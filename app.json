@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "estudio-ia",
+    "slug": "estudio-ia",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "estudioia",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.anonymous.estudioia",
+      "versionCode": 4
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png",
+      "backgroundColor": "#0f172a"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "splash": {
+      "image": "./assets/images/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f172a"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "0fb6a2dd-30c2-4700-826e-810bcabbb6ea"
+      }
+    }
+  }
+}

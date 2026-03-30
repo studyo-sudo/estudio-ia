@@ -1,0 +1,24 @@
+import { Alert } from 'react-native';
+import { getBillingState } from './billingStorage';
+
+function wait(ms: number) {
+  return new Promise<void>((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+export async function showAdIfFree(): Promise<void> {
+  const billing = await getBillingState();
+
+  if (billing.plan === 'premium') {
+    return;
+  }
+
+  Alert.alert(
+    'Anuncio',
+    'Simulación de anuncio para el plan Free. Luego lo reemplazamos por AdMob real.',
+    [{ text: 'Continuar' }]
+  );
+
+  await wait(900);
+}
