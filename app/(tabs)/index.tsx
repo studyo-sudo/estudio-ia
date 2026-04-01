@@ -1,5 +1,6 @@
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
+import { EncodingType, readAsStringAsync } from 'expo-file-system/legacy';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, Platform } from 'react-native';
@@ -10,7 +11,7 @@ import { PdfResultData } from '../../data/mockPdfResults';
 import { showAdIfFree } from '../../services/adsService';
 import { BillingState, getBillingState } from '../../services/billingStorage';
 import { createHistoryId, saveHistoryItem } from '../../services/historyStorage';
-import { analyzeFile, analyzeImage } from '../../services/studyApi';
+import { analyzeFile, analyzeImage, analyzeInlineFile } from '../../services/studyApi';
 import { mapStudyAnalysisToResult } from '../../services/studyResultMapper';
 import {
   canUseImageFree,
@@ -86,6 +87,7 @@ export default function HomeScreen() {
       setIsProcessing(true);
 
       const formData = new FormData();
+      let data;
 
       if (Platform.OS === 'web') {
         const webFile = (file as { file?: File }).file;
@@ -95,18 +97,18 @@ export default function HomeScreen() {
         }
 
         formData.append('file', webFile);
+        data = await analyzeFile(formData);
       } else {
-        formData.append(
-          'file',
-          {
-            uri: file.uri,
-            name: file.name,
-            type: file.mimeType || 'application/octet-stream',
-          } as never
-        );
-      }
+        const base64 = await readAsStringAsync(file.uri, {
+          encoding: EncodingType.Base64,
+        });
 
-      const data = await analyzeFile(formData);
+        data = await analyzeInlineFile({
+          fileName: file.name,
+          mimeType: file.mimeType || 'application/octet-stream',
+          base64,
+        });
+      }
       const generatedResult: PdfResultData = mapStudyAnalysisToResult(data, 'file');
 
       if (billing.plan === 'free') {

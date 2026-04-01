@@ -43,6 +43,29 @@ function requireAuth(req, res, next) {
   next();
 }
 
+async function analyzeStudyFilePayload(buffer, fileName, mimeType) {
+  const normalizedName = String(fileName || 'archivo').toLowerCase();
+  const normalizedMimeType = String(mimeType || '').toLowerCase();
+  const looksLikeText =
+    normalizedMimeType.startsWith('text/') ||
+    normalizedMimeType.includes('json') ||
+    normalizedMimeType.includes('xml') ||
+    normalizedMimeType.includes('html') ||
+    normalizedName.endsWith('.txt') ||
+    normalizedName.endsWith('.md') ||
+    normalizedName.endsWith('.csv') ||
+    normalizedName.endsWith('.json') ||
+    normalizedName.endsWith('.xml') ||
+    normalizedName.endsWith('.html') ||
+    normalizedName.endsWith('.pdf');
+
+  if (looksLikeText && buffer?.length) {
+    return analyzeTextFile(buffer, fileName);
+  }
+
+  return buildStudyAnalysis('file', fileName);
+}
+
 app.get('/health', (_req, res) => {
   res.json({ ok: true });
 });
@@ -179,12 +202,8 @@ app.post('/analyze-file', upload.single('file'), async (req, res) => {
   const fileName = req.file?.originalname || 'archivo';
 
   try {
-    const mimeType = String(req.file?.mimetype || '');
-    const isTextFile =
-      mimeType.startsWith('text/') || fileName.toLowerCase().endsWith('.txt');
-
-    if (isTextFile && req.file?.buffer) {
-      res.json(await analyzeTextFile(req.file.buffer, fileName));
+    if (req.file?.buffer) {
+      res.json(await analyzeStudyFilePayload(req.file.buffer, fileName, req.file.mimetype));
       return;
     }
   } catch (error) {
@@ -192,6 +211,23 @@ app.post('/analyze-file', upload.single('file'), async (req, res) => {
   }
 
   res.json(buildStudyAnalysis('file', fileName));
+});
+
+app.post('/analyze-file-inline', async (req, res) => {
+  const { fileName, mimeType, base64 } = req.body || {};
+
+  if (!fileName || !base64 || typeof base64 !== 'string') {
+    res.status(400).json({ error: 'fileName y base64 son obligatorios' });
+    return;
+  }
+
+  try {
+    const buffer = Buffer.from(base64, 'base64');
+    res.json(await analyzeStudyFilePayload(buffer, String(fileName), String(mimeType || '')));
+  } catch (error) {
+    console.error('Error analizando archivo inline con OpenAI:', error);
+    res.json(buildStudyAnalysis('file', String(fileName || 'archivo')));
+  }
 });
 
 app.post('/analyze-image', upload.single('image'), async (req, res) => {

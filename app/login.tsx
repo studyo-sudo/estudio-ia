@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
@@ -14,6 +15,7 @@ import { loginWithEmail, registerWithEmail } from '../services/authApi';
 import { getAuthState, login } from '../services/authStorage';
 
 export default function LoginScreen() {
+  const appVersion = Constants.expoConfig?.version || 'desconocida';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isBusy, setIsBusy] = useState(false);
@@ -84,6 +86,8 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <Text style={styles.versionBadge}>Version {appVersion}</Text>
+
       <View style={styles.hero}>
         <Text style={styles.title}>Studyo Ai</Text>
         <Text style={styles.subtitle}>
@@ -153,6 +157,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#0f172a',
     paddingHorizontal: 20,
     justifyContent: 'center',
+  },
+  versionBadge: {
+    position: 'absolute',
+    top: 18,
+    alignSelf: 'center',
+    color: '#94a3b8',
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 0.3,
   },
   hero: {
     marginBottom: 28,

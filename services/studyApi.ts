@@ -1,4 +1,4 @@
-import { postForm } from './apiClient';
+import { postForm, postJson } from './apiClient';
 
 export type StudyFlashcard = {
   front: string;
@@ -29,6 +29,14 @@ export type ExamModelResponse = {
 
 export function analyzeFile(formData: FormData) {
   return postForm<StudyAnalysisResponse>('/analyze-file', formData);
+}
+
+export function analyzeInlineFile(payload: {
+  fileName: string;
+  mimeType?: string;
+  base64: string;
+}) {
+  return postJson<StudyAnalysisResponse>('/analyze-file-inline', payload);
 }
 
 export function analyzeImage(formData: FormData) {
