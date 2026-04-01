@@ -1,12 +1,12 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-    Animated,
-    Pressable,
-    StyleSheet,
-    Text,
-    useWindowDimensions,
-    View,
+  Animated,
+  Pressable,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
 } from 'react-native';
 import { BillingState, getBillingState } from '../services/billingStorage';
 
@@ -15,14 +15,7 @@ type Flashcard = {
   back: string;
 };
 
-const CARD_COLORS = [
-  '#2563eb',
-  '#7c3aed',
-  '#0891b2',
-  '#059669',
-  '#ea580c',
-  '#db2777',
-];
+const CARD_COLORS = ['#2563eb', '#7c3aed', '#0891b2', '#059669', '#ea580c', '#db2777'];
 
 export default function FlashcardsScreen() {
   const params = useLocalSearchParams<{ cards?: string }>();
@@ -52,10 +45,7 @@ export default function FlashcardsScreen() {
       if (!Array.isArray(parsed)) return [];
 
       const validCards = parsed.filter(
-        (card) =>
-          card &&
-          typeof card.front === 'string' &&
-          typeof card.back === 'string'
+        (card) => card && typeof card.front === 'string' && typeof card.back === 'string'
       );
 
       return billing.plan === 'free' ? validCards.slice(0, 5) : validCards;
@@ -66,7 +56,6 @@ export default function FlashcardsScreen() {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
-
   const flipAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -107,7 +96,6 @@ export default function FlashcardsScreen() {
 
   const currentCard = cards[currentIndex];
   const currentColor = CARD_COLORS[currentIndex % CARD_COLORS.length];
-
   const cardWidth = Math.min(width * 0.82, 700);
   const cardHeight = Math.min(height * 0.52, 360);
 
@@ -129,7 +117,7 @@ export default function FlashcardsScreen() {
 
       {billing.plan === 'free' ? (
         <Text style={styles.freeNotice}>
-          En Free se muestran hasta 5 flashcards por sesión.
+          En Free se muestran hasta 5 flashcards por sesion.
         </Text>
       ) : null}
 
@@ -138,7 +126,6 @@ export default function FlashcardsScreen() {
           <Animated.View
             style={[
               styles.card,
-              styles.cardFront,
               {
                 backgroundColor: currentColor,
                 transform: [{ rotateY: frontInterpolate }],
@@ -147,13 +134,12 @@ export default function FlashcardsScreen() {
           >
             <Text style={styles.cardLabel}>Pregunta</Text>
             <Text style={styles.cardText}>{currentCard.front}</Text>
-            <Text style={styles.cardHint}>Tocá la card para ver la respuesta</Text>
+            <Text style={styles.cardHint}>Toca la card para ver la respuesta</Text>
           </Animated.View>
 
           <Animated.View
             style={[
               styles.card,
-              styles.cardBack,
               {
                 backgroundColor: currentColor,
                 transform: [{ rotateY: backInterpolate }],
@@ -162,7 +148,7 @@ export default function FlashcardsScreen() {
           >
             <Text style={styles.cardLabel}>Respuesta</Text>
             <Text style={styles.cardText}>{currentCard.back}</Text>
-            <Text style={styles.cardHint}>Tocá la card para volver</Text>
+            <Text style={styles.cardHint}>Toca la card para volver</Text>
           </Animated.View>
         </View>
       </Pressable>
@@ -173,7 +159,7 @@ export default function FlashcardsScreen() {
         </Pressable>
 
         <Pressable style={styles.navButtonPrimary} onPress={handleNext}>
-          <Text style={styles.navButtonPrimaryText}>Next</Text>
+          <Text style={styles.navButtonPrimaryText}>Siguiente</Text>
         </Pressable>
       </View>
     </View>
@@ -223,8 +209,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     elevation: 10,
   },
-  cardFront: {},
-  cardBack: {},
   cardLabel: {
     color: 'rgba(255,255,255,0.85)',
     fontSize: 16,

@@ -30,15 +30,17 @@ export default function RootLayout() {
         animation: 'slide_from_right',
       }}
     >
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="login" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="audio" options={{ title: 'Grabar clase' }} />
       <Stack.Screen name="exam" options={{ title: 'Examen' }} />
-      <Stack.Screen name="exam-model" options={{ title: 'Subir exámenes' }} />
+      <Stack.Screen name="exam-model" options={{ title: 'Subir examenes' }} />
       <Stack.Screen name="flashcards" options={{ title: 'Flashcards' }} />
       <Stack.Screen name="flashcards-history" options={{ title: 'Flashcards' }} />
       <Stack.Screen name="saved-item" options={{ title: 'Guardado' }} />
       <Stack.Screen name="pricing" options={{ title: 'Planes' }} />
-      <Stack.Screen name="credits" options={{ title: 'Créditos' }} />
+      <Stack.Screen name="credits" options={{ title: 'Creditos' }} />
     </Stack>
   );
 }

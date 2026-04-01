@@ -1,0 +1,26 @@
+[
+  {
+    "email": "nuevo.usuario.local@estudioia.local",
+    "passwordHash": "5ac0852e770506dcd80f1a36d20ba7878bf82244b836d9324593bd14bc56dcb5",
+    "source": "local",
+    "createdAt": 1774890500491
+  },
+  {
+    "email": "studyo.ai.app@gmail.com",
+    "passwordHash": "a4f4a3af8e17ccdbf2064e1428c9add3afab5f725e5b6af8ab597f64a6931a54",
+    "source": "local",
+    "createdAt": 1774952226003
+  },
+  {
+    "email": "admin123",
+    "passwordHash": "f45c251e72cd4f1090ad4be1863aa0481fde71976fe7c590f6133482d0ba6d05",
+    "source": "local",
+    "createdAt": 1774967838791
+  },
+  {
+    "email": "admin123@hotmail.com",
+    "passwordHash": "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9",
+    "source": "local",
+    "createdAt": 1774968282520
+  }
+]

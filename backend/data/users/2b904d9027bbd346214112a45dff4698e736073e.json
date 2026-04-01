@@ -1,0 +1,168 @@
+{
+  "history": [
+    {
+      "id": "1774956357086-75herswm",
+      "type": "image",
+      "title": "Gemini_Generated_Image_vl86kkvl86kkvl86.png",
+      "createdAt": 1774956357086,
+      "payload": {
+        "kind": "study-result",
+        "sourceType": "image",
+        "fileName": "Gemini_Generated_Image_vl86kkvl86kkvl86.png",
+        "fileSize": 1353481,
+        "result": {
+          "summary": "La imagen muestra a un/a streamer o jugador/a de esports con auriculares y micrófono en un escenario con iluminación morada. En la camiseta se lee claramente 'OTAKAR ESPORTS'. Elementos clave para estudiar: branding y equipo de transmisión (auriculares, micrófono), presencia ante la cámara, roles dentro de un equipo de esports y buenas prácticas de comunicación y preparación para competencias.",
+          "questions": [
+            "¿Qué texto se lee en la camiseta de la persona de la imagen?",
+            "Nombrar dos componentes del equipo de transmisión visibles en la imagen.",
+            "¿Qué roles son comunes dentro de un equipo de esports?",
+            "¿Qué buenas prácticas de comunicación se deben cuidar en streaming o competencias?"
+          ],
+          "flashcards": [
+            {
+              "front": "Texto visible en la camiseta",
+              "back": "OTAKAR ESPORTS"
+            },
+            {
+              "front": "Equipo de transmisión visible",
+              "back": "Auriculares y micrófono"
+            },
+            {
+              "front": "Entorno de la imagen",
+              "back": "Escenario con iluminación morada"
+            },
+            {
+              "front": "Roles en esports",
+              "back": "Jugador, caster, analista (y coach/entrenador)"
+            },
+            {
+              "front": "Consejo de comunicación para streaming",
+              "back": "Mantener claridad, voz estable y ritmo adecuado; mirar a la cámara; coordinar con el equipo"
+            }
+          ],
+          "exam": [
+            {
+              "question": "¿Cuál es el texto visible en la camiseta de la imagen?",
+              "options": [
+                "OTAKAR ESPORTS",
+                "GAMER TEAM",
+                "VISION ESPORT",
+                "NEXUS GAMING"
+              ],
+              "correctAnswer": "OTAKAR ESPORTS"
+            },
+            {
+              "question": "Qué elementos de equipo de transmisión se observan en la imagen?",
+              "options": [
+                "Auriculares y micrófono",
+                "Teclado y ratón",
+                "Cámara y luz frontal",
+                "Monitor de juego"
+              ],
+              "correctAnswer": "Auriculares y micrófono"
+            },
+            {
+              "question": "Dentro de un equipo de esports, ¿cuál es un rol típico además del jugador?",
+              "options": [
+                "Caster",
+                "Chef",
+                "Mecánico",
+                "Diseñador"
+              ],
+              "correctAnswer": "Caster"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "1774956097095-4xuo9m3x",
+      "type": "pdf",
+      "title": "generar habitos.txt",
+      "createdAt": 1774956097095,
+      "payload": {
+        "kind": "study-result",
+        "sourceType": "pdf",
+        "fileName": "generar habitos.txt",
+        "fileSize": 120066,
+        "result": {
+          "summary": "Este archivo explica la diferencia entre hábitos y reflejos, la base neurobiológica de la formación de hábitos (neuroplasticidad y cambios en conexiones neuronales), la distinción entre hábitos basados en objetivos y hábitos basados en la identidad, y propone marco práctico para hábitos de salud como el ejercicio de zona II (150–180 minutos/semana).",
+          "questions": [
+            "¿Qué diferencia a un hábito de un reflejo?",
+            "¿Qué es la neuroplasticidad y qué papel juega en la formación de hábitos?",
+            "¿Qué porcentaje de la conducta diaria se estima que es habitual?",
+            "¿Qué describe la zona II cardio y cuál es la pauta recomendada?"
+          ],
+          "flashcards": [
+            {
+              "front": "¿Qué es un hábito?",
+              "back": "Un comportamiento aprendido que se mantiene gracias a la neuroplasticidad; no es un reflejo innato, sino una ruta neuronal fortalecida con la repetición."
+            },
+            {
+              "front": "Diferencia entre reflejo y hábito",
+              "back": "Reflejos son respuestas hard-wired e innatas; hábitos son aprendidos y, a menudo, inconscientes, apoyados por cambios en las conexiones neuronales."
+            },
+            {
+              "front": "¿Qué porcentaje de la conducta diaria se estima que es habitual?",
+              "back": "Hasta el 70% de la conducta en la vigilia."
+            },
+            {
+              "front": "¿Qué es la neuroplasticidad?",
+              "back": "Proceso por el cual el sistema nervioso cambia en respuesta a la experiencia, formando nuevas conexiones neuronales que sostienen hábitos."
+            },
+            {
+              "front": "Hábitos basados en objetivos vs hábitos basados en identidad",
+              "back": "Objetivo: hábitos para lograr un resultado concreto; Identidad: hábitos que reflejan quién quieres ser y guían el tipo de hábitos que adopta."
+            }
+          ],
+          "exam": [
+            {
+              "question": "¿Qué diferencia a un hábito de un reflejo?",
+              "options": [
+                "A) Los hábitos son aprendidos y se sostienen por neuroplasticidad; los reflejos son respuestas preprogramadas.",
+                "B) Los hábitos son innatos; los reflejos se aprenden.",
+                "C) No hay diferencia; son lo mismo.",
+                "D) Los hábitos sólo ocurren de noche."
+              ],
+              "correctAnswer": "A) Los hábitos son aprendidos y se sostienen por neuroplasticidad; los reflejos son respuestas preprogramadas."
+            },
+            {
+              "question": "¿Qué es la neuroplasticidad?",
+              "options": [
+                "A) Cambio en las conexiones neuronales en respuesta a la experiencia",
+                "B) Rigidez de las rutas neuronales",
+                "C) Solo cambia el ADN",
+                "D) Es lo mismo que la memoria a corto plazo"
+              ],
+              "correctAnswer": "A) Cambio en las conexiones neuronales en respuesta a la experiencia"
+            },
+            {
+              "question": "¿Qué porcentaje de la conducta diaria se estima que es habitual?",
+              "options": [
+                "A) 30%",
+                "B) 50%",
+                "C) 70%",
+                "D) 90%"
+              ],
+              "correctAnswer": "C) 70%"
+            },
+            {
+              "question": "¿Qué describe la zona II cardio y cuál es la pauta recomendada?",
+              "options": [
+                "A) Entrenamiento de alta intensidad que impide hablar",
+                "B) Entrenamiento de intensidad moderada donde aún puedes mantener una conversación; 150–180 minutos/semana",
+                "C) Descanso completo",
+                "D) Solo ejercicios de fuerza"
+              ],
+              "correctAnswer": "B) Entrenamiento de intensidad moderada donde aún puedes mantener una conversación; 150–180 minutos/semana"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "billing": {
+    "plan": "free",
+    "credits": 0
+  }
+}

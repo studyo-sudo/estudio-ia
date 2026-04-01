@@ -1,20 +1,49 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Tabs } from 'expo-router';
-import { useEffect } from 'react';
-import { Platform } from 'react-native';
-import Purchases from 'react-native-purchases';
+import { Redirect, Tabs, useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, View } from 'react-native';
+import { initializePurchases } from '../../services/purchasesService';
+import { getAuthState } from '../../services/authStorage';
 
 export default function TabLayout() {
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    Purchases.setLogLevel(Purchases.LOG_LEVEL.DEBUG);
-
-    if (Platform.OS === 'android') {
-      Purchases.configure({
-        apiKey: 'test_YEUhsQjjEWPYgRDqcoUrWlNQyud',
-      });
-    }
+    initializePurchases();
   }, []);
+
+  const checkAuth = useCallback(async () => {
+    const auth = await getAuthState();
+    setIsAuthenticated(Boolean(auth.token));
+    setIsCheckingAuth(false);
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      setIsCheckingAuth(true);
+      void checkAuth();
+    }, [checkAuth])
+  );
+
+  if (isCheckingAuth) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: '#0f172a',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <ActivityIndicator size="large" color="#22d3ee" />
+      </View>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Redirect href="/login" />;
+  }
 
   return (
     <Tabs
@@ -46,6 +75,15 @@ export default function TabLayout() {
           title: 'Historial',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'time' : 'time-outline'} size={28} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="account"
+        options={{
+          title: 'Cuenta',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'person' : 'person-outline'} size={28} color={color} />
           ),
         }}
       />

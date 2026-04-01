@@ -63,11 +63,13 @@ export default function SavedItemScreen() {
     );
   }
 
+  const payload = item.payload;
+
   const openGeneratedExam = () => {
     router.push({
       pathname: '/exam',
       params: {
-        exam: JSON.stringify(item.payload.questions),
+        exam: JSON.stringify(payload.questions),
       },
     });
   };
@@ -81,7 +83,7 @@ export default function SavedItemScreen() {
 
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Temas detectados</Text>
-        {item.payload.detectedTopics.map((topic, index) => (
+        {payload.detectedTopics.map((topic, index) => (
           <View key={index} style={styles.topicChip}>
             <Text style={styles.topicChipText}>{topic}</Text>
           </View>
@@ -90,18 +92,18 @@ export default function SavedItemScreen() {
 
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Estilo detectado</Text>
-        <Text style={styles.bodyText}>{item.payload.examStyle}</Text>
+        <Text style={styles.bodyText}>{payload.examStyle}</Text>
       </View>
 
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Preguntas estimadas</Text>
-        <Text style={styles.bigNumber}>{item.payload.estimatedQuestions}</Text>
+        <Text style={styles.bigNumber}>{payload.estimatedQuestions}</Text>
       </View>
 
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Examen generado</Text>
         <Text style={styles.bodyText}>
-          Este modelo guardado contiene {item.payload.questions.length} preguntas.
+          Este modelo guardado contiene {payload.questions.length} preguntas.
         </Text>
       </View>
 

@@ -1,11 +1,8 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import {
-    addCredits,
-    BillingState,
-    getBillingState,
-} from '../services/billingStorage';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ENABLE_FAKE_BILLING } from '../constants/env';
+import { addCredits, BillingState, getBillingState } from '../services/billingStorage';
 
 type CreditPack = {
   title: string;
@@ -34,6 +31,14 @@ export default function CreditsScreen() {
   );
 
   const buyPack = async (amount: number) => {
+    if (!ENABLE_FAKE_BILLING) {
+      Alert.alert(
+        'No disponible',
+        'Los creditos reales todavia necesitan integracion con backend o tienda.'
+      );
+      return;
+    }
+
     await addCredits(amount);
     await loadBilling();
   };
@@ -45,9 +50,9 @@ export default function CreditsScreen() {
           credits: 50,
           price: '$5',
           equivalents: [
-            '≈ 10 PDFs',
-            '≈ 25 imágenes',
-            '≈ 25 min de audio',
+            'Aprox. 10 PDFs',
+            'Aprox. 25 imagenes',
+            'Aprox. 25 min de audio',
             'Ideal para uso puntual',
           ],
         },
@@ -56,9 +61,9 @@ export default function CreditsScreen() {
           credits: 120,
           price: '$10',
           equivalents: [
-            '≈ 24 PDFs',
-            '≈ 60 imágenes',
-            '≈ 1 hora de audio',
+            'Aprox. 24 PDFs',
+            'Aprox. 60 imagenes',
+            'Aprox. 1 hora de audio',
             'Ideal para semanas intensas',
           ],
         },
@@ -67,9 +72,9 @@ export default function CreditsScreen() {
           credits: 300,
           price: '$20',
           equivalents: [
-            '≈ 60 PDFs',
-            '≈ 150 imágenes',
-            '≈ 2 h 30 min de audio',
+            'Aprox. 60 PDFs',
+            'Aprox. 150 imagenes',
+            'Aprox. 2 h 30 min de audio',
             'Ideal para heavy users',
           ],
         },
@@ -80,10 +85,10 @@ export default function CreditsScreen() {
           credits: 50,
           price: '$10',
           equivalents: [
-            '≈ 10 PDFs',
-            '≈ 25 imágenes',
-            '≈ 25 min de audio',
-            'En Free los créditos cuestan más',
+            'Aprox. 10 PDFs',
+            'Aprox. 25 imagenes',
+            'Aprox. 25 min de audio',
+            'En Free los creditos cuestan mas',
           ],
         },
         {
@@ -91,9 +96,9 @@ export default function CreditsScreen() {
           credits: 120,
           price: '$20',
           equivalents: [
-            '≈ 24 PDFs',
-            '≈ 60 imágenes',
-            '≈ 1 hora de audio',
+            'Aprox. 24 PDFs',
+            'Aprox. 60 imagenes',
+            'Aprox. 1 hora de audio',
             'Premium te da mejor valor',
           ],
         },
@@ -102,9 +107,9 @@ export default function CreditsScreen() {
           credits: 300,
           price: '$40',
           equivalents: [
-            '≈ 60 PDFs',
-            '≈ 150 imágenes',
-            '≈ 2 h 30 min de audio',
+            'Aprox. 60 PDFs',
+            'Aprox. 150 imagenes',
+            'Aprox. 2 h 30 min de audio',
             'Pensado para urgencias grandes',
           ],
         },
@@ -116,19 +121,28 @@ export default function CreditsScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={styles.title}>Créditos</Text>
+      <Text style={styles.title}>Creditos</Text>
       <Text style={styles.subtitle}>
         {isPremium
-          ? 'Como usuario Premium, obtenés mejor precio en créditos.'
-          : 'En Free los créditos son más caros. Premium te da mejor valor.'}
+          ? 'Como usuario Premium, obtienes mejor precio en creditos.'
+          : 'En Free los creditos son mas caros. Premium te da mejor valor.'}
       </Text>
 
       <View style={styles.balanceCard}>
         <Text style={styles.balanceLabel}>Saldo actual</Text>
-        <Text style={styles.balanceValue}>{billing.credits} créditos</Text>
+        <Text style={styles.balanceValue}>{billing.credits} creditos</Text>
       </View>
 
-      <Text style={styles.sectionTitle}>Elegí un pack</Text>
+      <View style={styles.infoCard}>
+        <Text style={styles.infoTitle}>Modo de compra</Text>
+        <Text style={styles.infoText}>
+          {ENABLE_FAKE_BILLING
+            ? 'Esta pantalla funciona en modo demo y guarda los creditos localmente.'
+            : 'Los packs estan visibles, pero la compra real todavia no esta conectada.'}
+        </Text>
+      </View>
+
+      <Text style={styles.sectionTitle}>Elige un pack</Text>
 
       <ScrollView
         horizontal
@@ -138,7 +152,7 @@ export default function CreditsScreen() {
         {packs.map((pack) => (
           <View key={pack.title} style={styles.packCard}>
             <Text style={styles.packTitle}>{pack.title}</Text>
-            <Text style={styles.packCredits}>{pack.credits} créditos</Text>
+            <Text style={styles.packCredits}>{pack.credits} creditos</Text>
             <Text style={styles.packPrice}>{pack.price}</Text>
 
             <View style={styles.equivalentsBox}>
@@ -156,7 +170,9 @@ export default function CreditsScreen() {
                 void buyPack(pack.credits);
               }}
             >
-              <Text style={styles.buyButtonText}>Comprar</Text>
+              <Text style={styles.buyButtonText}>
+                {ENABLE_FAKE_BILLING ? 'Comprar' : 'Proximamente'}
+              </Text>
             </Pressable>
           </View>
         ))}
@@ -165,8 +181,8 @@ export default function CreditsScreen() {
       <View style={styles.noteCard}>
         <Text style={styles.noteTitle}>Referencia de consumo</Text>
         <Text style={styles.noteText}>
-          Estos valores son aproximados y pueden variar según longitud del contenido,
-          complejidad del análisis y cantidad de material generado.
+          Estos valores son aproximados y pueden variar segun longitud del contenido,
+          complejidad del analisis y cantidad de material generado.
         </Text>
       </View>
 
@@ -203,7 +219,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1e293b',
     borderRadius: 18,
     padding: 18,
-    marginBottom: 20,
+    marginBottom: 16,
   },
   balanceLabel: {
     color: '#94a3b8',
@@ -214,6 +230,23 @@ const styles = StyleSheet.create({
     color: '#93c5fd',
     fontSize: 28,
     fontWeight: '800',
+  },
+  infoCard: {
+    backgroundColor: '#111827',
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 20,
+  },
+  infoTitle: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  infoText: {
+    color: '#cbd5e1',
+    fontSize: 14,
+    lineHeight: 22,
   },
   sectionTitle: {
     color: 'white',

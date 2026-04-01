@@ -9,10 +9,28 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://9765-201-219-109-168.ngrok-free.app",
+        "EXPO_PUBLIC_ENABLE_FAKE_ADS": "true",
+        "EXPO_PUBLIC_ENABLE_FAKE_BILLING": "false",
+        "EXPO_PUBLIC_RC_ANDROID_API_KEY": "goog_nAnnpStVTZOovEmTdMOMIRtLFyS",
+        "EXPO_PUBLIC_RC_PREMIUM_ENTITLEMENT_ID": "premium",
+        "EXPO_PUBLIC_RC_OFFERING_ID": "default",
+        "EXPO_PUBLIC_RC_ANDROID_PRODUCT_ID": "studyo_ai_premium"
+      }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://9765-201-219-109-168.ngrok-free.app",
+        "EXPO_PUBLIC_ENABLE_FAKE_ADS": "true",
+        "EXPO_PUBLIC_ENABLE_FAKE_BILLING": "false",
+        "EXPO_PUBLIC_RC_ANDROID_API_KEY": "goog_nAnnpStVTZOovEmTdMOMIRtLFyS",
+        "EXPO_PUBLIC_RC_PREMIUM_ENTITLEMENT_ID": "premium",
+        "EXPO_PUBLIC_RC_OFFERING_ID": "default",
+        "EXPO_PUBLIC_RC_ANDROID_PRODUCT_ID": "studyo_ai_premium"
+      }
     }
   },
   "submit": {

@@ -28,23 +28,23 @@ export default function HomeScreenContent({
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={styles.title}>Estudio IA</Text>
+      <Text style={styles.title}>Studyo Ai</Text>
       <Text style={styles.subtitle}>
-        Convierte clases, PDFs, imágenes y exámenes en material de estudio.
+        Convierte clases, PDFs, imagenes y examenes en material de estudio.
       </Text>
 
       <View style={styles.statusCard}>
         <View style={styles.statusHeader}>
           <Text style={styles.statusTitle}>
-            {isPremium ? '💎 Premium activo' : '🟢 Plan Free'}
+            {isPremium ? 'Premium activo' : 'Plan Free'}
           </Text>
-          <Text style={styles.statusCredits}>{credits} créditos</Text>
+          <Text style={styles.statusCredits}>{credits} creditos</Text>
         </View>
 
         <Text style={styles.statusText}>
           {isPremium
-            ? 'Tu plan incluye uso amplio y créditos extra si necesitás más.'
-            : 'El plan free usa anuncios, límites semanales y créditos más caros.'}
+            ? 'Tu plan incluye uso amplio y creditos extra si necesitas mas.'
+            : 'El plan free usa anuncios, limites semanales y creditos mas caros.'}
         </Text>
 
         <View style={styles.statusButtonsRow}>
@@ -61,22 +61,22 @@ export default function HomeScreenContent({
             style={styles.secondaryMiniButton}
             onPress={() => router.push('/credits')}
           >
-            <Text style={styles.secondaryMiniButtonText}>Comprar créditos</Text>
+            <Text style={styles.secondaryMiniButtonText}>Comprar creditos</Text>
           </Pressable>
         </View>
       </View>
 
       <View style={styles.cardContainer}>
         <Pressable style={styles.card} onPress={onPdfPress}>
-          <Text style={styles.cardEmoji}>📄</Text>
+          <Text style={styles.cardEmoji}>PDF</Text>
           <Text style={styles.cardTitle}>Subir archivo</Text>
           <Text style={styles.cardText}>
-            Genera resúmenes, preguntas, flashcards y examen.
+            Genera resumenes, preguntas, flashcards y examen.
           </Text>
         </Pressable>
 
         <Pressable style={styles.card} onPress={onAudioPress}>
-          <Text style={styles.cardEmoji}>🎤</Text>
+          <Text style={styles.cardEmoji}>Audio</Text>
           <Text style={styles.cardTitle}>Grabar clase</Text>
           <Text style={styles.cardText}>
             Transcribe el audio y crea material de estudio.
@@ -84,7 +84,7 @@ export default function HomeScreenContent({
         </Pressable>
 
         <Pressable style={styles.card} onPress={onPhotoPress}>
-          <Text style={styles.cardEmoji}>📸</Text>
+          <Text style={styles.cardEmoji}>Foto</Text>
           <Text style={styles.cardTitle}>Foto de texto</Text>
           <Text style={styles.cardText}>
             Analiza pizarrones, apuntes o cualquier imagen con texto.
@@ -92,18 +92,18 @@ export default function HomeScreenContent({
         </Pressable>
 
         <Pressable style={styles.card} onPress={onExamModelPress}>
-          <Text style={styles.cardEmoji}>📝</Text>
-          <Text style={styles.cardTitle}>Subir exámenes</Text>
+          <Text style={styles.cardEmoji}>Exam</Text>
+          <Text style={styles.cardTitle}>Subir examenes</Text>
           <Text style={styles.cardText}>
-            Analiza exámenes anteriores y genera uno nuevo con estilo similar.
+            Analiza examenes anteriores y genera uno nuevo con estilo similar.
           </Text>
         </Pressable>
 
         <Pressable style={styles.card} onPress={onFlashcardsHistoryPress}>
-          <Text style={styles.cardEmoji}>🃏</Text>
+          <Text style={styles.cardEmoji}>Cards</Text>
           <Text style={styles.cardTitle}>Flashcards</Text>
           <Text style={styles.cardText}>
-            Abrí el historial de flashcards generadas y estudiá cuando quieras.
+            Abri el historial de flashcards generadas y estudia cuando quieras.
           </Text>
         </Pressable>
       </View>
@@ -199,7 +199,9 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   cardEmoji: {
-    fontSize: 28,
+    color: '#93c5fd',
+    fontSize: 18,
+    fontWeight: '800',
     marginBottom: 10,
   },
   cardTitle: {

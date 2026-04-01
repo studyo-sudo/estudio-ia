@@ -19,8 +19,6 @@ export default function PdfResultScreen({
 }: Props) {
   const isPdf = sourceType === 'pdf';
   const isImage = sourceType === 'image';
-  const isAudio = sourceType === 'audio';
-
   const estimatedPages = fileSize ? Math.max(1, Math.round(fileSize / 120)) : 1;
   const estimatedStudyTime = Math.max(5, estimatedPages * 3);
 
@@ -49,13 +47,17 @@ export default function PdfResultScreen({
       showsVerticalScrollIndicator={false}
     >
       <Text style={styles.title}>
-        {isPdf ? 'Resultado del archivo' : isImage ? 'Resultado de la imagen' : 'Resultado del audio'}
+        {isPdf
+          ? 'Resultado del archivo'
+          : isImage
+          ? 'Resultado de la imagen'
+          : 'Resultado del audio'}
       </Text>
 
       <View style={styles.headerCard}>
         <Text style={styles.fileName}>{fileName}</Text>
         <Text style={styles.fileInfo}>
-          Tamaño: {fileSize ? Math.round(fileSize / 1024) : 0} KB
+          Tamano: {fileSize ? Math.round(fileSize / 1024) : 0} KB
         </Text>
 
         <View style={styles.statsRow}>
@@ -65,9 +67,7 @@ export default function PdfResultScreen({
           </View>
 
           <View style={styles.statBox}>
-            <Text style={styles.statLabel}>
-              {isPdf ? 'Archivo' : isImage ? 'Fuente' : 'Fuente'}
-            </Text>
+            <Text style={styles.statLabel}>{isPdf ? 'Archivo' : 'Fuente'}</Text>
             <Text style={styles.statValue}>
               {isPdf ? 'Archivo' : isImage ? 'Imagen' : 'Audio'}
             </Text>
@@ -83,12 +83,12 @@ export default function PdfResultScreen({
       </View>
 
       <View style={styles.resultCard}>
-        <Text style={styles.sectionTitle}>🧠 Resumen</Text>
+        <Text style={styles.sectionTitle}>Resumen</Text>
         <Text style={styles.resultText}>{result.summary}</Text>
       </View>
 
       <View style={styles.resultCard}>
-        <Text style={styles.sectionTitle}>❓ Preguntas tipo examen</Text>
+        <Text style={styles.sectionTitle}>Preguntas tipo examen</Text>
         {result.questions.map((question, index) => (
           <View key={index} style={styles.questionBox}>
             <Text style={styles.questionText}>
@@ -99,9 +99,9 @@ export default function PdfResultScreen({
       </View>
 
       <View style={styles.resultCard}>
-        <Text style={styles.sectionTitle}>📚 Flashcards</Text>
+        <Text style={styles.sectionTitle}>Flashcards</Text>
         <Text style={styles.flashcardsDescription}>
-          Estudiá las flashcards en modo interactivo, una por una, con animación de giro.
+          Estudia las flashcards en modo interactivo, una por una, con animacion de giro.
         </Text>
 
         <Pressable style={styles.flashcardsButton} onPress={handleOpenFlashcards}>

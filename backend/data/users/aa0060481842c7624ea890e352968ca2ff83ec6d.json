@@ -1,0 +1,134 @@
+{
+  "history": [
+    {
+      "id": "1774953686847-0jocwqu6",
+      "type": "image",
+      "title": "Gemini_Generated_Image_vl86kkvl86kkvl86.png",
+      "createdAt": 1774953686847,
+      "payload": {
+        "kind": "study-result",
+        "sourceType": "image",
+        "fileName": "Gemini_Generated_Image_vl86kkvl86kkvl86.png",
+        "fileSize": 1353481,
+        "result": {
+          "summary": "Analisis inicial generado para la imagen \"Gemini_Generated_Image_vl86kkvl86kkvl86.png\". Este backend starter devuelve contenido estructurado compatible con la app mientras se integra el motor real de IA.",
+          "questions": [
+            "Cual es la idea principal de la imagen \"Gemini_Generated_Image_vl86kkvl86kkvl86.png\"?",
+            "Que conceptos de la imagen \"Gemini_Generated_Image_vl86kkvl86kkvl86.png\" conviene repasar primero?",
+            "Que aplicacion practica aparece en la imagen \"Gemini_Generated_Image_vl86kkvl86kkvl86.png\"?"
+          ],
+          "flashcards": [
+            {
+              "front": "Tema central de la imagen \"Gemini_Generated_Image_vl86kkvl86kkvl86.png\"",
+              "back": "Resumen clave generado a partir de la imagen \"Gemini_Generated_Image_vl86kkvl86kkvl86.png\"."
+            },
+            {
+              "front": "Concepto importante",
+              "back": "Punto para memorizar del material la imagen \"Gemini_Generated_Image_vl86kkvl86kkvl86.png\"."
+            }
+          ],
+          "exam": [
+            {
+              "question": "Cual es la idea principal de la imagen \"Gemini_Generated_Image_vl86kkvl86kkvl86.png\"?",
+              "options": [
+                "El concepto central de la imagen \"Gemini_Generated_Image_vl86kkvl86kkvl86.png\"",
+                "Un detalle menor",
+                "Una referencia externa",
+                "Nada relevante"
+              ],
+              "correctAnswer": "El concepto central de la imagen \"Gemini_Generated_Image_vl86kkvl86kkvl86.png\""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "1774953284799-hdb5pxb8",
+      "type": "pdf",
+      "title": "generar habitos.txt",
+      "createdAt": 1774953284799,
+      "payload": {
+        "kind": "study-result",
+        "sourceType": "pdf",
+        "fileName": "generar habitos.txt",
+        "fileSize": 120066,
+        "result": {
+          "summary": "Analisis inicial generado para el archivo \"generar habitos.txt\". Este backend starter devuelve contenido estructurado compatible con la app mientras se integra el motor real de IA.",
+          "questions": [
+            "Cual es la idea principal de el archivo \"generar habitos.txt\"?",
+            "Que conceptos de el archivo \"generar habitos.txt\" conviene repasar primero?",
+            "Que aplicacion practica aparece en el archivo \"generar habitos.txt\"?"
+          ],
+          "flashcards": [
+            {
+              "front": "Tema central de el archivo \"generar habitos.txt\"",
+              "back": "Resumen clave generado a partir de el archivo \"generar habitos.txt\"."
+            },
+            {
+              "front": "Concepto importante",
+              "back": "Punto para memorizar del material el archivo \"generar habitos.txt\"."
+            }
+          ],
+          "exam": [
+            {
+              "question": "Cual es la idea principal de el archivo \"generar habitos.txt\"?",
+              "options": [
+                "El concepto central de el archivo \"generar habitos.txt\"",
+                "Un detalle menor",
+                "Una referencia externa",
+                "Nada relevante"
+              ],
+              "correctAnswer": "El concepto central de el archivo \"generar habitos.txt\""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "1774953242822-3235xs0a",
+      "type": "pdf",
+      "title": "generar habitos.txt",
+      "createdAt": 1774953242822,
+      "payload": {
+        "kind": "study-result",
+        "sourceType": "pdf",
+        "fileName": "generar habitos.txt",
+        "fileSize": 120066,
+        "result": {
+          "summary": "Analisis inicial generado para el archivo \"generar habitos.txt\". Este backend starter devuelve contenido estructurado compatible con la app mientras se integra el motor real de IA.",
+          "questions": [
+            "Cual es la idea principal de el archivo \"generar habitos.txt\"?",
+            "Que conceptos de el archivo \"generar habitos.txt\" conviene repasar primero?",
+            "Que aplicacion practica aparece en el archivo \"generar habitos.txt\"?"
+          ],
+          "flashcards": [
+            {
+              "front": "Tema central de el archivo \"generar habitos.txt\"",
+              "back": "Resumen clave generado a partir de el archivo \"generar habitos.txt\"."
+            },
+            {
+              "front": "Concepto importante",
+              "back": "Punto para memorizar del material el archivo \"generar habitos.txt\"."
+            }
+          ],
+          "exam": [
+            {
+              "question": "Cual es la idea principal de el archivo \"generar habitos.txt\"?",
+              "options": [
+                "El concepto central de el archivo \"generar habitos.txt\"",
+                "Un detalle menor",
+                "Una referencia externa",
+                "Nada relevante"
+              ],
+              "correctAnswer": "El concepto central de el archivo \"generar habitos.txt\""
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "billing": {
+    "plan": "free",
+    "credits": 0
+  }
+}

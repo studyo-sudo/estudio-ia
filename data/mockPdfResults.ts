@@ -20,18 +20,18 @@ const genericResult: PdfResultData = {
   summary:
     'El documento presenta conceptos centrales del tema, relaciones entre ideas y ejemplos importantes para estudiar y preparar un examen.',
   questions: [
-    '¿Cuál es la idea principal del documento?',
-    '¿Qué conceptos son más importantes para recordar?',
-    '¿Cómo se aplica la teoría en un caso práctico?',
+    'Cual es la idea principal del documento?',
+    'Que conceptos son mas importantes para recordar?',
+    'Como se aplica la teoria en un caso practico?',
   ],
   flashcards: [
     {
       front: 'Concepto 1',
-      back: 'Definición breve y clara del concepto.',
+      back: 'Definicion breve y clara del concepto.',
     },
     {
       front: 'Concepto 2',
-      back: 'Explicación rápida con contexto.',
+      back: 'Explicacion rapida con contexto.',
     },
     {
       front: 'Concepto 3',
@@ -40,11 +40,11 @@ const genericResult: PdfResultData = {
   ],
   exam: [
     {
-      question: '¿Cuál es la idea principal del documento?',
+      question: 'Cual es la idea principal del documento?',
       options: [
         'La idea principal del documento',
         'Un dato secundario',
-        'Una opinión aislada',
+        'Una opinion aislada',
         'Una referencia externa',
       ],
       correctAnswer: 'La idea principal del documento',

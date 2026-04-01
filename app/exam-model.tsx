@@ -13,10 +13,8 @@ import {
 } from 'react-native';
 import ProcessingScreen from '../components/ProcessingScreen';
 import { BillingState, getBillingState } from '../services/billingStorage';
-import {
-  createHistoryId,
-  saveHistoryItem,
-} from '../services/historyStorage';
+import { createHistoryId, saveHistoryItem } from '../services/historyStorage';
+import { analyzeExamModel } from '../services/studyApi';
 import {
   canUseExamModelFree,
   registerExamModelFreeUse,
@@ -44,9 +42,6 @@ type ExamModelResult = {
     questions: GeneratedExamQuestion[];
   };
 };
-
-const BACKEND_BASE_URL =
-  Platform.OS === 'web' ? 'http://localhost:3000' : 'http://192.168.1.108:3000';
 
 export default function ExamModelScreen() {
   const [images, setImages] = useState<SelectedExamImage[]>([]);
@@ -90,8 +85,8 @@ export default function ExamModelScreen() {
         size:
           typeof asset.fileSize === 'number'
             ? asset.fileSize
-            : (asset as any).file?.size,
-        webFile: (asset as any).file,
+            : (asset as { file?: File }).file?.size,
+        webFile: (asset as { file?: File }).file,
       }));
 
       setImages((prev) => {
@@ -99,8 +94,8 @@ export default function ExamModelScreen() {
         return merged.slice(0, maxImagesAllowed);
       });
     } catch (error) {
-      console.error('Error eligiendo exámenes:', error);
-      Alert.alert('Error', 'No se pudieron seleccionar las imágenes.');
+      console.error('Error eligiendo examenes:', error);
+      Alert.alert('Error', 'No se pudieron seleccionar las imagenes.');
     }
   };
 
@@ -111,7 +106,7 @@ export default function ExamModelScreen() {
   const handleGenerate = async () => {
     try {
       if (images.length === 0) {
-        Alert.alert('Faltan exámenes', 'Subí al menos una imagen de examen.');
+        Alert.alert('Faltan examenes', 'Sube al menos una imagen de examen.');
         return;
       }
 
@@ -120,8 +115,8 @@ export default function ExamModelScreen() {
 
         if (!allowed) {
           Alert.alert(
-            'Límite alcanzado',
-            'En Free podés generar 1 modelo de examen por semana. Premium te da una experiencia mucho más amplia.'
+            'Limite alcanzado',
+            'En Free puedes generar 1 modelo de examen por semana. Premium te da una experiencia mucho mas amplia.'
           );
           return;
         }
@@ -145,23 +140,12 @@ export default function ExamModelScreen() {
               uri: image.uri,
               name: image.name,
               type: image.mimeType,
-            } as any
+            } as never
           );
         }
       }
 
-      const response = await fetch(`${BACKEND_BASE_URL}/analyze-exam-model`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      const rawText = await response.text();
-
-      if (!response.ok) {
-        throw new Error(`Backend respondió ${response.status}: ${rawText}`);
-      }
-
-      const data = JSON.parse(rawText);
+      const data = await analyzeExamModel(formData);
 
       if (
         !data ||
@@ -169,7 +153,7 @@ export default function ExamModelScreen() {
         !data.generatedExam ||
         !Array.isArray(data.generatedExam.questions)
       ) {
-        throw new Error('El backend no devolvió un modelo de examen válido.');
+        throw new Error('El backend no devolvio un modelo de examen valido.');
       }
 
       if (billing.plan === 'free') {
@@ -195,8 +179,7 @@ export default function ExamModelScreen() {
       await loadBilling();
     } catch (error) {
       console.error('Error generando modelo de examen:', error);
-      const message =
-        error instanceof Error ? error.message : 'Error desconocido';
+      const message = error instanceof Error ? error.message : 'Error desconocido';
       Alert.alert('Error generando examen', message);
     } finally {
       setIsProcessing(false);
@@ -223,7 +206,7 @@ export default function ExamModelScreen() {
     router.back();
   };
 
-    if (isProcessing) {
+  if (isProcessing) {
     return <ProcessingScreen type="examen" />;
   }
 
@@ -236,7 +219,7 @@ export default function ExamModelScreen() {
       >
         <Text style={styles.title}>Modelo de examen</Text>
         <Text style={styles.subtitle}>
-          Analizamos tus exámenes y generamos uno nuevo con estilo similar.
+          Analizamos tus examenes y generamos uno nuevo con estilo similar.
         </Text>
 
         <View style={styles.card}>
@@ -257,7 +240,7 @@ export default function ExamModelScreen() {
           <Text style={styles.sectionTitle}>Preguntas estimadas</Text>
           <Text style={styles.bigNumber}>{result.estimatedQuestions}</Text>
           <Text style={styles.bodyText}>
-            El examen generado intenta respetar la escala y el patrón de los exámenes subidos.
+            El examen generado intenta respetar la escala y el patron de los examenes subidos.
           </Text>
         </View>
 
@@ -285,9 +268,9 @@ export default function ExamModelScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={styles.title}>Subir exámenes</Text>
+      <Text style={styles.title}>Subir examenes</Text>
       <Text style={styles.subtitle}>
-        Subí fotos de exámenes anteriores y vamos a generar uno nuevo con estilo similar.
+        Sube fotos de examenes anteriores y vamos a generar uno nuevo con estilo similar.
       </Text>
 
       <View style={styles.noticeCard}>
@@ -296,20 +279,20 @@ export default function ExamModelScreen() {
         </Text>
         <Text style={styles.noticeText}>
           {billing.plan === 'premium'
-            ? 'Podés subir hasta 10 imágenes por modelo.'
-            : 'En Free podés subir hasta 2 imágenes y generar 1 modelo por semana.'}
+            ? 'Puedes subir hasta 10 imagenes por modelo.'
+            : 'En Free puedes subir hasta 2 imagenes y generar 1 modelo por semana.'}
         </Text>
       </View>
 
       <Pressable style={styles.primaryButton} onPress={addImagesFromLibrary}>
-        <Text style={styles.primaryButtonText}>Agregar exámenes</Text>
+        <Text style={styles.primaryButtonText}>Agregar examenes</Text>
       </Pressable>
 
       <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Exámenes cargados</Text>
+        <Text style={styles.sectionTitle}>Examenes cargados</Text>
 
         {images.length === 0 ? (
-          <Text style={styles.bodyText}>Todavía no cargaste imágenes.</Text>
+          <Text style={styles.bodyText}>Todavia no cargaste imagenes.</Text>
         ) : (
           <View style={styles.previewGrid}>
             {images.map((image, index) => (

@@ -49,9 +49,9 @@ export default function FlashcardsHistoryScreen() {
 
       {items.length === 0 ? (
         <View style={styles.emptyCard}>
-          <Text style={styles.emptyTitle}>Todavía no hay flashcards guardadas</Text>
+          <Text style={styles.emptyTitle}>Todavia no hay flashcards guardadas</Text>
           <Text style={styles.emptyText}>
-            Generá contenido desde archivo, imagen o audio y aparecerá acá.
+            Genera contenido desde archivo, imagen o audio y aparecera aqui.
           </Text>
         </View>
       ) : (
@@ -61,17 +61,12 @@ export default function FlashcardsHistoryScreen() {
           return (
             <View key={item.id} style={styles.itemCard}>
               <Text style={styles.itemTitle}>{item.title}</Text>
-              <Text style={styles.itemMeta}>
-                {new Date(item.createdAt).toLocaleString()}
-              </Text>
+              <Text style={styles.itemMeta}>{new Date(item.createdAt).toLocaleString()}</Text>
               <Text style={styles.itemCount}>
                 {item.payload.result.flashcards.length} flashcards
               </Text>
 
-              <Pressable
-                style={styles.openButton}
-                onPress={() => openFlashcards(item)}
-              >
+              <Pressable style={styles.openButton} onPress={() => openFlashcards(item)}>
                 <Text style={styles.openButtonText}>Estudiar flashcards</Text>
               </Pressable>
             </View>

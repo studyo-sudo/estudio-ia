@@ -1,12 +1,7 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
-import {
-  buildShareText,
-  deleteHistoryItem,
-  getHistoryItems,
-  HistoryItem,
-} from '../../services/historyStorage';
+import { Alert, Platform, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { buildShareText, deleteHistoryItem, getHistoryItems, HistoryItem } from '../../services/historyStorage';
 
 function formatTypeLabel(type: HistoryItem['type']) {
   switch (type) {
@@ -26,26 +21,38 @@ function formatTypeLabel(type: HistoryItem['type']) {
 export default function ExploreScreen() {
   const [items, setItems] = useState<HistoryItem[]>([]);
 
-  const loadItems = useCallback(async () => {
+  const loadScreenData = useCallback(async () => {
     const history = await getHistoryItems();
     setItems(history);
   }, []);
 
   useFocusEffect(
     useCallback(() => {
-      void loadItems();
-    }, [loadItems])
+      void loadScreenData();
+    }, [loadScreenData])
   );
 
   const handleDelete = async (id: string) => {
-    Alert.alert('Eliminar', '¿Querés eliminar este elemento del historial?', [
+    if (Platform.OS === 'web') {
+      const confirmed = globalThis.confirm?.('Quieres eliminar este elemento del historial?');
+
+      if (!confirmed) {
+        return;
+      }
+
+      await deleteHistoryItem(id);
+      await loadScreenData();
+      return;
+    }
+
+    Alert.alert('Eliminar', 'Quieres eliminar este elemento del historial?', [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Eliminar',
         style: 'destructive',
         onPress: async () => {
           await deleteHistoryItem(id);
-          await loadItems();
+          await loadScreenData();
         },
       },
     ]);
@@ -73,16 +80,16 @@ export default function ExploreScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Historial</Text>
+      <Text style={styles.title}>Historial de archivos</Text>
       <Text style={styles.subtitle}>
-        Todo lo que generes queda guardado acá.
+        Aqui aparecen los PDFs, imagenes, audios y resultados que generaste.
       </Text>
 
       {items.length === 0 ? (
         <View style={styles.emptyCard}>
-          <Text style={styles.emptyTitle}>Todavía no hay contenido guardado</Text>
+          <Text style={styles.emptyTitle}>Todavia no hay contenido guardado</Text>
           <Text style={styles.emptyText}>
-            Generá un PDF, una imagen, un audio o un modelo de examen y aparecerá acá.
+            Genera un PDF, una imagen, un audio o un modelo de examen y aparecera aqui.
           </Text>
         </View>
       ) : (
@@ -155,7 +162,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1e293b',
     borderRadius: 18,
     padding: 18,
-    marginBottom: 14,
+    marginTop: 14,
   },
   itemTitle: {
     color: 'white',

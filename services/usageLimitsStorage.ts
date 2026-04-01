@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getAuthState } from './authStorage';
 
-const USAGE_KEY = 'usage_limits_v1';
+const USAGE_KEY_PREFIX = 'usage_limits_v1';
 
 type WeeklyUsage = {
   weekKey: string;
@@ -25,9 +26,20 @@ function getWeekKey(date = new Date()) {
   return `${date.getFullYear()}-W${week}`;
 }
 
+async function getUsageStorageKey() {
+  const auth = await getAuthState();
+  const ownerKey =
+    auth.email && auth.email.trim().length > 0
+      ? auth.email.trim().toLowerCase()
+      : 'guest';
+
+  return `${USAGE_KEY_PREFIX}:${ownerKey}`;
+}
+
 async function getCurrentUsage(): Promise<WeeklyUsage> {
   try {
-    const raw = await AsyncStorage.getItem(USAGE_KEY);
+    const storageKey = await getUsageStorageKey();
+    const raw = await AsyncStorage.getItem(storageKey);
     const currentWeekKey = getWeekKey();
 
     if (!raw) {
@@ -62,7 +74,8 @@ async function getCurrentUsage(): Promise<WeeklyUsage> {
 }
 
 async function saveCurrentUsage(usage: WeeklyUsage): Promise<void> {
-  await AsyncStorage.setItem(USAGE_KEY, JSON.stringify(usage));
+  const storageKey = await getUsageStorageKey();
+  await AsyncStorage.setItem(storageKey, JSON.stringify(usage));
 }
 
 export async function getWeeklyUsage() {

@@ -1,18 +1,18 @@
 {
   "expo": {
-    "name": "estudio-ia",
-    "slug": "estudio-ia",
+    "name": "Studyo Ai",
+    "slug": "studyo-ai",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "estudioia",
+    "scheme": "studyoai",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
     "android": {
-      "package": "com.anonymous.estudioia",
+      "package": "com.studyoai",
       "versionCode": 4
     },
     "web": {
@@ -35,8 +35,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "0fb6a2dd-30c2-4700-826e-810bcabbb6ea"
+        "projectId": "2dcad64d-3f9d-4f6b-a46b-cd247eca8ac6"
       }
-    }
+    },
+    "owner": "studyo.ai"
   }
 }

@@ -9,10 +9,9 @@ import ProcessingScreen from '../../components/ProcessingScreen';
 import { PdfResultData } from '../../data/mockPdfResults';
 import { showAdIfFree } from '../../services/adsService';
 import { BillingState, getBillingState } from '../../services/billingStorage';
-import {
-  createHistoryId,
-  saveHistoryItem,
-} from '../../services/historyStorage';
+import { createHistoryId, saveHistoryItem } from '../../services/historyStorage';
+import { analyzeFile, analyzeImage } from '../../services/studyApi';
+import { mapStudyAnalysisToResult } from '../../services/studyResultMapper';
 import {
   canUseImageFree,
   canUsePdfFree,
@@ -28,9 +27,6 @@ type SelectedSource = {
 };
 
 type ProcessingType = 'archivo' | 'imagen' | 'audio' | 'examen';
-
-const BACKEND_BASE_URL =
-  Platform.OS === 'web' ? 'http://localhost:3000' : 'http://192.168.1.108:3000';
 
 export default function HomeScreen() {
   const [selectedSource, setSelectedSource] = useState<SelectedSource | null>(null);
@@ -60,8 +56,8 @@ export default function HomeScreen() {
 
         if (!allowed) {
           Alert.alert(
-            'Límite alcanzado',
-            'En Free podés procesar hasta 3 archivos por semana. Hacete Premium para seguir sin límites molestos.'
+            'Limite alcanzado',
+            'En Free puedes procesar hasta 3 archivos por semana. Hazte Premium para seguir sin limites molestos.'
           );
           return;
         }
@@ -83,10 +79,10 @@ export default function HomeScreen() {
       const formData = new FormData();
 
       if (Platform.OS === 'web') {
-        const webFile = (file as any).file;
+        const webFile = (file as { file?: File }).file;
 
         if (!webFile) {
-          throw new Error('En web no se encontró el archivo real para subir.');
+          throw new Error('En web no se encontro el archivo real para subir.');
         }
 
         formData.append('file', webFile);
@@ -97,68 +93,18 @@ export default function HomeScreen() {
             uri: file.uri,
             name: file.name,
             type: file.mimeType || 'application/octet-stream',
-          } as any
+          } as never
         );
       }
 
-      const response = await fetch(`${BACKEND_BASE_URL}/analyze-file`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Backend respondió ${response.status}: ${errorText}`);
-      }
-
-      const data = await response.json();
-
-      if (!data?.summary) {
-        throw new Error('El backend no devolvió un resumen válido.');
-      }
-
-      const generatedResult: PdfResultData = {
-        summary: data.summary,
-        questions:
-          Array.isArray(data.questions) && data.questions.length > 0
-            ? data.questions
-            : [
-                '¿Cuál es la idea principal del archivo?',
-                '¿Qué conceptos aparecen como más importantes?',
-                '¿Qué tema conviene estudiar primero?',
-              ],
-        flashcards:
-          Array.isArray(data.flashcards) && data.flashcards.length > 0
-            ? data.flashcards
-            : [
-                {
-                  front: 'Idea principal',
-                  back: 'Se genera a partir del contenido real del archivo.',
-                },
-              ],
-        exam:
-          Array.isArray(data.exam) && data.exam.length > 0
-            ? data.exam
-            : [
-                {
-                  question: '¿Cuál es la idea principal del archivo?',
-                  options: [
-                    'La idea principal del archivo',
-                    'Un detalle menor',
-                    'Una cita aislada',
-                    'Una referencia externa',
-                  ],
-                  correctAnswer: 'La idea principal del archivo',
-                },
-              ],
-      };
+      const data = await analyzeFile(formData);
+      const generatedResult: PdfResultData = mapStudyAnalysisToResult(data, 'file');
 
       if (billing.plan === 'free') {
         await registerPdfFreeUse();
       }
 
       setPdfResult(generatedResult);
-
       setSelectedSource({
         name: file.name,
         size: file.size,
@@ -183,10 +129,7 @@ export default function HomeScreen() {
       await loadBilling();
     } catch (error) {
       console.error('Error al procesar archivo:', error);
-
-      const message =
-        error instanceof Error ? error.message : 'Error desconocido';
-
+      const message = error instanceof Error ? error.message : 'Error desconocido';
       Alert.alert('Error procesando archivo', message);
     } finally {
       setIsProcessing(false);
@@ -200,10 +143,10 @@ export default function HomeScreen() {
     const formData = new FormData();
 
     if (Platform.OS === 'web') {
-      const webFile = (asset as any).file;
+      const webFile = (asset as { file?: File }).file;
 
       if (!webFile) {
-        throw new Error('En web no se encontró el archivo real de la imagen.');
+        throw new Error('En web no se encontro el archivo real de la imagen.');
       }
 
       formData.append('image', webFile);
@@ -214,61 +157,12 @@ export default function HomeScreen() {
           uri: asset.uri,
           name: asset.fileName || 'imagen.jpg',
           type: asset.mimeType || 'image/jpeg',
-        } as any
+        } as never
       );
     }
 
-    const response = await fetch(`${BACKEND_BASE_URL}/analyze-image`, {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Backend respondió ${response.status}: ${errorText}`);
-    }
-
-    const data = await response.json();
-
-    if (!data?.summary) {
-      throw new Error('El backend no devolvió un análisis válido para la imagen.');
-    }
-
-    const generatedResult: PdfResultData = {
-      summary: data.summary,
-      questions:
-        Array.isArray(data.questions) && data.questions.length > 0
-          ? data.questions
-          : [
-              '¿Cuál es la idea principal de la imagen?',
-              '¿Qué texto o concepto conviene memorizar?',
-              '¿Qué fórmula o definición aparece?',
-            ],
-      flashcards:
-        Array.isArray(data.flashcards) && data.flashcards.length > 0
-          ? data.flashcards
-          : [
-              {
-                front: 'Texto principal',
-                back: 'Contenido detectado desde la imagen.',
-              },
-            ],
-      exam:
-        Array.isArray(data.exam) && data.exam.length > 0
-          ? data.exam
-          : [
-              {
-                question: '¿Qué concepto principal aparece en la imagen?',
-                options: [
-                  'El concepto central',
-                  'Un detalle irrelevante',
-                  'Una referencia externa',
-                  'Nada identificable',
-                ],
-                correctAnswer: 'El concepto central',
-              },
-            ],
-    };
+    const data = await analyzeImage(formData);
+    const generatedResult: PdfResultData = mapStudyAnalysisToResult(data, 'image');
 
     if (billing.plan === 'free') {
       await registerImageFreeUse();
@@ -277,13 +171,14 @@ export default function HomeScreen() {
     setPdfResult(generatedResult);
 
     const imageName = asset.fileName || 'imagen';
+    const imageSize =
+      typeof asset.fileSize === 'number'
+        ? asset.fileSize
+        : (asset as { file?: File }).file?.size;
 
     setSelectedSource({
       name: imageName,
-      size:
-        typeof asset.fileSize === 'number'
-          ? asset.fileSize
-          : (asset as any).file?.size,
+      size: imageSize,
       uri: asset.uri,
       sourceType: 'image',
     });
@@ -297,10 +192,7 @@ export default function HomeScreen() {
         kind: 'study-result',
         sourceType: 'image',
         fileName: imageName,
-        fileSize:
-          typeof asset.fileSize === 'number'
-            ? asset.fileSize
-            : (asset as any).file?.size,
+        fileSize: imageSize,
         result: generatedResult,
       },
     });
@@ -315,8 +207,8 @@ export default function HomeScreen() {
 
         if (!allowed) {
           Alert.alert(
-            'Límite alcanzado',
-            'En Free podés procesar hasta 3 imágenes por semana. Hacete Premium para seguir.'
+            'Limite alcanzado',
+            'En Free puedes procesar hasta 3 imagenes por semana. Hazte Premium para seguir.'
           );
           return;
         }
@@ -331,14 +223,10 @@ export default function HomeScreen() {
       });
 
       if (result.canceled) return;
-
       await processImageAsset(result.assets[0]);
     } catch (error) {
       console.error('Error al procesar imagen:', error);
-
-      const message =
-        error instanceof Error ? error.message : 'Error desconocido';
-
+      const message = error instanceof Error ? error.message : 'Error desconocido';
       Alert.alert('Error procesando imagen', message);
     } finally {
       setIsProcessing(false);
@@ -352,8 +240,8 @@ export default function HomeScreen() {
 
         if (!allowed) {
           Alert.alert(
-            'Límite alcanzado',
-            'En Free podés procesar hasta 3 imágenes por semana. Hacete Premium para seguir.'
+            'Limite alcanzado',
+            'En Free puedes procesar hasta 3 imagenes por semana. Hazte Premium para seguir.'
           );
           return;
         }
@@ -366,7 +254,7 @@ export default function HomeScreen() {
       if (!permission.granted) {
         Alert.alert(
           'Permiso requerido',
-          'Necesitas dar permiso de cámara para sacar una foto.'
+          'Necesitas dar permiso de camara para sacar una foto.'
         );
         return;
       }
@@ -378,14 +266,10 @@ export default function HomeScreen() {
       });
 
       if (result.canceled) return;
-
       await processImageAsset(result.assets[0]);
     } catch (error) {
       console.error('Error al sacar foto:', error);
-
-      const message =
-        error instanceof Error ? error.message : 'Error desconocido';
-
+      const message = error instanceof Error ? error.message : 'Error desconocido';
       Alert.alert('Error sacando foto', message);
     } finally {
       setIsProcessing(false);
@@ -398,15 +282,15 @@ export default function HomeScreen() {
       return;
     }
 
-    Alert.alert('Foto de texto', 'Elegí cómo querés analizar la imagen', [
+    Alert.alert('Foto de texto', 'Elige como quieres analizar la imagen', [
       {
-        text: 'Cámara',
+        text: 'Camara',
         onPress: () => {
           void openCamera();
         },
       },
       {
-        text: 'Galería',
+        text: 'Galeria',
         onPress: () => {
           void openImageLibrary();
         },

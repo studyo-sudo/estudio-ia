@@ -1,4 +1,5 @@
 import { Alert } from 'react-native';
+import { ENABLE_FAKE_ADS } from '../constants/env';
 import { getBillingState } from './billingStorage';
 
 function wait(ms: number) {
@@ -10,13 +11,13 @@ function wait(ms: number) {
 export async function showAdIfFree(): Promise<void> {
   const billing = await getBillingState();
 
-  if (billing.plan === 'premium') {
+  if (billing.plan === 'premium' || !ENABLE_FAKE_ADS) {
     return;
   }
 
   Alert.alert(
     'Anuncio',
-    'Simulación de anuncio para el plan Free. Luego lo reemplazamos por AdMob real.',
+    'Simulacion de anuncio para el plan Free. Luego puedes reemplazarla por AdMob real.',
     [{ text: 'Continuar' }]
   );
 

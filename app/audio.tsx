@@ -1,3 +1,4 @@
+import * as DocumentPicker from 'expo-document-picker';
 import {
   getRecordingPermissionsAsync,
   RecordingPresets,
@@ -13,18 +14,10 @@ import PdfResultScreen from '../components/PdfResultScreen';
 import ProcessingScreen from '../components/ProcessingScreen';
 import { PdfResultData } from '../data/mockPdfResults';
 import { showAdIfFree } from '../services/adsService';
-import {
-  BillingState,
-  consumeCredits,
-  getBillingState,
-} from '../services/billingStorage';
-import {
-  createHistoryId,
-  saveHistoryItem,
-} from '../services/historyStorage';
-
-const BACKEND_BASE_URL =
-  Platform.OS === 'web' ? 'http://localhost:3000' : 'http://192.168.1.108:3000';
+import { BillingState, consumeCredits, getBillingState } from '../services/billingStorage';
+import { createHistoryId, saveHistoryItem } from '../services/historyStorage';
+import { analyzeAudio } from '../services/studyApi';
+import { mapStudyAnalysisToResult } from '../services/studyResultMapper';
 
 function formatDuration(ms: number) {
   const totalSeconds = Math.floor(ms / 1000);
@@ -76,9 +69,69 @@ export default function AudioScreen() {
     try {
       if (billing.plan === 'free' && billing.credits <= 0) {
         Alert.alert(
-          'Créditos requeridos',
-          'En Free el audio solo se usa con créditos. Comprá créditos para analizar grabaciones.'
+          'Creditos requeridos',
+          'En Free el audio solo se usa con creditos. Compra creditos para analizar grabaciones.'
         );
+        return;
+      }
+
+      if (Platform.OS === 'web') {
+        const picked = await DocumentPicker.getDocumentAsync({
+          type: ['audio/*'],
+          copyToCacheDirectory: true,
+        });
+
+        if (picked.canceled) return;
+
+        const asset = picked.assets[0];
+        const webFile = (asset as { file?: File }).file;
+
+        if (!webFile) {
+          throw new Error('En web no se encontro el archivo de audio para subir.');
+        }
+
+        const estimatedCredits = getAudioCreditCost(60000);
+
+        if (billing.plan === 'free') {
+          const consumed = await consumeCredits(estimatedCredits);
+
+          if (!consumed) {
+            await loadBilling();
+            Alert.alert(
+              'Creditos insuficientes',
+              `Para analizar audio en web necesitas al menos ${estimatedCredits} creditos.`
+            );
+            return;
+          }
+        }
+
+        setIsProcessing(true);
+
+        const formData = new FormData();
+        formData.append('audio', webFile);
+
+        const data = await analyzeAudio(formData);
+        const generatedResult: PdfResultData = mapStudyAnalysisToResult(data, 'audio');
+
+        setRecordingName(asset.name);
+        setRecordingSize(asset.size);
+        setResult(generatedResult);
+
+        await saveHistoryItem({
+          id: createHistoryId(),
+          type: 'audio',
+          title: asset.name,
+          createdAt: Date.now(),
+          payload: {
+            kind: 'study-result',
+            sourceType: 'audio',
+            fileName: asset.name,
+            fileSize: asset.size,
+            result: generatedResult,
+          },
+        });
+
+        await loadBilling();
         return;
       }
 
@@ -89,7 +142,7 @@ export default function AudioScreen() {
       if (!granted) {
         Alert.alert(
           'Permiso requerido',
-          'Necesitás dar permiso de micrófono para grabar audio.'
+          'Necesitas dar permiso de microfono para grabar audio.'
         );
         return;
       }
@@ -102,8 +155,11 @@ export default function AudioScreen() {
       await recorder.prepareToRecordAsync();
       recorder.record();
     } catch (error) {
-      console.error('Error iniciando grabación:', error);
-      Alert.alert('Error', 'No se pudo iniciar la grabación.');
+      console.error('Error iniciando grabacion:', error);
+      const message = error instanceof Error ? error.message : 'No se pudo iniciar la grabacion.';
+      Alert.alert('Error', message);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -114,7 +170,7 @@ export default function AudioScreen() {
       const audioUri = recorder.uri || recorderState.url;
 
       if (!audioUri) {
-        throw new Error('No se encontró el archivo de audio grabado.');
+        throw new Error('No se encontro el archivo de audio grabado.');
       }
 
       const durationMillis = recorderState.durationMillis || 0;
@@ -126,8 +182,8 @@ export default function AudioScreen() {
         if (!consumed) {
           await loadBilling();
           Alert.alert(
-            'Créditos insuficientes',
-            `Esta grabación necesita ${neededCredits} créditos. Comprá más créditos o acortá la duración.`
+            'Creditos insuficientes',
+            `Esta grabacion necesita ${neededCredits} creditos. Compra mas creditos o acorta la duracion.`
           );
           return;
         }
@@ -138,7 +194,7 @@ export default function AudioScreen() {
       const formData = new FormData();
 
       let finalName = 'clase-grabada.m4a';
-      let finalSize: number | undefined = undefined;
+      let finalSize: number | undefined;
 
       if (Platform.OS === 'web') {
         const response = await fetch(audioUri);
@@ -169,62 +225,12 @@ export default function AudioScreen() {
             uri: audioUri,
             name: 'clase-grabada.m4a',
             type: 'audio/m4a',
-          } as any
+          } as never
         );
       }
 
-      const backendResponse = await fetch(`${BACKEND_BASE_URL}/analyze-audio`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      const rawText = await backendResponse.text();
-
-      if (!backendResponse.ok) {
-        throw new Error(`Backend respondió ${backendResponse.status}: ${rawText}`);
-      }
-
-      const data = JSON.parse(rawText);
-
-      if (!data?.summary) {
-        throw new Error('El backend no devolvió un resumen válido del audio.');
-      }
-
-      const generatedResult: PdfResultData = {
-        summary: data.summary,
-        questions:
-          Array.isArray(data.questions) && data.questions.length > 0
-            ? data.questions
-            : [
-                '¿Cuál fue la idea principal de la clase?',
-                '¿Qué conceptos fueron los más importantes?',
-                '¿Qué conviene repasar primero?',
-              ],
-        flashcards:
-          Array.isArray(data.flashcards) && data.flashcards.length > 0
-            ? data.flashcards
-            : [
-                {
-                  front: 'Tema principal',
-                  back: 'Generado desde la transcripción del audio.',
-                },
-              ],
-        exam:
-          Array.isArray(data.exam) && data.exam.length > 0
-            ? data.exam
-            : [
-                {
-                  question: '¿Cuál fue el tema principal de la clase?',
-                  options: [
-                    'El tema central',
-                    'Un detalle irrelevante',
-                    'Una opinión aislada',
-                    'Nada importante',
-                  ],
-                  correctAnswer: 'El tema central',
-                },
-              ],
-      };
+      const data = await analyzeAudio(formData);
+      const generatedResult: PdfResultData = mapStudyAnalysisToResult(data, 'audio');
 
       setRecordingName(finalName);
       setRecordingSize(finalSize);
@@ -247,8 +253,7 @@ export default function AudioScreen() {
       await loadBilling();
     } catch (error) {
       console.error('Error procesando audio:', error);
-      const message =
-        error instanceof Error ? error.message : 'Error desconocido';
+      const message = error instanceof Error ? error.message : 'Error desconocido';
       Alert.alert('Error procesando audio', message);
     } finally {
       setIsProcessing(false);
@@ -266,8 +271,8 @@ export default function AudioScreen() {
 
   const freeAudioText =
     billing.plan === 'free'
-      ? `En Free, el audio consume créditos. Costo estimado: 2 créditos por minuto. Saldo actual: ${billing.credits}.`
-      : 'Con Premium, podés usar audio sin consumir créditos obligatorios.';
+      ? `En Free, el audio consume creditos. Costo estimado: 2 creditos por minuto. Saldo actual: ${billing.credits}.`
+      : 'Con Premium, puedes usar audio sin consumir creditos obligatorios.';
 
   if (isProcessing) {
     return <ProcessingScreen type="audio" />;
@@ -293,9 +298,18 @@ export default function AudioScreen() {
     >
       <Text style={styles.title}>Grabar clase</Text>
       <Text style={styles.subtitle}>
-        Grabá una clase o explicación, detené la grabación y generá resumen, preguntas,
+        Graba una clase o explicacion, deten la grabacion y genera resumen, preguntas,
         flashcards y examen.
       </Text>
+      {Platform.OS === 'web' ? (
+        <View style={styles.noticeCard}>
+          <Text style={styles.noticeTitle}>Audio en web</Text>
+          <Text style={styles.noticeText}>
+            En la web subiremos un archivo de audio en lugar de grabar directamente desde el
+            navegador.
+          </Text>
+        </View>
+      ) : null}
 
       <View style={styles.noticeCard}>
         <Text style={styles.noticeTitle}>
@@ -310,13 +324,15 @@ export default function AudioScreen() {
           {recorderState.isRecording ? 'Grabando...' : 'Listo para grabar'}
         </Text>
 
-        <Text style={styles.label}>Duración</Text>
+        <Text style={styles.label}>Duracion</Text>
         <Text style={styles.timer}>{formatDuration(recorderState.durationMillis || 0)}</Text>
       </View>
 
       {!recorderState.isRecording ? (
         <Pressable style={styles.primaryButton} onPress={handleStartRecording}>
-          <Text style={styles.primaryButtonText}>Empezar grabación</Text>
+          <Text style={styles.primaryButtonText}>
+            {Platform.OS === 'web' ? 'Subir audio' : 'Empezar grabacion'}
+          </Text>
         </Pressable>
       ) : (
         <Pressable style={styles.stopButton} onPress={handleStopAndAnalyze}>
@@ -331,8 +347,8 @@ export default function AudioScreen() {
       <View style={styles.tipCard}>
         <Text style={styles.tipTitle}>Consejo</Text>
         <Text style={styles.tipText}>
-          Dejá el teléfono cerca del profesor o de la fuente de audio para mejorar la
-          transcripción.
+          Deja el telefono cerca del profesor o de la fuente de audio para mejorar la
+          transcripcion.
         </Text>
       </View>
     </ScrollView>
