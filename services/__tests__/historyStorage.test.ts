@@ -4,12 +4,12 @@ import { mergeHistoryItems, type HistoryItem } from '../historyStorage';
 function createItem(id: string, createdAt: number): HistoryItem {
   return {
     id,
-    type: 'pdf',
+    type: 'file',
     title: `Item ${id}`,
     createdAt,
     payload: {
       kind: 'study-result',
-      sourceType: 'pdf',
+      sourceType: 'file',
       fileName: `file-${id}.pdf`,
       result: {
         summary: 'summary',

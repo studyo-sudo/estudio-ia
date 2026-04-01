@@ -23,7 +23,7 @@ type SelectedSource = {
   name: string;
   size?: number;
   uri?: string;
-  sourceType: 'pdf' | 'image';
+  sourceType: 'file' | 'image';
 };
 
 type ProcessingType = 'archivo' | 'imagen' | 'audio' | 'examen';
@@ -66,7 +66,16 @@ export default function HomeScreen() {
       await showAdIfFree();
 
       const result = await DocumentPicker.getDocumentAsync({
-        type: ['application/pdf', 'text/plain'],
+        type: [
+          'application/pdf',
+          'text/plain',
+          'text/markdown',
+          'text/csv',
+          'application/json',
+          'application/xml',
+          'text/xml',
+          'text/html',
+        ],
         copyToCacheDirectory: true,
       });
 
@@ -109,17 +118,17 @@ export default function HomeScreen() {
         name: file.name,
         size: file.size,
         uri: file.uri,
-        sourceType: 'pdf',
+        sourceType: 'file',
       });
 
       await saveHistoryItem({
         id: createHistoryId(),
-        type: 'pdf',
+        type: 'file',
         title: file.name,
         createdAt: Date.now(),
         payload: {
           kind: 'study-result',
-          sourceType: 'pdf',
+          sourceType: 'file',
           fileName: file.name,
           fileSize: file.size,
           result: generatedResult,

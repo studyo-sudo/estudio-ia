@@ -30,7 +30,7 @@ export default function HomeScreenContent({
     >
       <Text style={styles.title}>Studyo Ai</Text>
       <Text style={styles.subtitle}>
-        Convierte clases, PDFs, imagenes y examenes en material de estudio.
+        Convierte clases, archivos, imagenes y examenes en material de estudio.
       </Text>
 
       <View style={styles.statusCard}>
@@ -68,10 +68,10 @@ export default function HomeScreenContent({
 
       <View style={styles.cardContainer}>
         <Pressable style={styles.card} onPress={onPdfPress}>
-          <Text style={styles.cardEmoji}>PDF</Text>
+          <Text style={styles.cardEmoji}>Archivo</Text>
           <Text style={styles.cardTitle}>Subir archivo</Text>
           <Text style={styles.cardText}>
-            Genera resumenes, preguntas, flashcards y examen.
+            Soporta PDF y varios formatos de texto para generar material de estudio.
           </Text>
         </Pressable>
 

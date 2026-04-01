@@ -1,5 +1,6 @@
 const OpenAI = require('openai');
 const { toFile } = require('openai');
+const pdfParse = require('pdf-parse');
 const { openaiApiKey, openaiModel } = require('./config');
 
 let client = null;
@@ -151,7 +152,15 @@ async function createStructuredStudyAnalysis(inputContent, fallbackKind, fileNam
 }
 
 async function analyzeTextFile(buffer, fileName) {
-  const rawText = buffer.toString('utf8').trim();
+  const normalizedName = String(fileName || 'archivo').toLowerCase();
+  let rawText = '';
+
+  if (normalizedName.endsWith('.pdf')) {
+    const parsed = await pdfParse(buffer);
+    rawText = String(parsed.text || '').trim();
+  } else {
+    rawText = buffer.toString('utf8').trim();
+  }
 
   if (!rawText) {
     return buildStudyAnalysis('file', fileName);

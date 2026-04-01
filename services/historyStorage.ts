@@ -5,7 +5,7 @@ const HISTORY_KEY = 'study_history_v1';
 
 export type SavedStudyResultPayload = {
   kind: 'study-result';
-  sourceType: 'pdf' | 'image' | 'audio';
+  sourceType: 'file' | 'image' | 'audio';
   fileName: string;
   fileSize?: number;
   result: PdfResultData;
@@ -25,7 +25,7 @@ export type SavedExamModelPayload = {
 
 export type HistoryItem = {
   id: string;
-  type: 'pdf' | 'image' | 'audio' | 'exam-model';
+  type: 'file' | 'image' | 'audio' | 'exam-model';
   title: string;
   createdAt: number;
   payload: SavedStudyResultPayload | SavedExamModelPayload;

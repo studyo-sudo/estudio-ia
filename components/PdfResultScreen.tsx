@@ -7,7 +7,7 @@ type Props = {
   fileSize?: number;
   result: PdfResultData;
   onBack: () => void;
-  sourceType: 'pdf' | 'image' | 'audio';
+  sourceType: 'file' | 'image' | 'audio';
 };
 
 export default function PdfResultScreen({
@@ -17,7 +17,7 @@ export default function PdfResultScreen({
   onBack,
   sourceType,
 }: Props) {
-  const isPdf = sourceType === 'pdf';
+  const isFile = sourceType === 'file';
   const isImage = sourceType === 'image';
   const estimatedPages = fileSize ? Math.max(1, Math.round(fileSize / 120)) : 1;
   const estimatedStudyTime = Math.max(5, estimatedPages * 3);
@@ -47,7 +47,7 @@ export default function PdfResultScreen({
       showsVerticalScrollIndicator={false}
     >
       <Text style={styles.title}>
-        {isPdf
+        {isFile
           ? 'Resultado del archivo'
           : isImage
           ? 'Resultado de la imagen'
@@ -67,16 +67,16 @@ export default function PdfResultScreen({
           </View>
 
           <View style={styles.statBox}>
-            <Text style={styles.statLabel}>{isPdf ? 'Archivo' : 'Fuente'}</Text>
+            <Text style={styles.statLabel}>{isFile ? 'Archivo' : 'Fuente'}</Text>
             <Text style={styles.statValue}>
-              {isPdf ? 'Archivo' : isImage ? 'Imagen' : 'Audio'}
+              {isFile ? 'Archivo' : isImage ? 'Imagen' : 'Audio'}
             </Text>
           </View>
 
           <View style={styles.statBox}>
             <Text style={styles.statLabel}>Estudio</Text>
             <Text style={styles.statValue}>
-              {isPdf ? `${estimatedStudyTime} min` : isImage ? 'Visual' : 'Clase'}
+              {isFile ? `${estimatedStudyTime} min` : isImage ? 'Visual' : 'Clase'}
             </Text>
           </View>
         </View>

@@ -79,3 +79,15 @@ Los datos se guardan en `backend/data/users/*.json`.
 ## Alcance
 
 Este backend no usa IA real ni pasarela de pagos real. Sirve como base compatible con la app para desarrollar la capa externa, validar contratos y despues reemplazar implementaciones por servicios productivos.
+
+## Archivos soportados
+
+`POST /analyze-file` acepta:
+
+- `.pdf`
+- `.txt`
+- `.md`
+- `.csv`
+- `.json`
+- `.xml`
+- `.html`
