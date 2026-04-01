@@ -5,8 +5,8 @@ import { buildShareText, deleteHistoryItem, getHistoryItems, HistoryItem } from 
 
 function formatTypeLabel(type: HistoryItem['type']) {
   switch (type) {
-    case 'pdf':
-      return 'PDF';
+    case 'file':
+      return 'Archivo';
     case 'image':
       return 'Imagen';
     case 'audio':
@@ -82,14 +82,14 @@ export default function ExploreScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Historial de archivos</Text>
       <Text style={styles.subtitle}>
-        Aqui aparecen los PDFs, imagenes, audios y resultados que generaste.
+        Aqui aparecen los archivos, imagenes, audios y resultados que generaste.
       </Text>
 
       {items.length === 0 ? (
         <View style={styles.emptyCard}>
           <Text style={styles.emptyTitle}>Todavia no hay contenido guardado</Text>
           <Text style={styles.emptyText}>
-            Genera un PDF, una imagen, un audio o un modelo de examen y aparecera aqui.
+            Genera un archivo, una imagen, un audio o un modelo de examen y aparecera aqui.
           </Text>
         </View>
       ) : (
