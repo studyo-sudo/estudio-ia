@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -7,6 +8,7 @@ import { pullHistoryFromCloud, pushHistoryToCloud } from '../../services/history
 import { getHistoryItems, mergeHistoryItems, setHistoryItems } from '../../services/historyStorage';
 
 export default function AccountScreen() {
+  const appVersion = Constants.expoConfig?.version || 'desconocida';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authEmail, setAuthEmail] = useState<string | null>(null);
@@ -121,7 +123,9 @@ export default function AccountScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Cuenta</Text>
-      <Text style={styles.subtitle}>Accede a tu cuenta y sincroniza el historial en la nube.</Text>
+      <Text style={styles.subtitle}>
+        Accede a tu cuenta y sincroniza el historial en la nube. Version {appVersion}.
+      </Text>
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Estado de sesion</Text>
@@ -215,7 +219,7 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 20,
-    paddingTop: 24,
+    paddingTop: 32,
     paddingBottom: 120,
   },
   title: {

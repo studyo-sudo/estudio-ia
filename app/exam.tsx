@@ -70,6 +70,9 @@ export default function ExamScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Examen completo</Text>
+      <Text style={styles.subtitle}>
+        {exam.length} {exam.length === 1 ? 'pregunta disponible' : 'preguntas disponibles'}
+      </Text>
 
       {showResult && (
         <View style={styles.scoreCard}>
@@ -140,13 +143,18 @@ const styles = StyleSheet.create({
     paddingTop: 80,
   },
   content: {
-    paddingBottom: 40,
+    paddingBottom: 140,
   },
   title: {
     color: 'white',
     fontSize: 34,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 8,
+  },
+  subtitle: {
+    color: '#94a3b8',
+    fontSize: 15,
+    marginBottom: 18,
   },
   scoreCard: {
     backgroundColor: '#1d4ed8',
