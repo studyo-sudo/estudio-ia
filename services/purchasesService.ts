@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import Purchases from 'react-native-purchases';
 import {
@@ -11,6 +12,10 @@ function isNativeMobile() {
   return Platform.OS === 'ios' || Platform.OS === 'android';
 }
 
+function isExpoGo() {
+  return Constants.executionEnvironment === 'storeClient';
+}
+
 function getApiKeyForPlatform() {
   if (Platform.OS === 'ios') return RC_IOS_API_KEY;
   if (Platform.OS === 'android') return RC_ANDROID_API_KEY;
@@ -18,7 +23,7 @@ function getApiKeyForPlatform() {
 }
 
 export function canUseNativePurchases() {
-  return Boolean(isNativeMobile() && getApiKeyForPlatform());
+  return Boolean(isNativeMobile() && !isExpoGo() && getApiKeyForPlatform());
 }
 
 export function initializePurchases() {
