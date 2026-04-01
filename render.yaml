@@ -20,5 +20,7 @@ services:
         sync: false
       - key: OPENAI_MODEL
         value: gpt-5-nano
+      - key: OPENAI_PDF_MODEL
+        value: gpt-4o-mini
       - key: DATABASE_URL
         sync: false

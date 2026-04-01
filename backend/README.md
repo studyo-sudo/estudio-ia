@@ -60,6 +60,7 @@ Variables importantes:
 - `OPENAI_API_KEY`
 - `DATABASE_URL`
 - `AUTH_TOKEN_SECRET`
+- `OPENAI_PDF_MODEL` (opcional, por defecto `gpt-4o-mini`)
 
 Cuando Render te de una URL fija `https://...onrender.com`, usa esa URL como
 `EXPO_PUBLIC_API_BASE_URL` en la app para dejar de depender de `ngrok`.

@@ -39,5 +39,6 @@ module.exports = {
   databaseUrl: readEnv('DATABASE_URL', ''),
   openaiApiKey: readEnv('OPENAI_API_KEY', ''),
   openaiModel: readEnv('OPENAI_MODEL', 'gpt-5-nano'),
+  openaiPdfModel: readEnv('OPENAI_PDF_MODEL', 'gpt-4o-mini'),
   dataDir: path.join(rootDir, 'data'),
 };

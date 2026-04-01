@@ -1,7 +1,7 @@
 const OpenAI = require('openai');
 const { toFile } = require('openai');
 const pdfParse = require('pdf-parse');
-const { openaiApiKey, openaiModel } = require('./config');
+const { openaiApiKey, openaiModel, openaiPdfModel } = require('./config');
 
 let client = null;
 
@@ -121,7 +121,12 @@ function normalizeStudyAnalysis(data, fallbackKind, fileName) {
   };
 }
 
-async function createStructuredStudyAnalysis(inputContent, fallbackKind, fileName) {
+async function createStructuredStudyAnalysis(
+  inputContent,
+  fallbackKind,
+  fileName,
+  modelOverride = openaiModel
+) {
   const sdk = getClient();
 
   if (!sdk) {
@@ -129,7 +134,7 @@ async function createStructuredStudyAnalysis(inputContent, fallbackKind, fileNam
   }
 
   const response = await sdk.responses.create({
-    model: openaiModel,
+    model: modelOverride,
     input: [
       {
         role: 'system',
@@ -151,9 +156,53 @@ async function createStructuredStudyAnalysis(inputContent, fallbackKind, fileNam
   return normalizeStudyAnalysis(extractJsonObject(response.output_text), fallbackKind, fileName);
 }
 
+function normalizeFileName(fileName) {
+  const raw = String(fileName || 'archivo');
+
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+}
+
 async function analyzeTextFile(buffer, fileName) {
-  const normalizedName = String(fileName || 'archivo').toLowerCase();
+  const safeFileName = normalizeFileName(fileName);
+  const normalizedName = safeFileName.toLowerCase();
   let rawText = '';
+
+  if (normalizedName.endsWith('.pdf')) {
+    const sdk = getClient();
+
+    if (sdk) {
+      try {
+        const uploaded = await sdk.files.create({
+          file: await toFile(buffer, safeFileName, {
+            type: 'application/pdf',
+          }),
+          purpose: 'user_data',
+        });
+
+        return createStructuredStudyAnalysis(
+          [
+            {
+              type: 'input_file',
+              file_id: uploaded.id,
+            },
+            {
+              type: 'input_text',
+              text: `Analiza este PDF de estudio llamado "${safeFileName}" y genera material realmente util para estudiar. Devuelve resumen, preguntas, flashcards y examen usando tanto el texto como los elementos visuales del PDF.`,
+            },
+          ],
+          'file',
+          safeFileName,
+          openaiPdfModel
+        );
+      } catch (error) {
+        console.error('Error analizando PDF como archivo con OpenAI:', error);
+      }
+    }
+  }
 
   if (normalizedName.endsWith('.pdf')) {
     const parsed = await pdfParse(buffer);
@@ -163,18 +212,18 @@ async function analyzeTextFile(buffer, fileName) {
   }
 
   if (!rawText) {
-    return buildStudyAnalysis('file', fileName);
+    return buildStudyAnalysis('file', safeFileName);
   }
 
   return createStructuredStudyAnalysis(
     [
       {
         type: 'input_text',
-        text: `Analiza este archivo de estudio llamado "${fileName}" y genera contenido realmente util para estudiar.\n\nContenido:\n${rawText.slice(0, 12000)}`,
+        text: `Analiza este archivo de estudio llamado "${safeFileName}" y genera contenido realmente util para estudiar.\n\nContenido:\n${rawText.slice(0, 12000)}`,
       },
     ],
     'file',
-    fileName
+    safeFileName
   );
 }
 
