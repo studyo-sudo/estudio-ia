@@ -92,3 +92,9 @@ Este backend no usa IA real ni pasarela de pagos real. Sirve como base compatibl
 - `.json`
 - `.xml`
 - `.html`
+
+## Limites practicos
+
+- En subidas directas de archivo, el backend admite hasta aproximadamente `35 MB`.
+- En movil, los documentos se envian como base64, asi que el limite practico real suele ser un poco menor que el peso original del archivo.
+- Si aparece `413 Payload Too Large`, el archivo supero ese limite y conviene reducirlo o dividirlo.

@@ -19,10 +19,16 @@ const {
 } = require('./storage');
 
 const app = express();
-const upload = multer({ storage: multer.memoryStorage() });
+const MAX_UPLOAD_SIZE_MB = 35;
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: MAX_UPLOAD_SIZE_MB * 1024 * 1024,
+  },
+});
 
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: `${MAX_UPLOAD_SIZE_MB + 10}mb` }));
 
 function getBearerToken(headerValue) {
   if (!headerValue || typeof headerValue !== 'string') return null;
