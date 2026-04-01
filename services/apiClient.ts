@@ -50,7 +50,12 @@ export async function requestText({
   const text = await response.text();
 
   if (!response.ok) {
-    throw new ApiError(`Request failed with status ${response.status}`, response.status, text);
+    const details = text?.trim() ? ` Respuesta: ${text.trim()}` : '';
+    throw new ApiError(
+      `Request failed with status ${response.status} en ${url}.${details}`,
+      response.status,
+      text
+    );
   }
 
   return text;
