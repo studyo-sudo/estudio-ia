@@ -16,7 +16,7 @@ function readBooleanEnv(name: string, defaultValue: boolean) {
 const defaultApiBaseUrl =
   Platform.OS === 'web'
     ? 'http://localhost:3000'
-    : 'https://9765-201-219-109-168.ngrok-free.app';
+    : 'https://studyo-ai-backend.onrender.com';
 
 export const API_BASE_URL = readEnv('EXPO_PUBLIC_API_BASE_URL') || defaultApiBaseUrl;
 export const ENABLE_FAKE_ADS = readBooleanEnv('EXPO_PUBLIC_ENABLE_FAKE_ADS', true);
