@@ -14,12 +14,24 @@ export type PlanType = 'free' | 'premium';
 export type BillingState = {
   plan: PlanType;
   credits: number;
+  creditGrants: CreditGrant[];
+};
+
+export type CreditGrant = {
+  id: string;
+  amount: number;
+  remaining: number;
+  purchasedAt: number;
+  expiresAt: number;
 };
 
 const DEFAULT_BILLING_STATE: BillingState = {
   plan: 'free',
   credits: 0,
+  creditGrants: [],
 };
+
+const CREDIT_EXPIRATION_MS = 30 * 24 * 60 * 60 * 1000;
 
 async function hasAuthenticatedSession() {
   const auth = await getAuthState();
@@ -27,12 +39,40 @@ async function hasAuthenticatedSession() {
 }
 
 function normalizeBillingState(parsed: Partial<BillingState> | null | undefined): BillingState {
+  const now = Date.now();
+  const grants = Array.isArray(parsed?.creditGrants)
+    ? parsed.creditGrants
+        .filter(
+          (grant): grant is CreditGrant =>
+            Boolean(
+              grant &&
+                typeof grant.id === 'string' &&
+                typeof grant.amount === 'number' &&
+                typeof grant.remaining === 'number' &&
+                typeof grant.purchasedAt === 'number' &&
+                typeof grant.expiresAt === 'number'
+            )
+        )
+        .filter((grant) => grant.remaining > 0 && grant.expiresAt > now)
+        .sort((a, b) => a.expiresAt - b.expiresAt)
+    : [];
+
+  if (grants.length === 0 && typeof parsed?.credits === 'number' && parsed.credits > 0) {
+    grants.push({
+      id: `legacy-${now}`,
+      amount: parsed.credits,
+      remaining: parsed.credits,
+      purchasedAt: now,
+      expiresAt: now + CREDIT_EXPIRATION_MS,
+    });
+  }
+
+  const credits = grants.reduce((total, grant) => total + grant.remaining, 0);
+
   return {
     plan: parsed?.plan === 'premium' ? 'premium' : 'free',
-    credits:
-      typeof parsed?.credits === 'number' && parsed.credits >= 0
-        ? parsed.credits
-        : 0,
+    credits,
+    creditGrants: grants,
   };
 }
 
@@ -89,9 +129,15 @@ export async function setPlan(plan: PlanType): Promise<void> {
 }
 
 export async function addCredits(amount: number): Promise<void> {
+  const validAmount = Number.isFinite(amount) && amount > 0 ? Math.floor(amount) : 0;
+
+  if (validAmount <= 0) {
+    return;
+  }
+
   if (await hasAuthenticatedSession()) {
     try {
-      const remoteState = normalizeBillingState(await addRemoteCredits(amount));
+      const remoteState = normalizeBillingState(await addRemoteCredits(validAmount));
       await AsyncStorage.setItem(BILLING_KEY, JSON.stringify(remoteState));
       return;
     } catch {
@@ -100,9 +146,19 @@ export async function addCredits(amount: number): Promise<void> {
   }
 
   const current = await getBillingState();
+  const now = Date.now();
   await setBillingState({
     ...current,
-    credits: current.credits + amount,
+    creditGrants: [
+      ...current.creditGrants,
+      {
+        id: `local-${now}`,
+        amount: validAmount,
+        remaining: validAmount,
+        purchasedAt: now,
+        expiresAt: now + CREDIT_EXPIRATION_MS,
+      },
+    ],
   });
 }
 
@@ -126,9 +182,24 @@ export async function consumeCredits(amount: number): Promise<boolean> {
     return false;
   }
 
+  let remainingToConsume = amount;
+  const nextGrants = current.creditGrants.map((grant) => {
+    if (remainingToConsume <= 0) {
+      return grant;
+    }
+
+    const spend = Math.min(grant.remaining, remainingToConsume);
+    remainingToConsume -= spend;
+
+    return {
+      ...grant,
+      remaining: grant.remaining - spend,
+    };
+  });
+
   await setBillingState({
     ...current,
-    credits: current.credits - amount,
+    creditGrants: nextGrants,
   });
 
   return true;

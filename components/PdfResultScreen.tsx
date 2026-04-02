@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import AppBottomNav from './AppBottomNav';
 import { PdfResultData } from '../data/mockPdfResults';
 
 type Props = {
@@ -41,11 +42,12 @@ export default function PdfResultScreen({
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.resultContent}
-      showsVerticalScrollIndicator={false}
-    >
+    <View style={styles.screen}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.resultContent}
+        showsVerticalScrollIndicator={false}
+      >
       <Text style={styles.title}>
         {isFile
           ? 'Resultado del archivo'
@@ -113,14 +115,21 @@ export default function PdfResultScreen({
         <Text style={styles.primaryButtonText}>Generar examen completo</Text>
       </Pressable>
 
-      <Pressable style={styles.secondaryButton} onPress={onBack}>
-        <Text style={styles.secondaryButtonText}>Volver</Text>
-      </Pressable>
-    </ScrollView>
+        <Pressable style={styles.secondaryButton} onPress={onBack}>
+          <Text style={styles.secondaryButtonText}>Volver</Text>
+        </Pressable>
+      </ScrollView>
+
+      <AppBottomNav activeTab="home" />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#0f172a',
+  },
   container: {
     flex: 1,
     backgroundColor: '#0f172a',
@@ -128,7 +137,7 @@ const styles = StyleSheet.create({
     paddingTop: 80,
   },
   resultContent: {
-    paddingBottom: 180,
+    paddingBottom: 120,
   },
   title: {
     color: 'white',

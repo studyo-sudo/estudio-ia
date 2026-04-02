@@ -1,6 +1,7 @@
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import AppBottomNav from '../components/AppBottomNav';
 import { ENABLE_FAKE_BILLING } from '../constants/env';
 import { addCredits, BillingState, getBillingState } from '../services/billingStorage';
 
@@ -11,13 +12,41 @@ type CreditPack = {
   equivalents: string[];
 };
 
+const PACKS: CreditPack[] = [
+  {
+    title: 'Pack basico',
+    credits: 50,
+    price: '$10',
+    equivalents: ['50 PDFs', '200 imagenes', '1 hora de audio'],
+  },
+  {
+    title: 'Pack mediano',
+    credits: 120,
+    price: '$20',
+    equivalents: ['120 PDFs', '500 imagenes', '2.5 horas de audio'],
+  },
+  {
+    title: 'Pack grande',
+    credits: 300,
+    price: '$40',
+    equivalents: ['300 PDFs', '1200 imagenes', '7 horas de audio'],
+  },
+];
+
+function formatDate(dateValue: number) {
+  return new Date(dateValue).toLocaleDateString('es-AR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+}
+
 export default function CreditsScreen() {
   const [billing, setBilling] = useState<BillingState>({
     plan: 'free',
     credits: 0,
+    creditGrants: [],
   });
-
-  const isPremium = billing.plan === 'premium';
 
   const loadBilling = useCallback(async () => {
     const state = await getBillingState();
@@ -30,6 +59,16 @@ export default function CreditsScreen() {
     }, [loadBilling])
   );
 
+  const nextExpiration = useMemo(() => {
+    if (billing.creditGrants.length === 0) {
+      return null;
+    }
+
+    return billing.creditGrants.reduce((earliest, grant) =>
+      grant.expiresAt < earliest.expiresAt ? grant : earliest
+    );
+  }, [billing.creditGrants]);
+
   const buyPack = async (amount: number) => {
     if (!ENABLE_FAKE_BILLING) {
       Alert.alert(
@@ -41,115 +80,49 @@ export default function CreditsScreen() {
 
     await addCredits(amount);
     await loadBilling();
+    Alert.alert(
+      'Compra registrada',
+      `Se agregaron ${amount} creditos. Recuerda que vencen a los 30 dias.`
+    );
   };
 
-  const packs: CreditPack[] = isPremium
-    ? [
-        {
-          title: 'Pack chico',
-          credits: 50,
-          price: '$5',
-          equivalents: [
-            'Aprox. 10 PDFs',
-            'Aprox. 25 imagenes',
-            'Aprox. 25 min de audio',
-            'Ideal para uso puntual',
-          ],
-        },
-        {
-          title: 'Pack medio',
-          credits: 120,
-          price: '$10',
-          equivalents: [
-            'Aprox. 24 PDFs',
-            'Aprox. 60 imagenes',
-            'Aprox. 1 hora de audio',
-            'Ideal para semanas intensas',
-          ],
-        },
-        {
-          title: 'Pack grande',
-          credits: 300,
-          price: '$20',
-          equivalents: [
-            'Aprox. 60 PDFs',
-            'Aprox. 150 imagenes',
-            'Aprox. 2 h 30 min de audio',
-            'Ideal para heavy users',
-          ],
-        },
-      ]
-    : [
-        {
-          title: 'Pack chico',
-          credits: 50,
-          price: '$10',
-          equivalents: [
-            'Aprox. 10 PDFs',
-            'Aprox. 25 imagenes',
-            'Aprox. 25 min de audio',
-            'En Free los creditos cuestan mas',
-          ],
-        },
-        {
-          title: 'Pack medio',
-          credits: 120,
-          price: '$20',
-          equivalents: [
-            'Aprox. 24 PDFs',
-            'Aprox. 60 imagenes',
-            'Aprox. 1 hora de audio',
-            'Premium te da mejor valor',
-          ],
-        },
-        {
-          title: 'Pack grande',
-          credits: 300,
-          price: '$40',
-          equivalents: [
-            'Aprox. 60 PDFs',
-            'Aprox. 150 imagenes',
-            'Aprox. 2 h 30 min de audio',
-            'Pensado para urgencias grandes',
-          ],
-        },
-      ];
-
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
+    <View style={styles.screen}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
       <Text style={styles.title}>Creditos</Text>
-      <Text style={styles.subtitle}>
-        {isPremium
-          ? 'Como usuario Premium, obtienes mejor precio en creditos.'
-          : 'En Free los creditos son mas caros. Premium te da mejor valor.'}
-      </Text>
+      <Text style={styles.subtitle}>Compra creditos para seguir estudiando cuando lo necesites.</Text>
 
       <View style={styles.balanceCard}>
         <Text style={styles.balanceLabel}>Saldo actual</Text>
         <Text style={styles.balanceValue}>{billing.credits} creditos</Text>
+        <Text style={styles.balancePlan}>
+          {billing.plan === 'premium' ? 'Plan Premium activo' : 'Plan Free'}
+        </Text>
+        <Text style={styles.balanceExpiration}>
+          {nextExpiration
+            ? `Proximo vencimiento: ${formatDate(nextExpiration.expiresAt)}`
+            : 'Todavia no tienes creditos activos.'}
+        </Text>
       </View>
 
       <View style={styles.infoCard}>
-        <Text style={styles.infoTitle}>Modo de compra</Text>
+        <Text style={styles.infoTitle}>Importante</Text>
+        <Text style={styles.infoText}>Los creditos duran 30 dias desde la compra.</Text>
         <Text style={styles.infoText}>
           {ENABLE_FAKE_BILLING
-            ? 'Esta pantalla funciona en modo demo y guarda los creditos localmente.'
+            ? 'Esta pantalla funciona en modo demo y guarda los creditos localmente o en tu cuenta.'
             : 'Los packs estan visibles, pero la compra real todavia no esta conectada.'}
         </Text>
       </View>
 
       <Text style={styles.sectionTitle}>Elige un pack</Text>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.horizontalList}
-      >
-        {packs.map((pack) => (
+      <View style={styles.packList}>
+        {PACKS.map((pack) => (
           <View key={pack.title} style={styles.packCard}>
             <Text style={styles.packTitle}>{pack.title}</Text>
             <Text style={styles.packCredits}>{pack.credits} creditos</Text>
@@ -157,9 +130,9 @@ export default function CreditsScreen() {
 
             <View style={styles.equivalentsBox}>
               <Text style={styles.equivalentsTitle}>Equivale aprox. a:</Text>
-              {pack.equivalents.map((item, index) => (
-                <Text key={index} style={styles.equivalentText}>
-                  • {item}
+              {pack.equivalents.map((item) => (
+                <Text key={item} style={styles.equivalentText}>
+                  - {item}
                 </Text>
               ))}
             </View>
@@ -171,12 +144,12 @@ export default function CreditsScreen() {
               }}
             >
               <Text style={styles.buyButtonText}>
-                {ENABLE_FAKE_BILLING ? 'Comprar' : 'Proximamente'}
+                {ENABLE_FAKE_BILLING ? 'Comprar pack' : 'Proximamente'}
               </Text>
             </Pressable>
           </View>
         ))}
-      </ScrollView>
+      </View>
 
       <View style={styles.noteCard}>
         <Text style={styles.noteTitle}>Referencia de consumo</Text>
@@ -186,14 +159,21 @@ export default function CreditsScreen() {
         </Text>
       </View>
 
-      <Pressable style={styles.backButton} onPress={() => router.back()}>
-        <Text style={styles.backButtonText}>Volver</Text>
-      </Pressable>
-    </ScrollView>
+        <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <Text style={styles.backButtonText}>Volver</Text>
+        </Pressable>
+      </ScrollView>
+
+      <AppBottomNav activeTab="shop" />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#0f172a',
+  },
   container: {
     flex: 1,
     backgroundColor: '#0f172a',
@@ -230,6 +210,18 @@ const styles = StyleSheet.create({
     color: '#93c5fd',
     fontSize: 28,
     fontWeight: '800',
+    marginBottom: 6,
+  },
+  balancePlan: {
+    color: 'white',
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+  balanceExpiration: {
+    color: '#cbd5e1',
+    fontSize: 14,
+    lineHeight: 22,
   },
   infoCard: {
     backgroundColor: '#111827',
@@ -247,6 +239,7 @@ const styles = StyleSheet.create({
     color: '#cbd5e1',
     fontSize: 14,
     lineHeight: 22,
+    marginBottom: 4,
   },
   sectionTitle: {
     color: 'white',
@@ -254,15 +247,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginBottom: 14,
   },
-  horizontalList: {
-    paddingRight: 20,
+  packList: {
+    gap: 14,
   },
   packCard: {
-    width: 300,
     backgroundColor: '#1e293b',
     borderRadius: 20,
     padding: 20,
-    marginRight: 14,
   },
   packTitle: {
     color: 'white',
@@ -286,7 +277,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 14,
     marginBottom: 18,
-    minHeight: 150,
   },
   equivalentsTitle: {
     color: 'white',

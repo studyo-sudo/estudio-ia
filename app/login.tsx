@@ -18,6 +18,7 @@ export default function LoginScreen() {
   const appVersion = Constants.expoConfig?.version || 'desconocida';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isBusy, setIsBusy] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
@@ -120,14 +121,19 @@ export default function LoginScreen() {
           autoCapitalize="none"
           style={styles.input}
         />
-        <TextInput
-          value={password}
-          onChangeText={setPassword}
-          placeholder="Password"
-          placeholderTextColor="#64748b"
-          secureTextEntry
-          style={styles.input}
-        />
+        <View style={styles.passwordRow}>
+          <TextInput
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Password"
+            placeholderTextColor="#64748b"
+            secureTextEntry={!showPassword}
+            style={styles.passwordInput}
+          />
+          <Pressable style={styles.eyeButton} onPress={() => setShowPassword((prev) => !prev)}>
+            <Text style={styles.eyeButtonText}>{showPassword ? 'Ocultar' : 'Ver'}</Text>
+          </Pressable>
+        </View>
 
         <Pressable style={styles.primaryButton} onPress={handleSubmit} disabled={isBusy}>
           <Text style={styles.primaryButtonText}>
@@ -219,6 +225,31 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderWidth: 1,
     borderColor: '#1e293b',
+  },
+  passwordRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0f172a',
+    borderRadius: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#1e293b',
+    overflow: 'hidden',
+  },
+  passwordInput: {
+    flex: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    color: 'white',
+  },
+  eyeButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  eyeButtonText: {
+    color: '#93c5fd',
+    fontWeight: '700',
+    fontSize: 13,
   },
   primaryButton: {
     backgroundColor: '#2563eb',

@@ -33,6 +33,7 @@ export default function RootLayout() {
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="login" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="file" options={{ title: 'Archivo' }} />
       <Stack.Screen name="audio" options={{ title: 'Grabar clase' }} />
       <Stack.Screen name="exam" options={{ title: 'Examen' }} />
       <Stack.Screen name="exam-model" options={{ title: 'Subir examenes' }} />

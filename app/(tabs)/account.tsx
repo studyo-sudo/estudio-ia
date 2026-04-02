@@ -203,10 +203,6 @@ export default function AccountScreen() {
             </Pressable>
           </View>
         )}
-
-        <Pressable style={styles.planButton} onPress={() => router.push('/pricing')}>
-          <Text style={styles.planButtonText}>Ver planes y Premium</Text>
-        </Pressable>
       </View>
     </ScrollView>
   );
@@ -219,7 +215,7 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 20,
-    paddingTop: 32,
+    paddingTop: 80,
     paddingBottom: 120,
   },
   title: {
@@ -310,17 +306,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   ghostButtonText: {
-    color: '#cbd5e1',
-    fontWeight: '700',
-  },
-  planButton: {
-    backgroundColor: '#0f172a',
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: 'center',
-    marginTop: 14,
-  },
-  planButtonText: {
     color: '#cbd5e1',
     fontWeight: '700',
   },

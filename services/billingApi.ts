@@ -4,6 +4,13 @@ import { postJson, requestJson } from './apiClient';
 export type RemoteBillingState = {
   plan: 'free' | 'premium';
   credits: number;
+  creditGrants?: Array<{
+    id: string;
+    amount: number;
+    remaining: number;
+    purchasedAt: number;
+    expiresAt: number;
+  }>;
 };
 
 async function getAuthHeaders() {

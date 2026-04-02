@@ -1,27 +1,16 @@
-import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 type Props = {
-  onPdfPress: () => void;
-  onAudioPress: () => void;
-  onPhotoPress: () => void;
+  onFilePress: () => void;
   onExamModelPress: () => void;
   onFlashcardsHistoryPress: () => void;
-  plan: 'free' | 'premium';
-  credits: number;
 };
 
 export default function HomeScreenContent({
-  onPdfPress,
-  onAudioPress,
-  onPhotoPress,
+  onFilePress,
   onExamModelPress,
   onFlashcardsHistoryPress,
-  plan,
-  credits,
 }: Props) {
-  const isPremium = plan === 'premium';
-
   return (
     <ScrollView
       style={styles.container}
@@ -33,61 +22,13 @@ export default function HomeScreenContent({
         Convierte clases, archivos, imagenes y examenes en material de estudio.
       </Text>
 
-      <View style={styles.statusCard}>
-        <View style={styles.statusHeader}>
-          <Text style={styles.statusTitle}>
-            {isPremium ? 'Premium activo' : 'Plan Free'}
-          </Text>
-          <Text style={styles.statusCredits}>{credits} creditos</Text>
-        </View>
-
-        <Text style={styles.statusText}>
-          {isPremium
-            ? 'Tu plan incluye uso amplio y creditos extra si necesitas mas.'
-            : 'El plan free usa anuncios, limites semanales y creditos mas caros.'}
-        </Text>
-
-        <View style={styles.statusButtonsRow}>
-          <Pressable
-            style={styles.primaryMiniButton}
-            onPress={() => router.push('/pricing')}
-          >
-            <Text style={styles.primaryMiniButtonText}>
-              {isPremium ? 'Ver plan' : 'Hazte Premium'}
-            </Text>
-          </Pressable>
-
-          <Pressable
-            style={styles.secondaryMiniButton}
-            onPress={() => router.push('/credits')}
-          >
-            <Text style={styles.secondaryMiniButtonText}>Comprar creditos</Text>
-          </Pressable>
-        </View>
-      </View>
-
       <View style={styles.cardContainer}>
-        <Pressable style={styles.card} onPress={onPdfPress}>
+        <Pressable style={styles.card} onPress={onFilePress}>
           <Text style={styles.cardEmoji}>Archivo</Text>
-          <Text style={styles.cardTitle}>Subir archivo</Text>
+          <Text style={styles.cardTitle}>Centro de carga</Text>
           <Text style={styles.cardText}>
-            Soporta PDF y varios formatos de texto para generar material de estudio.
-          </Text>
-        </Pressable>
-
-        <Pressable style={styles.card} onPress={onAudioPress}>
-          <Text style={styles.cardEmoji}>Audio</Text>
-          <Text style={styles.cardTitle}>Grabar clase</Text>
-          <Text style={styles.cardText}>
-            Transcribe el audio y crea material de estudio.
-          </Text>
-        </Pressable>
-
-        <Pressable style={styles.card} onPress={onPhotoPress}>
-          <Text style={styles.cardEmoji}>Foto</Text>
-          <Text style={styles.cardTitle}>Foto de texto</Text>
-          <Text style={styles.cardText}>
-            Analiza pizarrones, apuntes o cualquier imagen con texto.
+            Sube texto, PDF, imagenes o audio desde un solo lugar para generar material
+            de estudio.
           </Text>
         </Pressable>
 
@@ -132,63 +73,6 @@ const styles = StyleSheet.create({
     fontSize: 17,
     lineHeight: 24,
     marginBottom: 24,
-  },
-  statusCard: {
-    backgroundColor: '#1e293b',
-    borderRadius: 18,
-    padding: 18,
-    marginBottom: 20,
-  },
-  statusHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 10,
-    marginBottom: 10,
-  },
-  statusTitle: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: '700',
-    flex: 1,
-  },
-  statusCredits: {
-    color: '#93c5fd',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  statusText: {
-    color: '#cbd5e1',
-    fontSize: 14,
-    lineHeight: 22,
-    marginBottom: 14,
-  },
-  statusButtonsRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  primaryMiniButton: {
-    flex: 1,
-    backgroundColor: '#2563eb',
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  primaryMiniButtonText: {
-    color: 'white',
-    fontWeight: '700',
-    fontSize: 14,
-  },
-  secondaryMiniButton: {
-    flex: 1,
-    backgroundColor: '#7c3aed',
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  secondaryMiniButtonText: {
-    color: 'white',
-    fontWeight: '700',
-    fontSize: 14,
   },
   cardContainer: {
     gap: 16,

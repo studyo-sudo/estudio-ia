@@ -8,6 +8,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import AppBottomNav from '../components/AppBottomNav';
 import { BillingState, getBillingState } from '../services/billingStorage';
 
 type Flashcard = {
@@ -24,6 +25,7 @@ export default function FlashcardsScreen() {
   const [billing, setBilling] = useState<BillingState>({
     plan: 'free',
     credits: 0,
+    creditGrants: [],
   });
 
   const loadBilling = useCallback(async () => {
@@ -162,6 +164,8 @@ export default function FlashcardsScreen() {
           <Text style={styles.navButtonPrimaryText}>Siguiente</Text>
         </Pressable>
       </View>
+
+      <AppBottomNav activeTab="home" />
     </View>
   );
 }
@@ -173,7 +177,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 30,
+    paddingTop: 30,
+    paddingBottom: 110,
   },
   counter: {
     color: '#cbd5e1',

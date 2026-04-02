@@ -21,6 +21,33 @@ export class ApiError extends Error {
   }
 }
 
+function toReadableErrorMessage(status: number, url: string, responseText: string) {
+  const normalizedResponse = String(responseText || '').trim();
+
+  if (status === 401) {
+    return 'Email o password incorrectos.';
+  }
+
+  if (status === 404) {
+    return `No se encontro el servicio solicitado en ${url}.`;
+  }
+
+  if (status === 413) {
+    return 'El archivo es demasiado grande. Prueba con uno de menos de 35 MB.';
+  }
+
+  if (status >= 500) {
+    return 'El servidor tuvo un problema procesando la solicitud. Intenta de nuevo en unos minutos.';
+  }
+
+  if (normalizedResponse) {
+    const compactText = normalizedResponse.replace(/\s+/g, ' ').slice(0, 220);
+    return `Request failed with status ${status} en ${url}. Respuesta: ${compactText}`;
+  }
+
+  return `Request failed with status ${status} en ${url}.`;
+}
+
 function buildUrl(path: string) {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
   return `${API_BASE_URL}${normalizedPath}`;
@@ -50,9 +77,8 @@ export async function requestText({
   const text = await response.text();
 
   if (!response.ok) {
-    const details = text?.trim() ? ` Respuesta: ${text.trim()}` : '';
     throw new ApiError(
-      `Request failed with status ${response.status} en ${url}.${details}`,
+      toReadableErrorMessage(response.status, url, text),
       response.status,
       text
     );

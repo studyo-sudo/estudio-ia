@@ -11,6 +11,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import AppBottomNav from '../components/AppBottomNav';
 import ProcessingScreen from '../components/ProcessingScreen';
 import { BillingState, getBillingState } from '../services/billingStorage';
 import { createHistoryId, saveHistoryItem } from '../services/historyStorage';
@@ -50,6 +51,7 @@ export default function ExamModelScreen() {
   const [billing, setBilling] = useState<BillingState>({
     plan: 'free',
     credits: 0,
+    creditGrants: [],
   });
 
   const loadBilling = useCallback(async () => {
@@ -212,11 +214,12 @@ export default function ExamModelScreen() {
 
   if (result) {
     return (
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
+      <View style={styles.screen}>
+        <ScrollView
+          style={styles.container}
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+        >
         <Text style={styles.title}>Modelo de examen</Text>
         <Text style={styles.subtitle}>
           Analizamos tus examenes y generamos uno nuevo con estilo similar.
@@ -255,19 +258,23 @@ export default function ExamModelScreen() {
           <Text style={styles.primaryButtonText}>Abrir examen generado</Text>
         </Pressable>
 
-        <Pressable style={styles.secondaryButton} onPress={handleBack}>
-          <Text style={styles.secondaryButtonText}>Volver</Text>
-        </Pressable>
-      </ScrollView>
+          <Pressable style={styles.secondaryButton} onPress={handleBack}>
+            <Text style={styles.secondaryButtonText}>Volver</Text>
+          </Pressable>
+        </ScrollView>
+
+        <AppBottomNav activeTab="home" />
+      </View>
     );
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
+    <View style={styles.screen}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
       <Text style={styles.title}>Subir examenes</Text>
       <Text style={styles.subtitle}>
         Sube fotos de examenes anteriores y vamos a generar uno nuevo con estilo similar.
@@ -321,14 +328,21 @@ export default function ExamModelScreen() {
         <Text style={styles.generateButtonText}>Generar modelo de examen</Text>
       </Pressable>
 
-      <Pressable style={styles.secondaryButton} onPress={handleBack}>
-        <Text style={styles.secondaryButtonText}>Volver</Text>
-      </Pressable>
-    </ScrollView>
+        <Pressable style={styles.secondaryButton} onPress={handleBack}>
+          <Text style={styles.secondaryButtonText}>Volver</Text>
+        </Pressable>
+      </ScrollView>
+
+      <AppBottomNav activeTab="home" />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#0f172a',
+  },
   container: {
     flex: 1,
     backgroundColor: '#0f172a',

@@ -6,6 +6,41 @@ const { getPool, hasDatabase, initializeDatabase } = require('./db');
 
 const usersDir = path.join(dataDir, 'users');
 const authFile = path.join(dataDir, 'auth-users.json');
+const CREDIT_EXPIRATION_MS = 30 * 24 * 60 * 60 * 1000;
+
+function normalizeBillingState(rawBilling) {
+  const now = Date.now();
+  const grants = Array.isArray(rawBilling?.creditGrants)
+    ? rawBilling.creditGrants
+        .filter(
+          (grant) =>
+            grant &&
+            typeof grant.id === 'string' &&
+            typeof grant.amount === 'number' &&
+            typeof grant.remaining === 'number' &&
+            typeof grant.purchasedAt === 'number' &&
+            typeof grant.expiresAt === 'number'
+        )
+        .filter((grant) => grant.remaining > 0 && grant.expiresAt > now)
+        .sort((a, b) => a.expiresAt - b.expiresAt)
+    : [];
+
+  if (grants.length === 0 && Number.isFinite(rawBilling?.credits) && rawBilling.credits > 0) {
+    grants.push({
+      id: `legacy-${now}`,
+      amount: rawBilling.credits,
+      remaining: rawBilling.credits,
+      purchasedAt: now,
+      expiresAt: now + CREDIT_EXPIRATION_MS,
+    });
+  }
+
+  return {
+    plan: rawBilling?.plan === 'premium' ? 'premium' : 'free',
+    credits: grants.reduce((total, grant) => total + grant.remaining, 0),
+    creditGrants: grants,
+  };
+}
 
 async function ensureStorageReady() {
   if (hasDatabase()) {
@@ -44,13 +79,7 @@ async function readUserState(email) {
 
     const row = result.rows[0];
     const history = Array.isArray(row.history) ? row.history : [];
-    const billing =
-      row.billing && typeof row.billing === 'object'
-        ? {
-            plan: row.billing.plan === 'premium' ? 'premium' : 'free',
-            credits: Number.isFinite(row.billing.credits) ? row.billing.credits : 0,
-          }
-        : { plan: 'free', credits: 0 };
+    const billing = normalizeBillingState(row.billing);
 
     return { history, billing };
   }
@@ -62,18 +91,12 @@ async function readUserState(email) {
     const parsed = JSON.parse(raw);
     return {
       history: Array.isArray(parsed.history) ? parsed.history : [],
-      billing:
-        parsed.billing && typeof parsed.billing === 'object'
-          ? {
-              plan: parsed.billing.plan === 'premium' ? 'premium' : 'free',
-              credits: Number.isFinite(parsed.billing.credits) ? parsed.billing.credits : 0,
-            }
-          : { plan: 'free', credits: 0 },
+      billing: normalizeBillingState(parsed.billing),
     };
   } catch {
     return {
       history: [],
-      billing: { plan: 'free', credits: 0 },
+      billing: normalizeBillingState(),
     };
   }
 }

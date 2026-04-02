@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import AppBottomNav from '../components/AppBottomNav';
 
 type ExamQuestion = {
   question: string;
@@ -68,7 +69,8 @@ export default function ExamScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <View style={styles.screen}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>Examen completo</Text>
       <Text style={styles.subtitle}>
         {exam.length} {exam.length === 1 ? 'pregunta disponible' : 'preguntas disponibles'}
@@ -128,14 +130,21 @@ export default function ExamScreen() {
         </Pressable>
       ) : null}
 
-      <Pressable style={styles.backSecondaryButton} onPress={handleBack}>
-        <Text style={styles.backSecondaryButtonText}>Volver</Text>
-      </Pressable>
-    </ScrollView>
+        <Pressable style={styles.backSecondaryButton} onPress={handleBack}>
+          <Text style={styles.backSecondaryButtonText}>Volver</Text>
+        </Pressable>
+      </ScrollView>
+
+      <AppBottomNav activeTab="home" />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#0f172a',
+  },
   container: {
     flex: 1,
     backgroundColor: '#0f172a',
@@ -143,7 +152,7 @@ const styles = StyleSheet.create({
     paddingTop: 80,
   },
   content: {
-    paddingBottom: 140,
+    paddingBottom: 120,
   },
   title: {
     color: 'white',

@@ -19,6 +19,7 @@ const {
 } = require('./storage');
 
 const app = express();
+const CREDIT_EXPIRATION_MS = 30 * 24 * 60 * 60 * 1000;
 const MAX_UPLOAD_SIZE_MB = 35;
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -47,6 +48,17 @@ function requireAuth(req, res, next) {
 
   req.auth = payload;
   next();
+}
+
+function createCreditGrant(amount) {
+  const now = Date.now();
+  return {
+    id: `grant-${now}-${Math.random().toString(36).slice(2, 8)}`,
+    amount,
+    remaining: amount,
+    purchasedAt: now,
+    expiresAt: now + CREDIT_EXPIRATION_MS,
+  };
 }
 
 async function analyzeStudyFilePayload(buffer, fileName, mimeType) {
@@ -146,9 +158,20 @@ app.get('/billing/state', requireAuth, async (req, res) => {
 app.post('/billing/state', requireAuth, async (req, res) => {
   const { plan, credits } = req.body || {};
   const current = await readUserState(req.auth.email);
+  const nextCreditGrants =
+    Number.isFinite(credits) && Number(credits) > 0
+      ? [createCreditGrant(Math.floor(Number(credits)))]
+      : [];
   const nextBilling = {
     plan: plan === 'premium' ? 'premium' : 'free',
-    credits: Number.isFinite(credits) ? Math.max(0, Number(credits)) : current.billing.credits,
+    credits:
+      Number.isFinite(credits) && Number(credits) >= 0
+        ? nextCreditGrants.reduce((total, grant) => total + grant.remaining, 0)
+        : current.billing.credits,
+    creditGrants:
+      Number.isFinite(credits) && Number(credits) >= 0
+        ? nextCreditGrants
+        : current.billing.creditGrants,
   };
 
   await writeUserState(req.auth.email, {
@@ -162,10 +185,19 @@ app.post('/billing/state', requireAuth, async (req, res) => {
 app.post('/billing/credits/add', requireAuth, async (req, res) => {
   const amount = Number(req.body?.amount);
   const current = await readUserState(req.auth.email);
+  const validAmount = Number.isFinite(amount) && amount > 0 ? Math.floor(amount) : 0;
   const nextBilling = {
     ...current.billing,
-    credits: current.billing.credits + (Number.isFinite(amount) && amount > 0 ? amount : 0),
+    creditGrants:
+      validAmount > 0
+        ? [...current.billing.creditGrants, createCreditGrant(validAmount)]
+        : current.billing.creditGrants,
   };
+
+  nextBilling.credits = nextBilling.creditGrants.reduce(
+    (total, grant) => total + grant.remaining,
+    0
+  );
 
   await writeUserState(req.auth.email, {
     ...current,
@@ -178,7 +210,7 @@ app.post('/billing/credits/add', requireAuth, async (req, res) => {
 app.post('/billing/credits/consume', requireAuth, async (req, res) => {
   const amount = Number(req.body?.amount);
   const current = await readUserState(req.auth.email);
-  const validAmount = Number.isFinite(amount) && amount > 0 ? amount : 0;
+  const validAmount = Number.isFinite(amount) && amount > 0 ? Math.floor(amount) : 0;
 
   if (current.billing.credits < validAmount) {
     res.json({
@@ -190,8 +222,27 @@ app.post('/billing/credits/consume', requireAuth, async (req, res) => {
 
   const nextBilling = {
     ...current.billing,
-    credits: current.billing.credits - validAmount,
+    creditGrants: current.billing.creditGrants.map((grant) => ({ ...grant })),
   };
+
+  let remainingToConsume = validAmount;
+  nextBilling.creditGrants = nextBilling.creditGrants.map((grant) => {
+    if (remainingToConsume <= 0) {
+      return grant;
+    }
+
+    const spend = Math.min(grant.remaining, remainingToConsume);
+    remainingToConsume -= spend;
+
+    return {
+      ...grant,
+      remaining: grant.remaining - spend,
+    };
+  });
+  nextBilling.credits = nextBilling.creditGrants.reduce(
+    (total, grant) => total + grant.remaining,
+    0
+  );
 
   await writeUserState(req.auth.email, {
     ...current,

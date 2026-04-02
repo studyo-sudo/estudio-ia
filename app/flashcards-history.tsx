@@ -1,6 +1,7 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import AppBottomNav from '../components/AppBottomNav';
 import { getHistoryItems, HistoryItem } from '../services/historyStorage';
 
 export default function FlashcardsHistoryScreen() {
@@ -37,11 +38,12 @@ export default function FlashcardsHistoryScreen() {
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
+    <View style={styles.screen}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
       <Text style={styles.title}>Flashcards</Text>
       <Text style={styles.subtitle}>
         Historial de flashcards generadas para estudiar cuando quieras.
@@ -74,14 +76,21 @@ export default function FlashcardsHistoryScreen() {
         })
       )}
 
-      <Pressable style={styles.backButton} onPress={() => router.back()}>
-        <Text style={styles.backButtonText}>Volver</Text>
-      </Pressable>
-    </ScrollView>
+        <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <Text style={styles.backButtonText}>Volver</Text>
+        </Pressable>
+      </ScrollView>
+
+      <AppBottomNav activeTab="history" />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#0f172a',
+  },
   container: {
     flex: 1,
     backgroundColor: '#0f172a',

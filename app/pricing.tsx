@@ -1,6 +1,7 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import AppBottomNav from '../components/AppBottomNav';
 import { ENABLE_FAKE_BILLING } from '../constants/env';
 import { BillingState, getBillingState, setPlan } from '../services/billingStorage';
 import {
@@ -14,6 +15,7 @@ export default function PricingScreen() {
   const [billing, setBilling] = useState<BillingState>({
     plan: 'free',
     credits: 0,
+    creditGrants: [],
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -90,11 +92,12 @@ export default function PricingScreen() {
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
+    <View style={styles.screen}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
       <Text style={styles.title}>Planes</Text>
       <Text style={styles.subtitle}>Elige como quieres usar Studyo Ai.</Text>
 
@@ -134,7 +137,7 @@ export default function PricingScreen() {
         ]}
       >
         <Text style={styles.planName}>Premium</Text>
-        <Text style={styles.planPrice}>$10 / mes</Text>
+        <Text style={styles.planPrice}>$20 / mes</Text>
 
         <Text style={styles.planFeature}>300 a 500 PDFs</Text>
         <Text style={styles.planFeature}>1000 imagenes</Text>
@@ -162,14 +165,21 @@ export default function PricingScreen() {
         ) : null}
       </View>
 
-      <Pressable style={styles.backButton} onPress={() => router.back()}>
-        <Text style={styles.backButtonText}>Volver</Text>
-      </Pressable>
-    </ScrollView>
+        <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <Text style={styles.backButtonText}>Volver</Text>
+        </Pressable>
+      </ScrollView>
+
+      <AppBottomNav activeTab="shop" />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#0f172a',
+  },
   container: {
     flex: 1,
     backgroundColor: '#0f172a',

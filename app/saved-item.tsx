@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import AppBottomNav from '../components/AppBottomNav';
 import PdfResultScreen from '../components/PdfResultScreen';
 import { getHistoryItemById, HistoryItem } from '../services/historyStorage';
 
@@ -75,7 +76,8 @@ export default function SavedItemScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <View style={styles.screen}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.title}>{item.title}</Text>
       <Text style={styles.subtitle}>
         Guardado el {new Date(item.createdAt).toLocaleString()}
@@ -111,14 +113,21 @@ export default function SavedItemScreen() {
         <Text style={styles.primaryButtonText}>Abrir examen generado</Text>
       </Pressable>
 
-      <Pressable style={styles.secondaryButton} onPress={() => router.back()}>
-        <Text style={styles.secondaryButtonText}>Volver</Text>
-      </Pressable>
-    </ScrollView>
+        <Pressable style={styles.secondaryButton} onPress={() => router.back()}>
+          <Text style={styles.secondaryButtonText}>Volver</Text>
+        </Pressable>
+      </ScrollView>
+
+      <AppBottomNav activeTab="history" />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#0f172a',
+  },
   centered: {
     flex: 1,
     backgroundColor: '#0f172a',
@@ -138,7 +147,7 @@ const styles = StyleSheet.create({
     paddingTop: 80,
   },
   content: {
-    paddingBottom: 40,
+    paddingBottom: 120,
   },
   title: {
     color: 'white',

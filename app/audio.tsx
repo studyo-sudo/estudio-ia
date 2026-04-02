@@ -10,6 +10,7 @@ import {
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import AppBottomNav from '../components/AppBottomNav';
 import PdfResultScreen from '../components/PdfResultScreen';
 import ProcessingScreen from '../components/ProcessingScreen';
 import { PdfResultData } from '../data/mockPdfResults';
@@ -43,6 +44,7 @@ export default function AudioScreen() {
   const [billing, setBilling] = useState<BillingState>({
     plan: 'free',
     credits: 0,
+    creditGrants: [],
   });
 
   const loadBilling = useCallback(async () => {
@@ -291,11 +293,12 @@ export default function AudioScreen() {
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
+    <View style={styles.screen}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
       <Text style={styles.title}>Grabar clase</Text>
       <Text style={styles.subtitle}>
         Graba una clase o explicacion, deten la grabacion y genera resumen, preguntas,
@@ -344,18 +347,25 @@ export default function AudioScreen() {
         <Text style={styles.secondaryButtonText}>Volver</Text>
       </Pressable>
 
-      <View style={styles.tipCard}>
-        <Text style={styles.tipTitle}>Consejo</Text>
-        <Text style={styles.tipText}>
-          Deja el telefono cerca del profesor o de la fuente de audio para mejorar la
-          transcripcion.
-        </Text>
-      </View>
-    </ScrollView>
+        <View style={styles.tipCard}>
+          <Text style={styles.tipTitle}>Consejo</Text>
+          <Text style={styles.tipText}>
+            Deja el telefono cerca del profesor o de la fuente de audio para mejorar la
+            transcripcion.
+          </Text>
+        </View>
+      </ScrollView>
+
+      <AppBottomNav activeTab="home" />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#0f172a',
+  },
   container: {
     flex: 1,
     backgroundColor: '#0f172a',
