@@ -2,18 +2,23 @@
   "expo": {
     "name": "Studyo Ai",
     "slug": "studyo-ai",
-    "version": "1.0.8",
+    "version": "1.0.46",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "studyoai",
     "userInterfaceStyle": "dark",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "package": "com.studyoai",
-      "versionCode": 4
+      "versionCode": 15,
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -22,7 +27,11 @@
       "backgroundColor": "#0f172a"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-audio",
+      "expo-image",
+      "expo-web-browser",
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true

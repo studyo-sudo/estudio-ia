@@ -1,25 +1,17 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import {
-  Alert,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  useWindowDimensions,
-  View,
-} from 'react-native';
-import { ENABLE_FAKE_BILLING } from '../../constants/env';
-import { addCredits, BillingState, getBillingState } from '../../services/billingStorage';
+import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { BillingState, getBillingState } from '../../services/billingStorage';
 import {
   canUseNativePurchases,
+  purchaseCreditPack,
   purchasePremiumPlan,
   restorePurchasesAndSyncPlan,
   syncPlanFromRevenueCat,
 } from '../../services/purchasesService';
 
 type CreditPack = {
+  packSize: 'basic' | 'medium' | 'large';
   title: string;
   credits: number;
   price: string;
@@ -28,22 +20,25 @@ type CreditPack = {
 
 const CREDIT_PACKS: CreditPack[] = [
   {
+    packSize: 'basic',
     title: 'Pack basico',
-    credits: 50,
+    credits: 50000,
     price: '$10',
-    equivalents: ['50 PDFs', '200 imagenes', '1 hora de audio'],
+    equivalents: ['Aproximadamente 521 textos', '250 imagenes', '100 minutos de audio'],
   },
   {
+    packSize: 'medium',
     title: 'Pack mediano',
-    credits: 120,
+    credits: 120000,
     price: '$20',
-    equivalents: ['120 PDFs', '500 imagenes', '2.5 horas de audio'],
+    equivalents: ['Aproximadamente 1250 textos', '500 imagenes', '240 minutos de audio'],
   },
   {
+    packSize: 'large',
     title: 'Pack grande',
-    credits: 300,
+    credits: 300000,
     price: '$40',
-    equivalents: ['300 PDFs', '1200 imagenes', '7 horas de audio'],
+    equivalents: ['Aproximadamente 3125 textos', '1200 imagenes', '600 minutos de audio'],
   },
 ];
 
@@ -56,7 +51,6 @@ function formatDate(dateValue: number) {
 }
 
 export default function ShopScreen() {
-  const { width } = useWindowDimensions();
   const [billing, setBilling] = useState<BillingState>({
     plan: 'free',
     credits: 0,
@@ -65,11 +59,6 @@ export default function ShopScreen() {
   const [isLoading, setIsLoading] = useState(false);
 
   const nativePurchasesEnabled = canUseNativePurchases();
-  const billingMode = nativePurchasesEnabled
-    ? 'native'
-    : ENABLE_FAKE_BILLING
-    ? 'demo'
-    : 'manual';
 
   const loadBilling = useCallback(async () => {
     if (nativePurchasesEnabled) {
@@ -96,23 +85,19 @@ export default function ShopScreen() {
     );
   }, [billing.creditGrants]);
 
-  const cardWidth = Math.min(width - 72, 300);
-  const cardGap = 14;
-  const initialCarouselOffset = cardWidth + cardGap;
-
   const handleActivatePremium = async () => {
     try {
       setIsLoading(true);
 
-      if (nativePurchasesEnabled) {
-        await purchasePremiumPlan();
-      } else {
+      if (!nativePurchasesEnabled) {
         Alert.alert(
           'No disponible',
           'Las compras nativas no estan configuradas todavia para esta app.'
         );
+        return;
       }
 
+      await purchasePremiumPlan();
       await loadBilling();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'No se pudo activar Premium.';
@@ -137,130 +122,151 @@ export default function ShopScreen() {
     }
   };
 
-  const handleBuyPack = async (credits: number) => {
-    if (!ENABLE_FAKE_BILLING) {
-      Alert.alert(
-        'No disponible',
-        'La compra real de creditos todavia necesita integracion con backend o tienda.'
-      );
-      return;
-    }
+  const handleBuyPack = async (pack: CreditPack) => {
+    try {
+      setIsLoading(true);
 
-    await addCredits(credits);
-    await loadBilling();
-    Alert.alert(
-      'Compra registrada',
-      `Se agregaron ${credits} creditos. Recuerda que vencen a los 30 dias.`
-    );
+      if (!nativePurchasesEnabled) {
+        Alert.alert(
+          'No disponible',
+          'Las compras nativas no estan configuradas todavia para esta app.'
+        );
+        return;
+      }
+
+      await purchaseCreditPack(pack.credits, pack.packSize);
+      await loadBilling();
+      Alert.alert(
+        'Compra completada',
+        `Se agregaron ${pack.credits} creditos. Recuerda que vencen a los 30 dias.`
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'No se pudo comprar el pack.';
+      Alert.alert('Compra no completada', message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      <Text style={styles.title}>Tienda</Text>
-
-      <View style={styles.balanceCard}>
-        <Text style={styles.balanceLabel}>Saldo actual</Text>
-        <Text style={styles.balanceValue}>{billing.credits} creditos</Text>
-        <Text style={styles.balancePlan}>
-          {billing.plan === 'premium' ? 'Plan Premium activo' : 'Plan Free'}
-        </Text>
-        {nextExpiration ? (
-          <Text style={styles.expirationText}>
-            Proximo vencimiento de creditos: {formatDate(nextExpiration.expiresAt)}
-          </Text>
-        ) : (
-          <Text style={styles.expirationText}>Todavia no tienes creditos activos.</Text>
-        )}
-      </View>
-
-      <View
-        style={[
-          styles.premiumCard,
-          billing.plan === 'premium' && styles.premiumCardActive,
-        ]}
-      >
-        <Text style={styles.sectionTitle}>Premium</Text>
-        <Text style={styles.premiumPrice}>$20 / mes</Text>
-        <Text style={styles.premiumFeature}>Sin anuncios</Text>
-        <Text style={styles.premiumFeature}>Sin limites semanales molestos</Text>
-        <Text style={styles.premiumFeature}>Mejor experiencia de estudio</Text>
-
-        <Pressable style={styles.primaryButton} onPress={handleActivatePremium} disabled={isLoading}>
-          <Text style={styles.primaryButtonText}>
-            {billing.plan === 'premium'
-              ? 'Premium activo'
-              : isLoading
-              ? 'Procesando...'
-              : 'Comprar Premium'}
-          </Text>
-        </Pressable>
-
-        {nativePurchasesEnabled ? (
-          <Pressable style={styles.secondaryButton} onPress={handleRestore} disabled={isLoading}>
-            <Text style={styles.secondaryButtonText}>Restaurar compras</Text>
-          </Pressable>
-        ) : null}
-      </View>
-
-      <Text style={styles.sectionTitle}>Packs de creditos</Text>
-
+    <View style={styles.screen}>
       <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        decelerationRate="fast"
-        snapToInterval={cardWidth + cardGap}
-        snapToAlignment="start"
-        contentOffset={{ x: initialCarouselOffset, y: 0 }}
-        contentContainerStyle={styles.packList}
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
       >
-        {CREDIT_PACKS.map((pack) => (
-          <View key={pack.title} style={[styles.packCard, { width: cardWidth }]}>
-            <Text style={styles.packTitle}>{pack.title}</Text>
-            <Text style={styles.packCredits}>{pack.credits} creditos</Text>
-            <Text style={styles.packPrice}>{pack.price}</Text>
-            <Text style={styles.packHint}>Equivale aprox. a:</Text>
-            {pack.equivalents.map((item) => (
-              <Text key={item} style={styles.packEquivalent}>
-                - {item}
-              </Text>
-            ))}
+        <Text style={styles.title}>Tienda</Text>
 
+        <View style={styles.balanceCard}>
+          <Text style={styles.balanceLabel}>Saldo actual</Text>
+          <Text style={styles.balanceValue}>{billing.credits} creditos</Text>
+          <Text style={styles.balancePlan}>
+            {billing.plan === 'premium' ? 'Plan Premium activo' : 'Plan Free'}
+          </Text>
+          {nextExpiration ? (
+            <Text style={styles.expirationText}>
+              Proximo vencimiento de creditos: {formatDate(nextExpiration.expiresAt)}
+            </Text>
+          ) : (
+            <Text style={styles.expirationText}>Todavia no tienes creditos activos.</Text>
+          )}
+        </View>
+
+        <View
+          style={[
+            styles.premiumCard,
+            billing.plan === 'premium' && styles.premiumCardActive,
+          ]}
+        >
+          <Text style={styles.sectionTitle}>Premium</Text>
+          <Text style={styles.premiumPrice}>$20 / mes</Text>
+          <Text style={styles.premiumFeature}>Sin anuncios</Text>
+          <Text style={styles.premiumFeature}>Sin limites semanales molestos</Text>
+          <Text style={styles.premiumFeature}>Mejor experiencia de estudio</Text>
+
+          <Pressable
+            style={styles.primaryButton}
+            onPress={handleActivatePremium}
+            disabled={isLoading}
+          >
+            <Text style={styles.primaryButtonText}>
+              {billing.plan === 'premium'
+                ? 'Premium activo'
+                : isLoading
+                ? 'Procesando...'
+                : 'Comprar Premium'}
+            </Text>
+          </Pressable>
+
+          {nativePurchasesEnabled ? (
             <Pressable
-              style={styles.buyButton}
-              onPress={() => {
-                void handleBuyPack(pack.credits);
-              }}
+              style={styles.secondaryButton}
+              onPress={handleRestore}
+              disabled={isLoading}
             >
-              <Text style={styles.buyButtonText}>
-                {ENABLE_FAKE_BILLING ? 'Comprar pack' : 'Proximamente'}
-              </Text>
+              <Text style={styles.secondaryButtonText}>Restaurar compras</Text>
             </Pressable>
-          </View>
-        ))}
-      </ScrollView>
+          ) : null}
+        </View>
 
-      <View style={styles.infoCard}>
-        <Text style={styles.infoTitle}>Importante</Text>
-        <Text style={styles.infoText}>
-          Los creditos duran 30 dias desde la compra. Despues de ese plazo se vencen.
-        </Text>
-        <Text style={styles.infoText}>
-          {billingMode === 'native'
-            ? `Compras nativas activas en ${Platform.OS}.`
-            : billingMode === 'demo'
-            ? 'Los creditos se agregan en modo demo para pruebas.'
-            : 'La compra real de creditos todavia no esta conectada en esta build.'}
-        </Text>
-      </View>
-    </ScrollView>
+        <Text style={styles.sectionTitle}>Packs de creditos</Text>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          decelerationRate="fast"
+          snapToInterval={300 + 14}
+          snapToAlignment="start"
+          contentContainerStyle={styles.packList}
+        >
+          {CREDIT_PACKS.map((pack) => (
+            <View key={pack.title} style={styles.packCard}>
+              <Text style={styles.packTitle}>{pack.title}</Text>
+              <Text style={styles.packCredits}>{pack.credits} creditos</Text>
+              <Text style={styles.packPrice}>{pack.price}</Text>
+              <Text style={styles.packHint}>Equivale aprox. a:</Text>
+              {pack.equivalents.map((item) => (
+                <Text key={item} style={styles.packEquivalent}>
+                  - {item}
+                </Text>
+              ))}
+
+              <Pressable
+                style={styles.buyButton}
+                onPress={() => {
+                  void handleBuyPack(pack);
+                }}
+                disabled={isLoading}
+              >
+                <Text style={styles.buyButtonText}>
+                  {isLoading ? 'Procesando...' : 'Comprar pack'}
+                </Text>
+              </Pressable>
+            </View>
+          ))}
+        </ScrollView>
+
+        <View style={styles.infoCard}>
+          <Text style={styles.infoTitle}>Importante</Text>
+          <Text style={styles.infoText}>
+            Los creditos duran 30 dias desde la compra. Despues de ese plazo se vencen.
+          </Text>
+          <Text style={styles.infoText}>
+            {nativePurchasesEnabled
+              ? `Compras nativas activas en ${Platform.OS}.`
+              : 'Las compras nativas todavia no estan configuradas para esta plataforma.'}
+          </Text>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#0f172a',
+  },
   container: {
     flex: 1,
     backgroundColor: '#0f172a',
@@ -379,6 +385,7 @@ const styles = StyleSheet.create({
     paddingRight: 20,
   },
   packCard: {
+    width: 300,
     backgroundColor: '#1e293b',
     borderRadius: 20,
     padding: 20,

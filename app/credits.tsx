@@ -2,10 +2,11 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AppBottomNav from '../components/AppBottomNav';
-import { ENABLE_FAKE_BILLING } from '../constants/env';
-import { addCredits, BillingState, getBillingState } from '../services/billingStorage';
+import { BillingState, getBillingState } from '../services/billingStorage';
+import { canUseNativePurchases, purchaseCreditPack } from '../services/purchasesService';
 
 type CreditPack = {
+  packSize: 'basic' | 'medium' | 'large';
   title: string;
   credits: number;
   price: string;
@@ -14,22 +15,25 @@ type CreditPack = {
 
 const PACKS: CreditPack[] = [
   {
+    packSize: 'basic',
     title: 'Pack basico',
-    credits: 50,
+    credits: 50000,
     price: '$10',
-    equivalents: ['50 PDFs', '200 imagenes', '1 hora de audio'],
+    equivalents: ['Aproximadamente 521 textos', '250 imagenes', '100 minutos de audio'],
   },
   {
+    packSize: 'medium',
     title: 'Pack mediano',
-    credits: 120,
+    credits: 120000,
     price: '$20',
-    equivalents: ['120 PDFs', '500 imagenes', '2.5 horas de audio'],
+    equivalents: ['Aproximadamente 1250 textos', '500 imagenes', '240 minutos de audio'],
   },
   {
+    packSize: 'large',
     title: 'Pack grande',
-    credits: 300,
+    credits: 300000,
     price: '$40',
-    equivalents: ['300 PDFs', '1200 imagenes', '7 horas de audio'],
+    equivalents: ['Aproximadamente 3125 textos', '1200 imagenes', '600 minutos de audio'],
   },
 ];
 
@@ -47,6 +51,9 @@ export default function CreditsScreen() {
     credits: 0,
     creditGrants: [],
   });
+  const [isLoading, setIsLoading] = useState(false);
+
+  const nativePurchasesEnabled = canUseNativePurchases();
 
   const loadBilling = useCallback(async () => {
     const state = await getBillingState();
@@ -69,21 +76,30 @@ export default function CreditsScreen() {
     );
   }, [billing.creditGrants]);
 
-  const buyPack = async (amount: number) => {
-    if (!ENABLE_FAKE_BILLING) {
-      Alert.alert(
-        'No disponible',
-        'Los creditos reales todavia necesitan integracion con backend o tienda.'
-      );
-      return;
-    }
+  const buyPack = async (pack: CreditPack) => {
+    try {
+      setIsLoading(true);
 
-    await addCredits(amount);
-    await loadBilling();
-    Alert.alert(
-      'Compra registrada',
-      `Se agregaron ${amount} creditos. Recuerda que vencen a los 30 dias.`
-    );
+      if (!nativePurchasesEnabled) {
+        Alert.alert(
+          'No disponible',
+          'Las compras nativas no estan configuradas todavia para esta app.'
+        );
+        return;
+      }
+
+      await purchaseCreditPack(pack.credits, pack.packSize);
+      await loadBilling();
+      Alert.alert(
+        'Compra completada',
+        `Se agregaron ${pack.credits} creditos. Recuerda que vencen a los 30 dias.`
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'No se pudo comprar el pack.';
+      Alert.alert('Compra no completada', message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -93,71 +109,72 @@ export default function CreditsScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-      <Text style={styles.title}>Creditos</Text>
-      <Text style={styles.subtitle}>Compra creditos para seguir estudiando cuando lo necesites.</Text>
+        <Text style={styles.title}>Creditos</Text>
+        <Text style={styles.subtitle}>Compra creditos para seguir estudiando cuando lo necesites.</Text>
 
-      <View style={styles.balanceCard}>
-        <Text style={styles.balanceLabel}>Saldo actual</Text>
-        <Text style={styles.balanceValue}>{billing.credits} creditos</Text>
-        <Text style={styles.balancePlan}>
-          {billing.plan === 'premium' ? 'Plan Premium activo' : 'Plan Free'}
-        </Text>
-        <Text style={styles.balanceExpiration}>
-          {nextExpiration
-            ? `Proximo vencimiento: ${formatDate(nextExpiration.expiresAt)}`
-            : 'Todavia no tienes creditos activos.'}
-        </Text>
-      </View>
+        <View style={styles.balanceCard}>
+          <Text style={styles.balanceLabel}>Saldo actual</Text>
+          <Text style={styles.balanceValue}>{billing.credits} creditos</Text>
+          <Text style={styles.balancePlan}>
+            {billing.plan === 'premium' ? 'Plan Premium activo' : 'Plan Free'}
+          </Text>
+          <Text style={styles.balanceExpiration}>
+            {nextExpiration
+              ? `Proximo vencimiento: ${formatDate(nextExpiration.expiresAt)}`
+              : 'Todavia no tienes creditos activos.'}
+          </Text>
+        </View>
 
-      <View style={styles.infoCard}>
-        <Text style={styles.infoTitle}>Importante</Text>
-        <Text style={styles.infoText}>Los creditos duran 30 dias desde la compra.</Text>
-        <Text style={styles.infoText}>
-          {ENABLE_FAKE_BILLING
-            ? 'Esta pantalla funciona en modo demo y guarda los creditos localmente o en tu cuenta.'
-            : 'Los packs estan visibles, pero la compra real todavia no esta conectada.'}
-        </Text>
-      </View>
+        <View style={styles.infoCard}>
+          <Text style={styles.infoTitle}>Importante</Text>
+          <Text style={styles.infoText}>Los creditos duran 30 dias desde la compra.</Text>
+          <Text style={styles.infoText}>
+            {nativePurchasesEnabled
+              ? 'Los packs se compran con Google Play y se acreditan automaticamente.'
+              : 'Las compras nativas todavia no estan configuradas para esta plataforma.'}
+          </Text>
+        </View>
 
-      <Text style={styles.sectionTitle}>Elige un pack</Text>
+        <Text style={styles.sectionTitle}>Elige un pack</Text>
 
-      <View style={styles.packList}>
-        {PACKS.map((pack) => (
-          <View key={pack.title} style={styles.packCard}>
-            <Text style={styles.packTitle}>{pack.title}</Text>
-            <Text style={styles.packCredits}>{pack.credits} creditos</Text>
-            <Text style={styles.packPrice}>{pack.price}</Text>
+        <View style={styles.packList}>
+          {PACKS.map((pack) => (
+            <View key={pack.title} style={styles.packCard}>
+              <Text style={styles.packTitle}>{pack.title}</Text>
+              <Text style={styles.packCredits}>{pack.credits} creditos</Text>
+              <Text style={styles.packPrice}>{pack.price}</Text>
 
-            <View style={styles.equivalentsBox}>
-              <Text style={styles.equivalentsTitle}>Equivale aprox. a:</Text>
-              {pack.equivalents.map((item) => (
-                <Text key={item} style={styles.equivalentText}>
-                  - {item}
+              <View style={styles.equivalentsBox}>
+                <Text style={styles.equivalentsTitle}>Equivale aprox. a:</Text>
+                {pack.equivalents.map((item) => (
+                  <Text key={item} style={styles.equivalentText}>
+                    - {item}
+                  </Text>
+                ))}
+              </View>
+
+              <Pressable
+                style={styles.buyButton}
+                onPress={() => {
+                  void buyPack(pack);
+                }}
+                disabled={isLoading}
+              >
+                <Text style={styles.buyButtonText}>
+                  {isLoading ? 'Procesando...' : 'Comprar pack'}
                 </Text>
-              ))}
+              </Pressable>
             </View>
+          ))}
+        </View>
 
-            <Pressable
-              style={styles.buyButton}
-              onPress={() => {
-                void buyPack(pack.credits);
-              }}
-            >
-              <Text style={styles.buyButtonText}>
-                {ENABLE_FAKE_BILLING ? 'Comprar pack' : 'Proximamente'}
-              </Text>
-            </Pressable>
-          </View>
-        ))}
-      </View>
-
-      <View style={styles.noteCard}>
-        <Text style={styles.noteTitle}>Referencia de consumo</Text>
-        <Text style={styles.noteText}>
-          Estos valores son aproximados y pueden variar segun longitud del contenido,
-          complejidad del analisis y cantidad de material generado.
-        </Text>
-      </View>
+        <View style={styles.noteCard}>
+          <Text style={styles.noteTitle}>Referencia de consumo</Text>
+          <Text style={styles.noteText}>
+            Estos valores son aproximados y pueden variar segun longitud del contenido,
+            complejidad del analisis y cantidad de material generado.
+          </Text>
+        </View>
 
         <Pressable style={styles.backButton} onPress={() => router.back()}>
           <Text style={styles.backButtonText}>Volver</Text>

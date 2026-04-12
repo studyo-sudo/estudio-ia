@@ -8,7 +8,6 @@ import AppBottomNav from '../components/AppBottomNav';
 import PdfResultScreen from '../components/PdfResultScreen';
 import ProcessingScreen from '../components/ProcessingScreen';
 import { PdfResultData } from '../data/mockPdfResults';
-import { showAdIfFree } from '../services/adsService';
 import { createHistoryId, saveHistoryItem } from '../services/historyStorage';
 import { analyzeFile, analyzeImage, analyzeInlineFile } from '../services/studyApi';
 import { mapStudyAnalysisToResult } from '../services/studyResultMapper';
@@ -45,8 +44,6 @@ export default function FileScreen() {
         );
         return;
       }
-
-      await showAdIfFree();
 
       const picked = await DocumentPicker.getDocumentAsync({
         type: [
@@ -197,8 +194,6 @@ export default function FileScreen() {
         return;
       }
 
-      await showAdIfFree();
-
       const picked = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
         allowsEditing: false,
@@ -227,8 +222,6 @@ export default function FileScreen() {
         );
         return;
       }
-
-      await showAdIfFree();
 
       const permission = await ImagePicker.requestCameraPermissionsAsync();
 
@@ -281,7 +274,6 @@ export default function FileScreen() {
   };
 
   const handleAudioPress = async () => {
-    await showAdIfFree();
     router.push('/audio');
   };
 
@@ -365,7 +357,7 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 20,
     paddingTop: 32,
-    paddingBottom: 140,
+    paddingBottom: 180,
   },
   title: {
     color: 'white',

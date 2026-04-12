@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     paddingTop: 80,
   },
   resultContent: {
-    paddingBottom: 120,
+    paddingBottom: 220,
   },
   title: {
     color: 'white',

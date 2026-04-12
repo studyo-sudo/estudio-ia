@@ -2,8 +2,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AppBottomNav from '../components/AppBottomNav';
-import { ENABLE_FAKE_BILLING } from '../constants/env';
-import { BillingState, getBillingState, setPlan } from '../services/billingStorage';
+import { BillingState, getBillingState } from '../services/billingStorage';
 import {
   canUseNativePurchases,
   purchasePremiumPlan,
@@ -20,11 +19,6 @@ export default function PricingScreen() {
   const [isLoading, setIsLoading] = useState(false);
 
   const nativePurchasesEnabled = canUseNativePurchases();
-  const billingMode = nativePurchasesEnabled
-    ? 'native'
-    : ENABLE_FAKE_BILLING
-    ? 'demo'
-    : 'manual';
 
   const loadBilling = useCallback(async () => {
     if (nativePurchasesEnabled) {
@@ -45,18 +39,15 @@ export default function PricingScreen() {
     try {
       setIsLoading(true);
 
-      if (nativePurchasesEnabled) {
-        await purchasePremiumPlan();
-      } else if (ENABLE_FAKE_BILLING) {
-        await setPlan('premium');
-        Alert.alert('Modo demo', 'Premium se activo localmente para pruebas.');
-      } else {
+      if (!nativePurchasesEnabled) {
         Alert.alert(
           'No disponible',
           'Las compras nativas no estan configuradas todavia para esta app.'
         );
+        return;
       }
 
+      await purchasePremiumPlan();
       await loadBilling();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'No se pudo activar Premium.';
@@ -64,16 +55,6 @@ export default function PricingScreen() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleActivateFree = async () => {
-    if (!ENABLE_FAKE_BILLING && !nativePurchasesEnabled) {
-      Alert.alert('Sin cambios', 'No hay un flujo de billing local activo para editar el plan.');
-      return;
-    }
-
-    await setPlan('free');
-    await loadBilling();
   };
 
   const handleRestore = async () => {
@@ -98,72 +79,64 @@ export default function PricingScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-      <Text style={styles.title}>Planes</Text>
-      <Text style={styles.subtitle}>Elige como quieres usar Studyo Ai.</Text>
+        <Text style={styles.title}>Planes</Text>
+        <Text style={styles.subtitle}>Elige como quieres usar Studyo Ai.</Text>
 
-      <View style={styles.infoCard}>
-        <Text style={styles.infoTitle}>Estado de billing</Text>
-        <Text style={styles.infoText}>
-          {billingMode === 'native'
-            ? `Compras nativas activas en ${Platform.OS}.`
-            : billingMode === 'demo'
-            ? 'Modo demo activo: los cambios de plan se guardan localmente.'
-            : 'Las compras reales todavia no estan configuradas en esta build.'}
-        </Text>
-      </View>
-
-      <View style={[styles.planCard, billing.plan === 'free' && styles.activeCard]}>
-        <Text style={styles.planName}>Free</Text>
-        <Text style={styles.planPrice}>Gratis</Text>
-
-        <Text style={styles.planFeature}>3 PDFs por semana</Text>
-        <Text style={styles.planFeature}>3 imagenes por semana</Text>
-        <Text style={styles.planFeature}>Flashcards limitadas</Text>
-        <Text style={styles.planFeature}>Audio solo con creditos</Text>
-        <Text style={styles.planFeature}>Anuncio antes de cada uso</Text>
-        <Text style={styles.planFeature}>Creditos mas caros</Text>
-
-        <Pressable style={styles.secondaryButton} onPress={handleActivateFree} disabled={isLoading}>
-          <Text style={styles.secondaryButtonText}>
-            {billing.plan === 'free' ? 'Plan actual' : 'Usar Free'}
+        <View style={styles.infoCard}>
+          <Text style={styles.infoTitle}>Estado de billing</Text>
+          <Text style={styles.infoText}>
+            {nativePurchasesEnabled
+              ? `Compras nativas activas en ${Platform.OS}.`
+              : 'Las compras nativas todavia no estan configuradas para esta plataforma.'}
           </Text>
-        </Pressable>
-      </View>
+        </View>
 
-      <View
-        style={[
-          styles.planCard,
-          billing.plan === 'premium' && styles.activePremiumCard,
-        ]}
-      >
-        <Text style={styles.planName}>Premium</Text>
-        <Text style={styles.planPrice}>$20 / mes</Text>
+        <View style={[styles.planCard, billing.plan === 'free' && styles.activeCard]}>
+          <Text style={styles.planName}>Free</Text>
+          <Text style={styles.planPrice}>Gratis</Text>
 
-        <Text style={styles.planFeature}>300 a 500 PDFs</Text>
-        <Text style={styles.planFeature}>1000 imagenes</Text>
-        <Text style={styles.planFeature}>20 a 25 horas de audio</Text>
-        <Text style={styles.planFeature}>Sin anuncios</Text>
-        <Text style={styles.planFeature}>Creditos mas baratos</Text>
-        <Text style={styles.planFeature}>Uso justo incluido</Text>
+          <Text style={styles.planFeature}>3 PDFs por semana</Text>
+          <Text style={styles.planFeature}>3 imagenes por semana</Text>
+          <Text style={styles.planFeature}>Flashcards limitadas</Text>
+          <Text style={styles.planFeature}>Audio solo con creditos</Text>
+          <Text style={styles.planFeature}>Creditos mas caros</Text>
 
-        <Pressable style={styles.primaryButton} onPress={handleActivatePremium} disabled={isLoading}>
-          <Text style={styles.primaryButtonText}>
-            {billing.plan === 'premium'
-              ? 'Premium activo'
-              : isLoading
-              ? 'Procesando...'
-              : nativePurchasesEnabled
-              ? 'Comprar Premium'
-              : 'Activar Premium'}
-          </Text>
-        </Pressable>
+          <View style={styles.secondaryButton}>
+            <Text style={styles.secondaryButtonText}>Plan base</Text>
+          </View>
+        </View>
 
-        {nativePurchasesEnabled ? (
-          <Pressable style={styles.restoreButton} onPress={handleRestore} disabled={isLoading}>
-            <Text style={styles.restoreButtonText}>Restaurar compras</Text>
+        <View style={[styles.planCard, billing.plan === 'premium' && styles.activePremiumCard]}>
+          <Text style={styles.planName}>Premium</Text>
+          <Text style={styles.planPrice}>$20 / mes</Text>
+
+          <Text style={styles.planFeature}>300 a 500 PDFs</Text>
+          <Text style={styles.planFeature}>1000 imagenes</Text>
+          <Text style={styles.planFeature}>20 a 25 horas de audio</Text>
+          <Text style={styles.planFeature}>Sin anuncios</Text>
+          <Text style={styles.planFeature}>Creditos mas baratos</Text>
+          <Text style={styles.planFeature}>Uso justo incluido</Text>
+
+          <Pressable
+            style={styles.primaryButton}
+            onPress={handleActivatePremium}
+            disabled={isLoading}
+          >
+            <Text style={styles.primaryButtonText}>
+              {billing.plan === 'premium'
+                ? 'Premium activo'
+                : isLoading
+                ? 'Procesando...'
+                : 'Comprar Premium'}
+            </Text>
           </Pressable>
-        ) : null}
-      </View>
+
+          {nativePurchasesEnabled ? (
+            <Pressable style={styles.restoreButton} onPress={handleRestore} disabled={isLoading}>
+              <Text style={styles.restoreButtonText}>Restaurar compras</Text>
+            </Pressable>
+          ) : null}
+        </View>
 
         <Pressable style={styles.backButton} onPress={() => router.back()}>
           <Text style={styles.backButtonText}>Volver</Text>

@@ -14,7 +14,6 @@ import AppBottomNav from '../components/AppBottomNav';
 import PdfResultScreen from '../components/PdfResultScreen';
 import ProcessingScreen from '../components/ProcessingScreen';
 import { PdfResultData } from '../data/mockPdfResults';
-import { showAdIfFree } from '../services/adsService';
 import { BillingState, consumeCredits, getBillingState } from '../services/billingStorage';
 import { createHistoryId, saveHistoryItem } from '../services/historyStorage';
 import { analyzeAudio } from '../services/studyApi';
@@ -136,8 +135,6 @@ export default function AudioScreen() {
         await loadBilling();
         return;
       }
-
-      await showAdIfFree();
 
       const granted = await ensurePermission();
 
@@ -373,7 +370,7 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 20,
     paddingTop: 24,
-    paddingBottom: 120,
+    paddingBottom: 200,
   },
   title: {
     color: 'white',

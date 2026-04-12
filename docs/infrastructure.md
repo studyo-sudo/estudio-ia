@@ -11,8 +11,6 @@ Nota:
 ## Variables de entorno de la app
 
 - `EXPO_PUBLIC_API_BASE_URL`
-- `EXPO_PUBLIC_ENABLE_FAKE_ADS`
-- `EXPO_PUBLIC_ENABLE_FAKE_BILLING`
 - `EXPO_PUBLIC_RC_ANDROID_API_KEY`
 - `EXPO_PUBLIC_RC_IOS_API_KEY`
 - `EXPO_PUBLIC_RC_PREMIUM_ENTITLEMENT_ID`
@@ -144,10 +142,7 @@ Notas:
 
 ## Billing recomendado
 
-La app ya soporta dos modos:
-
-- Demo local con `EXPO_PUBLIC_ENABLE_FAKE_BILLING=true`
-- RevenueCat real con API keys cargadas
+La app ya soporta RevenueCat real con API keys cargadas.
 
 Para pasar a produccion:
 

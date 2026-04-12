@@ -22,11 +22,14 @@ App mobile hecha con Expo y React Native para convertir material de estudio en r
 Usa `.env` a partir de [.env.example](C:/Users/Ismael/estudio-ia/.env.example).
 
 - `EXPO_PUBLIC_API_BASE_URL`: URL base del backend
-- `EXPO_PUBLIC_ENABLE_FAKE_ADS`: activa anuncios simulados para desarrollo
-- `EXPO_PUBLIC_ENABLE_FAKE_BILLING`: activa compras y creditos locales de prueba
 - `EXPO_PUBLIC_RC_ANDROID_API_KEY`: API key de RevenueCat para Android
 - `EXPO_PUBLIC_RC_IOS_API_KEY`: API key de RevenueCat para iOS
 - `EXPO_PUBLIC_RC_PREMIUM_ENTITLEMENT_ID`: entitlement usado para detectar Premium
+- `EXPO_PUBLIC_RC_OFFERING_ID`: offering usado para Premium
+- `EXPO_PUBLIC_RC_CREDITS_OFFERING_ID`: offering usado para creditos
+- `EXPO_PUBLIC_RC_CREDITS_BASIC_PRODUCT_ID`: producto de creditos basicos
+- `EXPO_PUBLIC_RC_CREDITS_MEDIUM_PRODUCT_ID`: producto de creditos medianos
+- `EXPO_PUBLIC_RC_CREDITS_LARGE_PRODUCT_ID`: producto de creditos grandes
 
 ## Scripts
 
@@ -50,8 +53,7 @@ Con eso ya puedes levantar auth, sync y endpoints de analisis compatibles con la
 ## Estado actual
 
 - El proyecto compila sin errores de TypeScript.
-- Si RevenueCat no esta configurado, la app puede funcionar en modo demo.
-- Los creditos todavia se manejan localmente en modo demo; para produccion conviene moverlos a backend o a compras reales.
+- Las compras de Premium y creditos se resuelven con RevenueCat y Google Play.
 - El historial se guarda localmente en AsyncStorage.
 
 ## Backend esperado
@@ -70,7 +72,5 @@ La definicion de contratos y necesidades externas esta documentada en [docs/infr
 
 ## Recomendaciones para seguir
 
-- Conectar billing y creditos reales del lado servidor
 - Agregar autenticacion visible en la UI
 - Sumar tests para servicios y flujos principales
-- Reemplazar anuncios simulados por una integracion real si el plan Free lo necesita
