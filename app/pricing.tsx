@@ -1,38 +1,23 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import CreditCostTable from '../components/CreditCostTable';
 import AppBottomNav from '../components/AppBottomNav';
-import { BillingState, getBillingState } from '../services/billingStorage';
 import {
-  canUseNativePurchases,
   purchasePremiumPlan,
   restorePurchasesAndSyncPlan,
-  syncPlanFromRevenueCat,
 } from '../services/purchasesService';
+import { useSyncedBilling } from '../hooks/useSyncedBilling';
 
 export default function PricingScreen() {
-  const [billing, setBilling] = useState<BillingState>({
-    plan: 'free',
-    credits: 0,
-    creditGrants: [],
-  });
   const [isLoading, setIsLoading] = useState(false);
 
-  const nativePurchasesEnabled = canUseNativePurchases();
-
-  const loadBilling = useCallback(async () => {
-    if (nativePurchasesEnabled) {
-      await syncPlanFromRevenueCat().catch(() => {});
-    }
-
-    const state = await getBillingState();
-    setBilling(state);
-  }, [nativePurchasesEnabled]);
+  const { billing, refreshBilling, nativePurchasesEnabled } = useSyncedBilling();
 
   useFocusEffect(
     useCallback(() => {
-      void loadBilling();
-    }, [loadBilling])
+      void refreshBilling();
+    }, [refreshBilling])
   );
 
   const handleActivatePremium = async () => {
@@ -48,7 +33,7 @@ export default function PricingScreen() {
       }
 
       await purchasePremiumPlan();
-      await loadBilling();
+      await refreshBilling();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'No se pudo activar Premium.';
       Alert.alert('Compra no completada', message);
@@ -61,7 +46,7 @@ export default function PricingScreen() {
     try {
       setIsLoading(true);
       await restorePurchasesAndSyncPlan();
-      await loadBilling();
+      await refreshBilling();
       Alert.alert('Restauracion completa', 'Se restauraron tus compras correctamente.');
     } catch (error) {
       const message =
@@ -90,6 +75,8 @@ export default function PricingScreen() {
               : 'Las compras nativas todavia no estan configuradas para esta plataforma.'}
           </Text>
         </View>
+
+        <CreditCostTable />
 
         <View style={[styles.planCard, billing.plan === 'free' && styles.activeCard]}>
           <Text style={styles.planName}>Free</Text>
@@ -157,28 +144,39 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0f172a',
   },
-  content: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 120,
-  },
+    content: {
+      paddingHorizontal: 20,
+      paddingTop: 24,
+      paddingBottom: 280,
+    },
   title: {
     color: 'white',
     fontSize: 34,
     fontWeight: '800',
     marginBottom: 10,
+    textAlign: 'center',
+    width: '100%',
   },
   subtitle: {
     color: '#cbd5e1',
     fontSize: 17,
     lineHeight: 24,
     marginBottom: 24,
+    textAlign: 'center',
+    width: '100%',
   },
   infoCard: {
     backgroundColor: '#111827',
-    borderRadius: 18,
-    padding: 18,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#263445',
+    padding: 20,
     marginBottom: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.16,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 4,
   },
   infoTitle: {
     color: 'white',

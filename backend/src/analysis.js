@@ -297,10 +297,227 @@ function buildExamModelAnalysis(fileNames) {
   };
 }
 
+function truncateText(value, maxLength) {
+  const text = String(value || '').trim();
+
+  if (text.length <= maxLength) {
+    return text;
+  }
+
+  return `${text.slice(0, maxLength).trim()}...`;
+}
+
+function normalizeTutorMessages(messages) {
+  if (!Array.isArray(messages)) {
+    return [];
+  }
+
+  return messages
+    .filter((message) => message && typeof message === 'object')
+    .map((message) => ({
+      role: message.role === 'assistant' ? 'assistant' : 'user',
+      text: String(message.text || '').trim(),
+    }))
+    .filter((message) => message.text.length > 0)
+    .slice(-12);
+}
+
+function buildTutorFallbackReply(question, threadTitle) {
+  const safeQuestion = String(question || 'tu pregunta').trim() || 'tu pregunta';
+  const normalizedTitle = String(threadTitle || '').trim();
+  const suggestedTitle =
+    normalizedTitle && normalizedTitle !== 'Nuevo chat'
+      ? normalizedTitle
+      : truncateText(safeQuestion, 42) || 'Tutor';
+
+  return {
+    reply: `Claro. Puedo ayudarte con ${safeQuestion}. Si quieres, te lo explico paso a paso y luego te dejo un resumen corto para repasar.`,
+    suggestedTitle,
+  };
+}
+
+function normalizeTutorReply(data, question, threadTitle) {
+  const fallback = buildTutorFallbackReply(question, threadTitle);
+
+  return {
+    reply:
+      typeof data?.reply === 'string' && data.reply.trim().length > 0
+        ? data.reply.trim()
+        : fallback.reply,
+    suggestedTitle:
+      typeof data?.suggestedTitle === 'string' && data.suggestedTitle.trim().length > 0
+        ? truncateText(data.suggestedTitle.trim(), 42)
+        : fallback.suggestedTitle,
+  };
+}
+
+async function createTutorReply({
+  threadTitle,
+  question,
+  messages = [],
+  modelOverride = openaiModel,
+}) {
+  const normalizedQuestion = String(question || '').trim();
+  const normalizedThreadTitle = String(threadTitle || '').trim() || 'Nuevo chat';
+  const normalizedMessages = normalizeTutorMessages(messages);
+  const sdk = getClient();
+
+  if (!sdk) {
+    return buildTutorFallbackReply(normalizedQuestion, normalizedThreadTitle);
+  }
+
+  try {
+    const conversationText = normalizedMessages.length
+      ? normalizedMessages
+          .map((message, index) => {
+            const label = message.role === 'assistant' ? 'Tutor' : 'Usuario';
+            return `${index + 1}. ${label}: ${message.text}`;
+          })
+          .join('\n')
+      : 'Sin contexto previo.';
+
+    const response = await sdk.responses.create({
+      model: modelOverride,
+      input: [
+        {
+          role: 'system',
+          content: [
+            {
+              type: 'input_text',
+              text:
+                'Eres Tutor, un profesor paciente y claro en espanol. Responde solo JSON valido con esta forma exacta: {"reply":"string","suggestedTitle":"string"}. Explica con ejemplos, pasos y formulas solo cuando ayuden. Si faltan datos, dilo con honestidad y pide la informacion que te falte.',
+            },
+          ],
+        },
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'input_text',
+              text: `Titulo actual del chat: ${normalizedThreadTitle}\n\nPregunta actual:\n${normalizedQuestion || 'Sin pregunta especifica.'}\n\nConversacion previa:\n${conversationText}`,
+            },
+          ],
+        },
+      ],
+    });
+
+    return normalizeTutorReply(
+      extractJsonObject(response.output_text),
+      normalizedQuestion,
+      normalizedThreadTitle
+    );
+  } catch (error) {
+    console.error('Error generando respuesta del Tutor con OpenAI:', error);
+    return buildTutorFallbackReply(normalizedQuestion, normalizedThreadTitle);
+  }
+}
+
+function buildProblemSolution(fileName, description) {
+  const normalizedName = String(fileName || 'problema');
+  const normalizedDescription = String(description || '').trim();
+  const subject = normalizedDescription || normalizedName;
+
+  return {
+    title: 'Solucion paso a paso',
+    summary: `Voy a ayudarte a resolver ${subject}. Si faltan datos o la imagen esta borrosa, conviene revisar el enunciado completo antes de dar por cerrado el resultado.`,
+    steps: [
+      'Identifica que pide exactamente el enunciado.',
+      'Separa los datos conocidos de lo que hay que encontrar.',
+      'Aplica la formula, regla o procedimiento adecuado.',
+      'Verifica si el resultado tiene sentido con el contexto.',
+    ],
+    finalAnswer: 'Si quieres, vuelve a subir una imagen mas clara o agrega mas detalles para afinar la solucion.',
+    tips: [
+      'Revisa unidades, signos y operaciones intermedias.',
+      'Si es un ejercicio largo, divide el procedimiento en partes pequeñas.',
+    ],
+  };
+}
+
+function normalizeProblemSolution(data, fileName, description) {
+  const fallback = buildProblemSolution(fileName, description);
+
+  return {
+    title:
+      typeof data?.title === 'string' && data.title.trim().length > 0
+        ? truncateText(data.title.trim(), 60)
+        : fallback.title,
+    summary:
+      typeof data?.summary === 'string' && data.summary.trim().length > 0
+        ? data.summary.trim()
+        : fallback.summary,
+    steps:
+      Array.isArray(data?.steps) && data.steps.length > 0
+        ? data.steps.slice(0, 8).map((step) => String(step).trim()).filter(Boolean)
+        : fallback.steps,
+    finalAnswer:
+      typeof data?.finalAnswer === 'string' && data.finalAnswer.trim().length > 0
+        ? data.finalAnswer.trim()
+        : fallback.finalAnswer,
+    tips:
+      Array.isArray(data?.tips) && data.tips.length > 0
+        ? data.tips.slice(0, 5).map((tip) => String(tip).trim()).filter(Boolean)
+        : fallback.tips,
+  };
+}
+
+async function solveProblemImage(buffer, mimeType, fileName, description, modelOverride = openaiModel) {
+  const sdk = getClient();
+
+  if (!sdk) {
+    return buildProblemSolution(fileName, description);
+  }
+
+  try {
+    const response = await sdk.responses.create({
+      model: modelOverride,
+      input: [
+        {
+          role: 'system',
+          content: [
+            {
+              type: 'input_text',
+              text:
+                'Eres un profesor experto resolviendo ejercicios de matematicas, fisica y quimica. Devuelve solo JSON valido con esta forma exacta: {"title":"string","summary":"string","steps":["string"],"finalAnswer":"string","tips":["string"]}. Explica paso a paso, usando notacion clara y sin omitir pasos importantes.',
+            },
+          ],
+        },
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'input_text',
+              text: `Archivo: ${String(fileName || 'problema')}\n\nDescripcion adicional:\n${String(
+                description || 'Sin descripcion adicional.'
+              )}\n\nResuelve el ejercicio de forma clara y didactica.`,
+            },
+            {
+              type: 'input_image',
+              image_url: `data:${mimeType || 'image/jpeg'};base64,${buffer.toString('base64')}`,
+            },
+          ],
+        },
+      ],
+    });
+
+    return normalizeProblemSolution(
+      extractJsonObject(response.output_text),
+      fileName,
+      description
+    );
+  } catch (error) {
+    console.error('Error resolviendo problema con OpenAI:', error);
+    return buildProblemSolution(fileName, description);
+  }
+}
+
 module.exports = {
   analyzeAudioBuffer,
   analyzeImageBuffer,
   analyzeTextFile,
   buildStudyAnalysis,
   buildExamModelAnalysis,
+  buildProblemSolution,
+  createTutorReply,
+  solveProblemImage,
 };

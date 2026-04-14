@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import AppBottomNav from '../components/AppBottomNav';
-import { BillingState, getBillingState } from '../services/billingStorage';
+import { useSyncedBilling } from '../hooks/useSyncedBilling';
 
 type Flashcard = {
   front: string;
@@ -22,21 +22,12 @@ export default function FlashcardsScreen() {
   const params = useLocalSearchParams<{ cards?: string }>();
   const { width, height } = useWindowDimensions();
 
-  const [billing, setBilling] = useState<BillingState>({
-    plan: 'free',
-    credits: 0,
-    creditGrants: [],
-  });
-
-  const loadBilling = useCallback(async () => {
-    const state = await getBillingState();
-    setBilling(state);
-  }, []);
+  const { billing, refreshBilling } = useSyncedBilling();
 
   useFocusEffect(
     useCallback(() => {
-      void loadBilling();
-    }, [loadBilling])
+      void refreshBilling();
+    }, [refreshBilling])
   );
 
   const cards: Flashcard[] = useMemo(() => {
@@ -178,7 +169,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 20,
     paddingTop: 30,
-    paddingBottom: 110,
+    paddingBottom: 260,
   },
   counter: {
     color: '#cbd5e1',

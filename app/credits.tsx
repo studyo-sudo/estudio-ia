@@ -1,9 +1,10 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import CreditCostTable from '../components/CreditCostTable';
 import AppBottomNav from '../components/AppBottomNav';
-import { BillingState, getBillingState } from '../services/billingStorage';
-import { canUseNativePurchases, purchaseCreditPack } from '../services/purchasesService';
+import { purchaseCreditPack } from '../services/purchasesService';
+import { useSyncedBilling } from '../hooks/useSyncedBilling';
 
 type CreditPack = {
   packSize: 'basic' | 'medium' | 'large';
@@ -46,24 +47,14 @@ function formatDate(dateValue: number) {
 }
 
 export default function CreditsScreen() {
-  const [billing, setBilling] = useState<BillingState>({
-    plan: 'free',
-    credits: 0,
-    creditGrants: [],
-  });
   const [isLoading, setIsLoading] = useState(false);
 
-  const nativePurchasesEnabled = canUseNativePurchases();
-
-  const loadBilling = useCallback(async () => {
-    const state = await getBillingState();
-    setBilling(state);
-  }, []);
+  const { billing, refreshBilling, nativePurchasesEnabled } = useSyncedBilling();
 
   useFocusEffect(
     useCallback(() => {
-      void loadBilling();
-    }, [loadBilling])
+      void refreshBilling();
+    }, [refreshBilling])
   );
 
   const nextExpiration = useMemo(() => {
@@ -89,7 +80,7 @@ export default function CreditsScreen() {
       }
 
       await purchaseCreditPack(pack.credits, pack.packSize);
-      await loadBilling();
+      await refreshBilling();
       Alert.alert(
         'Compra completada',
         `Se agregaron ${pack.credits} creditos. Recuerda que vencen a los 30 dias.`
@@ -134,6 +125,8 @@ export default function CreditsScreen() {
               : 'Las compras nativas todavia no estan configuradas para esta plataforma.'}
           </Text>
         </View>
+
+        <CreditCostTable />
 
         <Text style={styles.sectionTitle}>Elige un pack</Text>
 
@@ -195,22 +188,26 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0f172a',
   },
-  content: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 120,
-  },
+    content: {
+      paddingHorizontal: 20,
+      paddingTop: 24,
+      paddingBottom: 280,
+    },
   title: {
     color: 'white',
     fontSize: 34,
     fontWeight: '800',
     marginBottom: 10,
+    textAlign: 'center',
+    width: '100%',
   },
   subtitle: {
     color: '#cbd5e1',
     fontSize: 17,
     lineHeight: 24,
     marginBottom: 24,
+    textAlign: 'center',
+    width: '100%',
   },
   balanceCard: {
     backgroundColor: '#1e293b',

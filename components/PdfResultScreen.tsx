@@ -134,16 +134,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0f172a',
     paddingHorizontal: 20,
-    paddingTop: 80,
+    paddingTop: 24,
   },
-  resultContent: {
-    paddingBottom: 220,
-  },
+    resultContent: {
+      paddingBottom: 280,
+    },
   title: {
     color: 'white',
     fontSize: 34,
     fontWeight: 'bold',
     marginBottom: 16,
+    textAlign: 'center',
+    width: '100%',
   },
   headerCard: {
     backgroundColor: '#1e293b',

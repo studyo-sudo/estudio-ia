@@ -1,7 +1,15 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, Platform, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
-import { buildShareText, deleteHistoryItem, getHistoryItems, HistoryItem } from '../../services/historyStorage';
+import { Alert, Platform, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import ActionIconButton from '../../components/ActionIconButton';
+import RenameItemModal from '../../components/RenameItemModal';
+import {
+  buildShareText,
+  deleteHistoryItem,
+  getHistoryItems,
+  HistoryItem,
+  updateHistoryItemTitle,
+} from '../../services/historyStorage';
 
 function formatTypeLabel(type: HistoryItem['type']) {
   switch (type) {
@@ -20,6 +28,8 @@ function formatTypeLabel(type: HistoryItem['type']) {
 
 export default function ExploreScreen() {
   const [items, setItems] = useState<HistoryItem[]>([]);
+  const [renamingItem, setRenamingItem] = useState<HistoryItem | null>(null);
+  const [savingRename, setSavingRename] = useState(false);
 
   const loadScreenData = useCallback(async () => {
     const history = await getHistoryItems();
@@ -78,49 +88,101 @@ export default function ExploreScreen() {
     });
   };
 
+  const handleRename = (item: HistoryItem) => {
+    setRenamingItem(item);
+  };
+
+  const handleSaveRename = async (value: string) => {
+    if (!renamingItem) return;
+
+    try {
+      setSavingRename(true);
+      await updateHistoryItemTitle(renamingItem.id, value);
+      setRenamingItem(null);
+      await loadScreenData();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'No se pudo cambiar el nombre.';
+      Alert.alert('Error renombrando', message);
+    } finally {
+      setSavingRename(false);
+    }
+  };
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Historial de archivos</Text>
-      <Text style={styles.subtitle}>
-        Aqui aparecen los archivos, imagenes, audios y resultados que generaste.
-      </Text>
+    <View style={styles.screen}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <Text style={styles.title}>Historial de archivos</Text>
+        <Text style={styles.subtitle}>
+          Aqui aparecen los archivos, imagenes, audios y resultados que generaste.
+        </Text>
 
-      {items.length === 0 ? (
-        <View style={styles.emptyCard}>
-          <Text style={styles.emptyTitle}>Todavia no hay contenido guardado</Text>
-          <Text style={styles.emptyText}>
-            Genera un archivo, una imagen, un audio o un modelo de examen y aparecera aqui.
-          </Text>
-        </View>
-      ) : (
-        items.map((item) => (
-          <View key={item.id} style={styles.itemCard}>
-            <Text style={styles.itemTitle}>{item.title}</Text>
-            <Text style={styles.itemMeta}>
-              {formatTypeLabel(item.type)} • {new Date(item.createdAt).toLocaleString()}
+        {items.length === 0 ? (
+          <View style={styles.emptyCard}>
+            <Text style={styles.emptyTitle}>Todavia no hay contenido guardado</Text>
+            <Text style={styles.emptyText}>
+              Genera un archivo, una imagen, un audio o un modelo de examen y aparecera aqui.
             </Text>
-
-            <View style={styles.buttonRow}>
-              <Pressable style={styles.openButton} onPress={() => handleOpen(item)}>
-                <Text style={styles.openButtonText}>Abrir</Text>
-              </Pressable>
-
-              <Pressable style={styles.shareButton} onPress={() => handleShare(item)}>
-                <Text style={styles.shareButtonText}>Compartir</Text>
-              </Pressable>
-
-              <Pressable style={styles.deleteButton} onPress={() => handleDelete(item.id)}>
-                <Text style={styles.deleteButtonText}>Eliminar</Text>
-              </Pressable>
-            </View>
           </View>
-        ))
-      )}
-    </ScrollView>
+        ) : (
+          items.map((item) => (
+            <View key={item.id} style={styles.itemCard}>
+              <Text style={styles.itemTitle}>{item.title}</Text>
+              <Text style={styles.itemMeta}>
+                {formatTypeLabel(item.type)} â€¢ {new Date(item.createdAt).toLocaleString()}
+              </Text>
+
+              <View style={styles.actionRow}>
+                <ActionIconButton
+                  icon="eye-outline"
+                  label="Abrir"
+                  onPress={() => handleOpen(item)}
+                  backgroundColor="#2563eb"
+                />
+
+                <ActionIconButton
+                  icon="share-social-outline"
+                  label="Compartir"
+                  onPress={() => handleShare(item)}
+                  backgroundColor="#7c3aed"
+                />
+
+                <ActionIconButton
+                  icon="create-outline"
+                  label="Renombrar"
+                  onPress={() => handleRename(item)}
+                  backgroundColor="#0f766e"
+                />
+
+                <ActionIconButton
+                  icon="trash-outline"
+                  label="Eliminar"
+                  onPress={() => handleDelete(item.id)}
+                  backgroundColor="#7f1d1d"
+                />
+              </View>
+            </View>
+          ))
+        )}
+      </ScrollView>
+
+      {/* No agregamos AppBottomNav aquí: esta pantalla ya vive dentro de los tabs nativos. */}
+      <RenameItemModal
+        visible={renamingItem !== null}
+        title="Renombrar elemento"
+        initialValue={renamingItem?.title || ''}
+        saving={savingRename}
+        onClose={() => setRenamingItem(null)}
+        onSave={handleSaveRename}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#0f172a',
+  },
   container: {
     flex: 1,
     backgroundColor: '#0f172a',
@@ -128,7 +190,7 @@ const styles = StyleSheet.create({
     paddingTop: 80,
   },
   content: {
-    paddingBottom: 40,
+    paddingBottom: 180,
   },
   title: {
     color: 'white',
@@ -175,41 +237,9 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginBottom: 14,
   },
-  buttonRow: {
+  actionRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 10,
-  },
-  openButton: {
-    flex: 1,
-    backgroundColor: '#2563eb',
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  openButtonText: {
-    color: 'white',
-    fontWeight: '700',
-  },
-  shareButton: {
-    flex: 1,
-    backgroundColor: '#7c3aed',
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  shareButtonText: {
-    color: 'white',
-    fontWeight: '700',
-  },
-  deleteButton: {
-    flex: 1,
-    backgroundColor: '#7f1d1d',
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  deleteButtonText: {
-    color: 'white',
-    fontWeight: '700',
   },
 });

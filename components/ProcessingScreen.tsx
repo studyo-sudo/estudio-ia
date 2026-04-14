@@ -1,7 +1,7 @@
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 type Props = {
-  type?: 'archivo' | 'imagen' | 'audio' | 'examen';
+  type?: 'archivo' | 'imagen' | 'audio' | 'examen' | 'problema';
 };
 
 export default function ProcessingScreen({ type = 'archivo' }: Props) {
@@ -12,6 +12,8 @@ export default function ProcessingScreen({ type = 'archivo' }: Props) {
       ? 'Procesando audio'
       : type === 'examen'
       ? 'Procesando examen'
+      : type === 'problema'
+      ? 'Procesando problema'
       : 'Procesando archivo';
 
   const subtitle =
@@ -21,6 +23,8 @@ export default function ProcessingScreen({ type = 'archivo' }: Props) {
       ? 'Transcribiendo el audio y generando material de estudio.'
       : type === 'examen'
       ? 'Detectando patrones y generando un nuevo modelo de examen.'
+      : type === 'problema'
+      ? 'Leyendo la imagen y resolviendo el ejercicio paso a paso.'
       : 'Leyendo el archivo y generando material de estudio.';
 
   return (

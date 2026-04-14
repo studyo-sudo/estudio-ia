@@ -9,7 +9,10 @@ const {
   analyzeImageBuffer,
   analyzeTextFile,
   buildExamModelAnalysis,
+  buildProblemSolution,
   buildStudyAnalysis,
+  createTutorReply,
+  solveProblemImage,
 } = require('./analysis');
 const {
   ensureStorageReady,
@@ -122,13 +125,39 @@ app.post('/auth/register', (req, res) => {
     })
     .catch((error) => {
       res.status(400).json({ error: error.message || 'Register failed' });
-    });
+  });
 });
 
 app.get('/auth/me', requireAuth, async (req, res) => {
   res.json({
     email: req.auth.email,
   });
+});
+
+app.post('/tutor/chat', async (req, res) => {
+  const { threadTitle, question, messages } = req.body || {};
+  const normalizedQuestion = String(question || '').trim();
+
+  if (!normalizedQuestion) {
+    res.status(400).json({ error: 'question es obligatorio' });
+    return;
+  }
+
+  try {
+    const reply = await createTutorReply({
+      threadTitle: String(threadTitle || 'Nuevo chat'),
+      question: normalizedQuestion,
+      messages: Array.isArray(messages) ? messages : [],
+    });
+
+    res.json(reply);
+  } catch (error) {
+    console.error('Error generando respuesta del tutor:', error);
+    res.json({
+      reply: 'Puedo ayudarte con eso, pero ahora mismo no pude generar una respuesta detallada.',
+      suggestedTitle: normalizedQuestion.slice(0, 42) || 'Tutor',
+    });
+  }
 });
 
 app.post('/history/sync/push', requireAuth, async (req, res) => {
@@ -323,6 +352,24 @@ app.post('/analyze-exam-model', upload.array('images'), (req, res) => {
     : [];
 
   res.json(buildExamModelAnalysis(fileNames));
+});
+
+app.post('/analyze-problem', upload.single('image'), async (req, res) => {
+  const fileName = req.file?.originalname || 'problema';
+  const description = String(req.body?.description || '').trim();
+
+  try {
+    if (req.file?.buffer) {
+      res.json(
+        await solveProblemImage(req.file.buffer, req.file.mimetype, fileName, description)
+      );
+      return;
+    }
+  } catch (error) {
+    console.error('Error resolviendo problema con OpenAI:', error);
+  }
+
+  res.json(buildProblemSolution(fileName, description));
 });
 
 ensureStorageReady()

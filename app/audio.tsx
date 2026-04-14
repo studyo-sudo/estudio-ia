@@ -14,10 +14,11 @@ import AppBottomNav from '../components/AppBottomNav';
 import PdfResultScreen from '../components/PdfResultScreen';
 import ProcessingScreen from '../components/ProcessingScreen';
 import { PdfResultData } from '../data/mockPdfResults';
-import { BillingState, consumeCredits, getBillingState } from '../services/billingStorage';
+import { consumeCredits } from '../services/billingStorage';
 import { createHistoryId, saveHistoryItem } from '../services/historyStorage';
 import { analyzeAudio } from '../services/studyApi';
 import { mapStudyAnalysisToResult } from '../services/studyResultMapper';
+import { useSyncedBilling } from '../hooks/useSyncedBilling';
 
 function formatDuration(ms: number) {
   const totalSeconds = Math.floor(ms / 1000);
@@ -40,21 +41,12 @@ export default function AudioScreen() {
   const [result, setResult] = useState<PdfResultData | null>(null);
   const [recordingName, setRecordingName] = useState('clase-grabada');
   const [recordingSize, setRecordingSize] = useState<number | undefined>(undefined);
-  const [billing, setBilling] = useState<BillingState>({
-    plan: 'free',
-    credits: 0,
-    creditGrants: [],
-  });
-
-  const loadBilling = useCallback(async () => {
-    const state = await getBillingState();
-    setBilling(state);
-  }, []);
+  const { billing, refreshBilling } = useSyncedBilling();
 
   useFocusEffect(
     useCallback(() => {
-      void loadBilling();
-    }, [loadBilling])
+      void refreshBilling();
+    }, [refreshBilling])
   );
 
   const ensurePermission = async () => {
@@ -97,7 +89,7 @@ export default function AudioScreen() {
           const consumed = await consumeCredits(estimatedCredits);
 
           if (!consumed) {
-            await loadBilling();
+            await refreshBilling();
             Alert.alert(
               'Creditos insuficientes',
               `Para analizar audio en web necesitas al menos ${estimatedCredits} creditos.`
@@ -132,7 +124,7 @@ export default function AudioScreen() {
           },
         });
 
-        await loadBilling();
+        await refreshBilling();
         return;
       }
 
@@ -179,7 +171,7 @@ export default function AudioScreen() {
         const consumed = await consumeCredits(neededCredits);
 
         if (!consumed) {
-          await loadBilling();
+          await refreshBilling();
           Alert.alert(
             'Creditos insuficientes',
             `Esta grabacion necesita ${neededCredits} creditos. Compra mas creditos o acorta la duracion.`
@@ -249,7 +241,7 @@ export default function AudioScreen() {
         },
       });
 
-      await loadBilling();
+      await refreshBilling();
     } catch (error) {
       console.error('Error procesando audio:', error);
       const message = error instanceof Error ? error.message : 'Error desconocido';
@@ -267,11 +259,6 @@ export default function AudioScreen() {
 
     router.back();
   };
-
-  const freeAudioText =
-    billing.plan === 'free'
-      ? `En Free, el audio consume creditos. Costo estimado: 2 creditos por minuto. Saldo actual: ${billing.credits}.`
-      : 'Con Premium, puedes usar audio sin consumir creditos obligatorios.';
 
   if (isProcessing) {
     return <ProcessingScreen type="audio" />;
@@ -312,10 +299,10 @@ export default function AudioScreen() {
       ) : null}
 
       <View style={styles.noticeCard}>
-        <Text style={styles.noticeTitle}>
-          {billing.plan === 'free' ? 'Plan Free' : 'Premium'}
+        <Text style={styles.noticeTitle}>Audio</Text>
+        <Text style={styles.noticeText}>
+          Graba una clase o sube un audio para generar resumen, preguntas, flashcards y examen.
         </Text>
-        <Text style={styles.noticeText}>{freeAudioText}</Text>
       </View>
 
       <View style={styles.card}>
@@ -367,22 +354,26 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0f172a',
   },
-  content: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 200,
-  },
+    content: {
+      paddingHorizontal: 20,
+      paddingTop: 24,
+        paddingBottom: 280,
+      },
   title: {
     color: 'white',
     fontSize: 34,
     fontWeight: 'bold',
     marginBottom: 10,
+    textAlign: 'center',
+    width: '100%',
   },
   subtitle: {
     color: '#cbd5e1',
     fontSize: 17,
     lineHeight: 24,
     marginBottom: 18,
+    textAlign: 'center',
+    width: '100%',
   },
   noticeCard: {
     backgroundColor: '#111827',

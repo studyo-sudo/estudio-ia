@@ -13,13 +13,13 @@ import {
 } from 'react-native';
 import AppBottomNav from '../components/AppBottomNav';
 import ProcessingScreen from '../components/ProcessingScreen';
-import { BillingState, getBillingState } from '../services/billingStorage';
 import { createHistoryId, saveHistoryItem } from '../services/historyStorage';
 import { analyzeExamModel } from '../services/studyApi';
 import {
   canUseExamModelFree,
   registerExamModelFreeUse,
 } from '../services/usageLimitsStorage';
+import { useSyncedBilling } from '../hooks/useSyncedBilling';
 
 type SelectedExamImage = {
   uri: string;
@@ -48,21 +48,12 @@ export default function ExamModelScreen() {
   const [images, setImages] = useState<SelectedExamImage[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState<ExamModelResult | null>(null);
-  const [billing, setBilling] = useState<BillingState>({
-    plan: 'free',
-    credits: 0,
-    creditGrants: [],
-  });
-
-  const loadBilling = useCallback(async () => {
-    const state = await getBillingState();
-    setBilling(state);
-  }, []);
+  const { billing, refreshBilling } = useSyncedBilling();
 
   useFocusEffect(
     useCallback(() => {
-      void loadBilling();
-    }, [loadBilling])
+      void refreshBilling();
+    }, [refreshBilling])
   );
 
   const maxImagesAllowed = billing.plan === 'premium' ? 10 : 2;
@@ -178,7 +169,7 @@ export default function ExamModelScreen() {
         },
       });
 
-      await loadBilling();
+      await refreshBilling();
     } catch (error) {
       console.error('Error generando modelo de examen:', error);
       const message = error instanceof Error ? error.message : 'Error desconocido';
@@ -347,22 +338,26 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0f172a',
   },
-  content: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 200,
-  },
+    content: {
+      paddingHorizontal: 20,
+      paddingTop: 24,
+      paddingBottom: 280,
+    },
   title: {
     color: 'white',
     fontSize: 34,
     fontWeight: 'bold',
     marginBottom: 10,
+    textAlign: 'center',
+    width: '100%',
   },
   subtitle: {
     color: '#cbd5e1',
     fontSize: 17,
     lineHeight: 24,
     marginBottom: 18,
+    textAlign: 'center',
+    width: '100%',
   },
   noticeCard: {
     backgroundColor: '#111827',

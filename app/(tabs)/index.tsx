@@ -6,6 +6,8 @@ export default function HomeScreen() {
     <HomeScreenContent
       onFilePress={() => router.push('/file')}
       onExamModelPress={() => router.push('/exam-model')}
+      onProblemSolverPress={() => router.push('/problem-solver' as never)}
+      onTutorPress={() => router.push('/tutor' as never)}
       onFlashcardsHistoryPress={() => router.push('/flashcards-history')}
     />
   );

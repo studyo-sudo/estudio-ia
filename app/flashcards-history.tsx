@@ -95,22 +95,26 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0f172a',
   },
-  content: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 120,
-  },
+    content: {
+      paddingHorizontal: 20,
+      paddingTop: 24,
+      paddingBottom: 280,
+    },
   title: {
     color: 'white',
     fontSize: 34,
     fontWeight: '800',
     marginBottom: 10,
+    textAlign: 'center',
+    width: '100%',
   },
   subtitle: {
     color: '#cbd5e1',
     fontSize: 17,
     lineHeight: 24,
     marginBottom: 24,
+    textAlign: 'center',
+    width: '100%',
   },
   emptyCard: {
     backgroundColor: '#1e293b',

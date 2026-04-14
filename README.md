@@ -64,6 +64,8 @@ La app consume estos endpoints:
 - `POST /analyze-image`
 - `POST /analyze-audio`
 - `POST /analyze-exam-model`
+- `POST /analyze-problem`
+- `POST /tutor/chat`
 - `POST /auth/login`
 - `POST /history/sync/push`
 - `GET /history/sync/pull`

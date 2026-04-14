@@ -15,6 +15,8 @@ Backend local para desarrollo de Studyo Ai.
 - `POST /analyze-image`
 - `POST /analyze-audio`
 - `POST /analyze-exam-model`
+- `POST /analyze-problem`
+- `POST /tutor/chat`
 - `GET /health`
 
 ## Uso

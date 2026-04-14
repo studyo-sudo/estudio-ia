@@ -37,11 +37,14 @@ export default function RootLayout() {
       <Stack.Screen name="audio" options={{ title: 'Grabar clase' }} />
       <Stack.Screen name="exam" options={{ title: 'Examen' }} />
       <Stack.Screen name="exam-model" options={{ title: 'Subir examenes' }} />
+      <Stack.Screen name="problem-solver" options={{ title: 'Resolver problemas' }} />
       <Stack.Screen name="flashcards" options={{ title: 'Flashcards' }} />
       <Stack.Screen name="flashcards-history" options={{ title: 'Flashcards' }} />
       <Stack.Screen name="saved-item" options={{ title: 'Guardado' }} />
       <Stack.Screen name="pricing" options={{ title: 'Planes' }} />
       <Stack.Screen name="credits" options={{ title: 'Creditos' }} />
+      <Stack.Screen name="tutor" options={{ title: 'Tutor' }} />
+      <Stack.Screen name="tutor-chat" options={{ title: 'Chat Tutor' }} />
     </Stack>
   );
 }

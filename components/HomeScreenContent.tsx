@@ -4,12 +4,16 @@ type Props = {
   onFilePress: () => void;
   onExamModelPress: () => void;
   onFlashcardsHistoryPress: () => void;
+  onProblemSolverPress: () => void;
+  onTutorPress: () => void;
 };
 
 export default function HomeScreenContent({
   onFilePress,
   onExamModelPress,
   onFlashcardsHistoryPress,
+  onProblemSolverPress,
+  onTutorPress,
 }: Props) {
   return (
     <ScrollView
@@ -40,6 +44,22 @@ export default function HomeScreenContent({
           </Text>
         </Pressable>
 
+        <Pressable style={styles.card} onPress={onProblemSolverPress}>
+          <Text style={styles.cardEmoji}>Solve</Text>
+          <Text style={styles.cardTitle}>Resolver problemas</Text>
+          <Text style={styles.cardText}>
+            Saca una foto de matematicas, fisica o quimica y recibe una correccion paso a paso.
+          </Text>
+        </Pressable>
+
+        <Pressable style={styles.card} onPress={onTutorPress}>
+          <Text style={styles.cardEmoji}>Tutor</Text>
+          <Text style={styles.cardTitle}>Tutor</Text>
+          <Text style={styles.cardText}>
+            Chatea con la IA para que te explique temas con ejemplos, formulas y resueltos.
+          </Text>
+        </Pressable>
+
         <Pressable style={styles.card} onPress={onFlashcardsHistoryPress}>
           <Text style={styles.cardEmoji}>Cards</Text>
           <Text style={styles.cardTitle}>Flashcards</Text>
@@ -57,11 +77,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0f172a',
   },
-  content: {
-    paddingHorizontal: 20,
-    paddingTop: 80,
-    paddingBottom: 140,
-  },
+    content: {
+      paddingHorizontal: 20,
+      paddingTop: 80,
+      paddingBottom: 280,
+    },
   title: {
     color: 'white',
     fontSize: 34,

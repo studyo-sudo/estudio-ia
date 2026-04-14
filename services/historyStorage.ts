@@ -73,6 +73,43 @@ export async function deleteHistoryItem(id: string): Promise<void> {
   await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
 }
 
+export async function updateHistoryItemTitle(id: string, title: string): Promise<HistoryItem | null> {
+  const normalizedTitle = title.trim();
+
+  if (!normalizedTitle) {
+    throw new Error('El nombre no puede estar vacio.');
+  }
+
+  const current = await getHistoryItems();
+  let updatedItem: HistoryItem | null = null;
+
+  const updated = current.map((item) => {
+    if (item.id !== id) {
+      return item;
+    }
+
+    const nextItem: HistoryItem = {
+      ...item,
+      title: normalizedTitle,
+      payload:
+        item.payload.kind === 'study-result'
+          ? {
+              ...item.payload,
+              fileName: normalizedTitle,
+            }
+          : {
+              ...item.payload,
+            },
+    };
+
+    updatedItem = nextItem;
+    return nextItem;
+  });
+
+  await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
+  return updatedItem;
+}
+
 export async function getHistoryItemById(id: string): Promise<HistoryItem | null> {
   const current = await getHistoryItems();
   return current.find((item) => item.id === id) || null;

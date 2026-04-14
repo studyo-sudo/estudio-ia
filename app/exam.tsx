@@ -149,21 +149,25 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0f172a',
     paddingHorizontal: 20,
-    paddingTop: 80,
+    paddingTop: 24,
   },
-  content: {
-    paddingBottom: 120,
-  },
+    content: {
+      paddingBottom: 280,
+    },
   title: {
     color: 'white',
     fontSize: 34,
     fontWeight: 'bold',
     marginBottom: 8,
+    textAlign: 'center',
+    width: '100%',
   },
   subtitle: {
     color: '#94a3b8',
     fontSize: 15,
     marginBottom: 18,
+    textAlign: 'center',
+    width: '100%',
   },
   scoreCard: {
     backgroundColor: '#1d4ed8',

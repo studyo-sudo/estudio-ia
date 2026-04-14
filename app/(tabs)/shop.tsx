@@ -1,14 +1,14 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { BillingState, getBillingState } from '../../services/billingStorage';
 import {
   canUseNativePurchases,
   purchaseCreditPack,
   purchasePremiumPlan,
   restorePurchasesAndSyncPlan,
-  syncPlanFromRevenueCat,
 } from '../../services/purchasesService';
+import CreditCostTable from '../../components/CreditCostTable';
+import { useSyncedBilling } from '../../hooks/useSyncedBilling';
 
 type CreditPack = {
   packSize: 'basic' | 'medium' | 'large';
@@ -51,28 +51,15 @@ function formatDate(dateValue: number) {
 }
 
 export default function ShopScreen() {
-  const [billing, setBilling] = useState<BillingState>({
-    plan: 'free',
-    credits: 0,
-    creditGrants: [],
-  });
   const [isLoading, setIsLoading] = useState(false);
 
   const nativePurchasesEnabled = canUseNativePurchases();
-
-  const loadBilling = useCallback(async () => {
-    if (nativePurchasesEnabled) {
-      await syncPlanFromRevenueCat().catch(() => {});
-    }
-
-    const state = await getBillingState();
-    setBilling(state);
-  }, [nativePurchasesEnabled]);
+  const { billing, refreshBilling } = useSyncedBilling();
 
   useFocusEffect(
     useCallback(() => {
-      void loadBilling();
-    }, [loadBilling])
+      void refreshBilling();
+    }, [refreshBilling])
   );
 
   const nextExpiration = useMemo(() => {
@@ -98,7 +85,7 @@ export default function ShopScreen() {
       }
 
       await purchasePremiumPlan();
-      await loadBilling();
+      await refreshBilling();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'No se pudo activar Premium.';
       Alert.alert('Compra no completada', message);
@@ -111,7 +98,7 @@ export default function ShopScreen() {
     try {
       setIsLoading(true);
       await restorePurchasesAndSyncPlan();
-      await loadBilling();
+      await refreshBilling();
       Alert.alert('Restauracion completa', 'Se restauraron tus compras correctamente.');
     } catch (error) {
       const message =
@@ -135,7 +122,7 @@ export default function ShopScreen() {
       }
 
       await purchaseCreditPack(pack.credits, pack.packSize);
-      await loadBilling();
+      await refreshBilling();
       Alert.alert(
         'Compra completada',
         `Se agregaron ${pack.credits} creditos. Recuerda que vencen a los 30 dias.`
@@ -257,6 +244,8 @@ export default function ShopScreen() {
               : 'Las compras nativas todavia no estan configuradas para esta plataforma.'}
           </Text>
         </View>
+
+        <CreditCostTable />
       </ScrollView>
     </View>
   );
@@ -271,11 +260,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0f172a',
   },
-  content: {
-    paddingHorizontal: 20,
-    paddingTop: 80,
-    paddingBottom: 140,
-  },
+    content: {
+      paddingHorizontal: 20,
+      paddingTop: 80,
+      paddingBottom: 280,
+    },
   title: {
     color: 'white',
     fontSize: 34,
@@ -312,9 +301,16 @@ const styles = StyleSheet.create({
   },
   infoCard: {
     backgroundColor: '#111827',
-    borderRadius: 18,
-    padding: 18,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#263445',
+    padding: 20,
     marginTop: 18,
+    shadowColor: '#000',
+    shadowOpacity: 0.16,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 4,
   },
   infoTitle: {
     color: 'white',
