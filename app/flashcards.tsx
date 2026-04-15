@@ -10,13 +10,19 @@ import {
 } from 'react-native';
 import AppBottomNav from '../components/AppBottomNav';
 import { useSyncedBilling } from '../hooks/useSyncedBilling';
+import { APP_COLORS } from '../constants/theme';
 
 type Flashcard = {
   front: string;
   back: string;
 };
 
-const CARD_COLORS = ['#2563eb', '#7c3aed', '#0891b2', '#059669', '#ea580c', '#db2777'];
+const CARD_COLORS = [
+  APP_COLORS.surface,
+  APP_COLORS.surfaceAlt,
+  APP_COLORS.backgroundMuted,
+  APP_COLORS.cream,
+];
 
 export default function FlashcardsScreen() {
   const params = useLocalSearchParams<{ cards?: string }>();
@@ -89,6 +95,7 @@ export default function FlashcardsScreen() {
 
   const currentCard = cards[currentIndex];
   const currentColor = CARD_COLORS[currentIndex % CARD_COLORS.length];
+  const isLightCard = currentColor === APP_COLORS.cream;
   const cardWidth = Math.min(width * 0.82, 700);
   const cardHeight = Math.min(height * 0.52, 360);
 
@@ -119,29 +126,39 @@ export default function FlashcardsScreen() {
           <Animated.View
             style={[
               styles.card,
+              isLightCard && styles.cardLight,
               {
                 backgroundColor: currentColor,
                 transform: [{ rotateY: frontInterpolate }],
               },
             ]}
           >
-            <Text style={styles.cardLabel}>Pregunta</Text>
-            <Text style={styles.cardText}>{currentCard.front}</Text>
-            <Text style={styles.cardHint}>Toca la card para ver la respuesta</Text>
+            <Text style={[styles.cardLabel, isLightCard && styles.cardLabelLight]}>Pregunta</Text>
+            <Text style={[styles.cardText, isLightCard && styles.cardTextLight]}>
+              {currentCard.front}
+            </Text>
+            <Text style={[styles.cardHint, isLightCard && styles.cardHintLight]}>
+              Toca la card para ver la respuesta
+            </Text>
           </Animated.View>
 
           <Animated.View
             style={[
               styles.card,
+              isLightCard && styles.cardLight,
               {
                 backgroundColor: currentColor,
                 transform: [{ rotateY: backInterpolate }],
               },
             ]}
           >
-            <Text style={styles.cardLabel}>Respuesta</Text>
-            <Text style={styles.cardText}>{currentCard.back}</Text>
-            <Text style={styles.cardHint}>Toca la card para volver</Text>
+            <Text style={[styles.cardLabel, isLightCard && styles.cardLabelLight]}>Respuesta</Text>
+            <Text style={[styles.cardText, isLightCard && styles.cardTextLight]}>
+              {currentCard.back}
+            </Text>
+            <Text style={[styles.cardHint, isLightCard && styles.cardHintLight]}>
+              Toca la card para volver
+            </Text>
           </Animated.View>
         </View>
       </Pressable>
@@ -164,7 +181,7 @@ export default function FlashcardsScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 20,
@@ -172,13 +189,13 @@ const styles = StyleSheet.create({
     paddingBottom: 260,
   },
   counter: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 16,
     marginBottom: 14,
     fontWeight: '600',
   },
   freeNotice: {
-    color: '#94a3b8',
+    color: APP_COLORS.textMuted,
     fontSize: 13,
     marginBottom: 14,
     textAlign: 'center',
@@ -199,14 +216,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backfaceVisibility: 'hidden',
-    shadowColor: '#000',
+    shadowColor: APP_COLORS.shadow,
     shadowOpacity: 0.25,
     shadowRadius: 18,
     shadowOffset: { width: 0, height: 8 },
     elevation: 10,
   },
   cardLabel: {
-    color: 'rgba(255,255,255,0.85)',
+    color: APP_COLORS.textMuted,
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 18,
@@ -214,7 +231,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   cardText: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 28,
     lineHeight: 38,
     fontWeight: '800',
@@ -222,9 +239,22 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   cardHint: {
-    color: 'rgba(255,255,255,0.85)',
+    color: APP_COLORS.textMuted,
     fontSize: 14,
     textAlign: 'center',
+  },
+  cardLight: {
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
+  },
+  cardLabelLight: {
+    color: APP_COLORS.accentText,
+  },
+  cardTextLight: {
+    color: APP_COLORS.accentText,
+  },
+  cardHintLight: {
+    color: APP_COLORS.accentText,
   },
   buttonsRow: {
     flexDirection: 'row',
@@ -232,7 +262,7 @@ const styles = StyleSheet.create({
     marginTop: 34,
   },
   navButtonPrimary: {
-    backgroundColor: '#2563eb',
+    backgroundColor: APP_COLORS.text,
     borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 28,
@@ -240,12 +270,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   navButtonPrimaryText: {
-    color: 'white',
+    color: APP_COLORS.accentText,
     fontSize: 16,
     fontWeight: '700',
   },
   navButtonSecondary: {
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 28,
@@ -253,31 +283,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   navButtonSecondaryText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.text,
     fontSize: 16,
     fontWeight: '700',
   },
   emptyContainer: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
   },
   emptyTitle: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 24,
     fontWeight: '700',
     marginBottom: 20,
   },
   backButton: {
-    backgroundColor: '#2563eb',
+    backgroundColor: APP_COLORS.text,
     borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 28,
   },
   backButtonText: {
-    color: 'white',
+    color: APP_COLORS.accentText,
     fontSize: 16,
     fontWeight: '700',
   },

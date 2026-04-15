@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
+import { APP_COLORS } from '../constants/theme';
 
 type CostRow = {
   label: string;
@@ -56,26 +57,26 @@ export default function CreditCostTable() {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#111827',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#263445',
+    borderColor: APP_COLORS.creamSoft,
     padding: 20,
     marginTop: 18,
-    shadowColor: '#000',
+    shadowColor: APP_COLORS.shadow,
     shadowOpacity: 0.18,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 6 },
     elevation: 4,
   },
   title: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 20,
     fontWeight: '800',
     marginBottom: 6,
   },
   subtitle: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 14,
@@ -86,7 +87,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   headerCell: {
-    color: '#93c5fd',
+    color: APP_COLORS.text,
     fontSize: 13,
     fontWeight: '800',
     flex: 1,
@@ -96,10 +97,10 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: '#1f2937',
+    borderTopColor: APP_COLORS.creamSoft,
   },
   cell: {
-    color: '#e2e8f0',
+    color: APP_COLORS.text,
     fontSize: 13,
     flex: 1,
     lineHeight: 18,
@@ -108,7 +109,7 @@ const styles = StyleSheet.create({
     flex: 1.2,
   },
   note: {
-    color: '#94a3b8',
+    color: APP_COLORS.textMuted,
     fontSize: 13,
     lineHeight: 18,
     marginTop: 12,

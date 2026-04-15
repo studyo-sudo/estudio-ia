@@ -4,6 +4,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import AppBottomNav from '../components/AppBottomNav';
 import PdfResultScreen from '../components/PdfResultScreen';
 import { getHistoryItemById, HistoryItem } from '../services/historyStorage';
+import { APP_COLORS } from '../constants/theme';
 
 export default function SavedItemScreen() {
   const params = useLocalSearchParams<{ id?: string }>();
@@ -126,23 +127,23 @@ export default function SavedItemScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
   },
   centered: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
   },
   loadingText: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 18,
     fontWeight: '600',
   },
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     paddingHorizontal: 20,
     paddingTop: 24,
   },
@@ -150,7 +151,7 @@ const styles = StyleSheet.create({
       paddingBottom: 280,
     },
   title: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 30,
     fontWeight: '800',
     marginBottom: 8,
@@ -158,66 +159,72 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   subtitle: {
-    color: '#94a3b8',
+    color: APP_COLORS.textMuted,
     fontSize: 14,
     marginBottom: 18,
     textAlign: 'center',
     width: '100%',
   },
   card: {
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 18,
     padding: 20,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   sectionTitle: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 20,
     fontWeight: '700',
     marginBottom: 12,
   },
   bodyText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 15,
     lineHeight: 24,
   },
   topicChip: {
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 12,
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   topicChipText: {
-    color: '#e2e8f0',
+    color: APP_COLORS.text,
     fontSize: 14,
     fontWeight: '600',
   },
   bigNumber: {
-    color: '#93c5fd',
+    color: APP_COLORS.text,
     fontSize: 38,
     fontWeight: '800',
   },
   primaryButton: {
-    backgroundColor: '#2563eb',
+    backgroundColor: APP_COLORS.text,
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
     marginBottom: 12,
   },
   primaryButtonText: {
-    color: 'white',
+    color: APP_COLORS.accentText,
     fontSize: 16,
     fontWeight: '700',
   },
   secondaryButton: {
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   secondaryButtonText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.text,
     fontSize: 16,
     fontWeight: '700',
   },

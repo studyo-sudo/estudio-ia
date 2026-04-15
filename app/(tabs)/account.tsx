@@ -6,6 +6,7 @@ import { loginWithEmail, registerWithEmail } from '../../services/authApi';
 import { getAuthState, login, logout } from '../../services/authStorage';
 import { pullHistoryFromCloud, pushHistoryToCloud } from '../../services/historySyncService';
 import { getHistoryItems, mergeHistoryItems, setHistoryItems } from '../../services/historyStorage';
+import { APP_COLORS } from '../../constants/theme';
 
 export default function AccountScreen() {
   const appVersion = Constants.expoConfig?.version || 'desconocida';
@@ -142,13 +143,27 @@ export default function AccountScreen() {
                 style={[styles.authModeButton, authMode === 'login' && styles.authModeButtonActive]}
                 onPress={() => setAuthMode('login')}
               >
-                <Text style={styles.authModeText}>Entrar</Text>
+                <Text
+                  style={[
+                    styles.authModeText,
+                    authMode === 'login' && styles.authModeTextActive,
+                  ]}
+                >
+                  Entrar
+                </Text>
               </Pressable>
               <Pressable
                 style={[styles.authModeButton, authMode === 'register' && styles.authModeButtonActive]}
                 onPress={() => setAuthMode('register')}
               >
-                <Text style={styles.authModeText}>Crear cuenta</Text>
+                <Text
+                  style={[
+                    styles.authModeText,
+                    authMode === 'register' && styles.authModeTextActive,
+                  ]}
+                >
+                  Crear cuenta
+                </Text>
               </Pressable>
             </View>
 
@@ -156,7 +171,7 @@ export default function AccountScreen() {
               value={email}
               onChangeText={setEmail}
               placeholder="tu@email.com"
-              placeholderTextColor="#64748b"
+              placeholderTextColor={APP_COLORS.textMuted}
               keyboardType="email-address"
               autoCapitalize="none"
               style={styles.input}
@@ -165,7 +180,7 @@ export default function AccountScreen() {
               value={password}
               onChangeText={setPassword}
               placeholder="Password"
-              placeholderTextColor="#64748b"
+              placeholderTextColor={APP_COLORS.textMuted}
               secureTextEntry
               style={styles.input}
             />
@@ -211,7 +226,7 @@ export default function AccountScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
   },
   content: {
     paddingHorizontal: 20,
@@ -219,30 +234,32 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
   },
   title: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 34,
     fontWeight: '800',
     marginBottom: 10,
   },
   subtitle: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 17,
     lineHeight: 24,
     marginBottom: 24,
   },
   card: {
-    backgroundColor: '#111827',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 18,
     padding: 18,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   cardTitle: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 20,
     fontWeight: '700',
     marginBottom: 8,
   },
   cardText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 14,
     lineHeight: 22,
     marginBottom: 14,
@@ -254,59 +271,62 @@ const styles = StyleSheet.create({
   },
   authModeButton: {
     flex: 1,
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surfaceAlt,
     borderRadius: 10,
     paddingVertical: 10,
     alignItems: 'center',
   },
   authModeButtonActive: {
-    backgroundColor: '#2563eb',
+    backgroundColor: APP_COLORS.text,
   },
   authModeText: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontWeight: '700',
   },
+  authModeTextActive: {
+    color: APP_COLORS.accentText,
+  },
   input: {
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    color: 'white',
+    color: APP_COLORS.text,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#1e293b',
+    borderColor: APP_COLORS.creamSoft,
   },
   buttonColumn: {
     gap: 10,
   },
   primaryButton: {
-    backgroundColor: '#2563eb',
+    backgroundColor: APP_COLORS.text,
     borderRadius: 12,
     paddingVertical: 12,
     alignItems: 'center',
   },
   primaryButtonText: {
-    color: 'white',
+    color: APP_COLORS.accentText,
     fontWeight: '700',
   },
   secondaryButton: {
-    backgroundColor: '#7c3aed',
+    backgroundColor: APP_COLORS.surfaceAlt,
     borderRadius: 12,
     paddingVertical: 12,
     alignItems: 'center',
   },
   secondaryButtonText: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontWeight: '700',
   },
   ghostButton: {
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surfaceDeep,
     borderRadius: 12,
     paddingVertical: 12,
     alignItems: 'center',
   },
   ghostButtonText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontWeight: '700',
   },
 });

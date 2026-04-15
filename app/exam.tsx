@@ -2,6 +2,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AppBottomNav from '../components/AppBottomNav';
+import { APP_COLORS } from '../constants/theme';
 
 type ExamQuestion = {
   question: string;
@@ -143,11 +144,11 @@ export default function ExamScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
   },
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     paddingHorizontal: 20,
     paddingTop: 24,
   },
@@ -155,7 +156,7 @@ const styles = StyleSheet.create({
       paddingBottom: 280,
     },
   title: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 34,
     fontWeight: 'bold',
     marginBottom: 8,
@@ -163,77 +164,83 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   subtitle: {
-    color: '#94a3b8',
+    color: APP_COLORS.textMuted,
     fontSize: 15,
     marginBottom: 18,
     textAlign: 'center',
     width: '100%',
   },
   scoreCard: {
-    backgroundColor: '#1d4ed8',
+    backgroundColor: APP_COLORS.text,
     borderRadius: 18,
     padding: 20,
     marginBottom: 16,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   scoreTitle: {
-    color: 'white',
+    color: APP_COLORS.accentText,
     fontSize: 18,
     marginBottom: 8,
     fontWeight: '600',
   },
   scoreValue: {
-    color: 'white',
+    color: APP_COLORS.accentText,
     fontSize: 30,
     fontWeight: '800',
   },
   questionCard: {
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 18,
     padding: 18,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   questionTitle: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 18,
     fontWeight: '700',
     lineHeight: 26,
     marginBottom: 14,
   },
   optionButton: {
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 14,
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   optionSelected: {
     borderWidth: 2,
-    borderColor: '#60a5fa',
+    borderColor: APP_COLORS.text,
   },
   optionCorrect: {
-    backgroundColor: '#166534',
+    backgroundColor: '#d9f3e2',
     borderWidth: 2,
-    borderColor: '#4ade80',
+    borderColor: '#a7d8b6',
   },
   optionWrong: {
-    backgroundColor: '#991b1b',
+    backgroundColor: '#f7d8d8',
     borderWidth: 2,
-    borderColor: '#f87171',
+    borderColor: '#e4a8a8',
   },
   optionText: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 15,
     lineHeight: 22,
   },
   answerText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 14,
     marginTop: 8,
     lineHeight: 20,
   },
   finishButton: {
-    backgroundColor: '#2563eb',
+    backgroundColor: APP_COLORS.text,
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
@@ -241,42 +248,44 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   finishButtonText: {
-    color: 'white',
+    color: APP_COLORS.accentText,
     fontSize: 16,
     fontWeight: '700',
   },
   backSecondaryButton: {
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   backSecondaryButtonText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.text,
     fontSize: 16,
     fontWeight: '700',
   },
   emptyContainer: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
   },
   emptyTitle: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 24,
     fontWeight: '700',
     marginBottom: 20,
   },
   backButton: {
-    backgroundColor: '#2563eb',
+    backgroundColor: APP_COLORS.text,
     borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 28,
   },
   backButtonText: {
-    color: 'white',
+    color: APP_COLORS.accentText,
     fontSize: 16,
     fontWeight: '700',
   },

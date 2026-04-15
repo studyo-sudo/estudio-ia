@@ -1,4 +1,5 @@
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { APP_COLORS } from '../constants/theme';
 
 type Props = {
   type?: 'archivo' | 'imagen' | 'audio' | 'examen' | 'problema';
@@ -30,7 +31,7 @@ export default function ProcessingScreen({ type = 'archivo' }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.card}>
-        <ActivityIndicator size="large" color="#60a5fa" />
+        <ActivityIndicator size="large" color={APP_COLORS.text} />
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.subtitle}>{subtitle}</Text>
       </View>
@@ -41,7 +42,7 @@ export default function ProcessingScreen({ type = 'archivo' }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
@@ -49,14 +50,16 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 380,
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 20,
     paddingVertical: 28,
     paddingHorizontal: 22,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   title: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 26,
     fontWeight: '800',
     marginTop: 18,
@@ -64,7 +67,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   subtitle: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 15,
     lineHeight: 24,
     textAlign: 'center',

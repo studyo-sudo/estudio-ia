@@ -2,6 +2,7 @@ import { Redirect } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, SafeAreaView, StyleSheet } from 'react-native';
 import { getAuthState } from '../services/authStorage';
+import { APP_COLORS } from '../constants/theme';
 
 export default function IndexScreen() {
   const [isLoading, setIsLoading] = useState(true);
@@ -20,7 +21,7 @@ export default function IndexScreen() {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
-        <ActivityIndicator size="large" color="#22d3ee" />
+        <ActivityIndicator size="large" color={APP_COLORS.text} />
       </SafeAreaView>
     );
   }
@@ -31,7 +32,7 @@ export default function IndexScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     alignItems: 'center',
     justifyContent: 'center',
   },

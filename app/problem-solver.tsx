@@ -14,6 +14,7 @@ import {
 import AppBottomNav from '../components/AppBottomNav';
 import ProcessingScreen from '../components/ProcessingScreen';
 import { analyzeProblem } from '../services/problemSolverApi';
+import { APP_COLORS } from '../constants/theme';
 
 type SelectedProblemImage = {
   uri: string;
@@ -137,7 +138,7 @@ export default function ProblemSolverScreen() {
             value={description}
             onChangeText={setDescription}
             placeholder="Escribe el problema o una pista"
-            placeholderTextColor="#64748b"
+            placeholderTextColor={APP_COLORS.textMuted}
             style={styles.input}
             multiline
           />
@@ -194,11 +195,11 @@ export default function ProblemSolverScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
   },
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
   },
   content: {
     paddingHorizontal: 20,
@@ -206,7 +207,7 @@ const styles = StyleSheet.create({
     paddingBottom: 260,
   },
   title: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 34,
     fontWeight: '800',
     marginBottom: 10,
@@ -214,7 +215,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   subtitle: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 17,
     lineHeight: 24,
     marginBottom: 24,
@@ -222,31 +223,35 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   card: {
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 18,
     padding: 20,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   sectionTitle: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 20,
     fontWeight: '800',
     marginBottom: 8,
   },
   bodyText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 15,
     lineHeight: 22,
     marginBottom: 14,
   },
   secondaryButton: {
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   secondaryButtonText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.text,
     fontWeight: '800',
     fontSize: 16,
   },
@@ -257,55 +262,59 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   input: {
-    backgroundColor: '#0f172a',
-    color: 'white',
+    backgroundColor: APP_COLORS.background,
+    color: APP_COLORS.text,
     minHeight: 110,
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: APP_COLORS.creamSoft,
   },
   solutionCard: {
-    backgroundColor: '#111827',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 18,
     padding: 18,
     marginBottom: 18,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   solutionBlock: {
     marginTop: 14,
   },
   solutionLabel: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 16,
     fontWeight: '800',
     marginBottom: 8,
   },
   stepItem: {
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     borderRadius: 12,
     padding: 12,
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   stepText: {
-    color: '#e2e8f0',
+    color: APP_COLORS.text,
     fontSize: 14,
     lineHeight: 22,
   },
   finalAnswer: {
-    color: '#dbeafe',
+    color: APP_COLORS.text,
     fontSize: 15,
     lineHeight: 24,
   },
   tipText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 14,
     lineHeight: 22,
     marginBottom: 4,
   },
   primaryButton: {
-    backgroundColor: '#2563eb',
+    backgroundColor: APP_COLORS.text,
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: 'center',
@@ -314,7 +323,7 @@ const styles = StyleSheet.create({
     opacity: 0.55,
   },
   primaryButtonText: {
-    color: 'white',
+    color: APP_COLORS.accentText,
     fontWeight: '800',
     fontSize: 16,
   },

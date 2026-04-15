@@ -7,6 +7,7 @@ import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from '
 import AppBottomNav from '../components/AppBottomNav';
 import PdfResultScreen from '../components/PdfResultScreen';
 import ProcessingScreen from '../components/ProcessingScreen';
+import { APP_COLORS } from '../constants/theme';
 import { PdfResultData } from '../data/mockPdfResults';
 import { createHistoryId, saveHistoryItem } from '../services/historyStorage';
 import { analyzeFile, analyzeImage, analyzeInlineFile } from '../services/studyApi';
@@ -348,11 +349,11 @@ export default function FileScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
   },
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
   },
   content: {
       paddingHorizontal: 20,
@@ -360,7 +361,7 @@ const styles = StyleSheet.create({
       paddingBottom: 280,
     },
   title: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 34,
     fontWeight: 'bold',
     marginBottom: 10,
@@ -368,7 +369,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   subtitle: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 17,
     lineHeight: 24,
     marginBottom: 24,
@@ -379,24 +380,26 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   card: {
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 18,
     padding: 20,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   cardEmoji: {
-    color: '#93c5fd',
+    color: APP_COLORS.text,
     fontSize: 18,
     fontWeight: '800',
     marginBottom: 10,
   },
   cardTitle: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 8,
   },
   cardText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 15,
     lineHeight: 22,
   },

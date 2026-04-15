@@ -2,6 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { APP_COLORS } from '../constants/theme';
 
 type AppBottomNavProps = {
   activeTab?: 'home' | 'history' | 'shop' | 'account';
@@ -36,7 +37,7 @@ export default function AppBottomNav({ activeTab }: AppBottomNavProps) {
               <Ionicons
                 name={focused ? item.activeIcon : item.inactiveIcon}
                 size={24}
-                color={focused ? '#22d3ee' : '#94a3b8'}
+                color={focused ? APP_COLORS.cream : APP_COLORS.creamMuted}
               />
               <Text style={[styles.label, focused && styles.labelActive]}>{item.label}</Text>
             </Pressable>
@@ -58,9 +59,9 @@ const styles = StyleSheet.create({
   bar: {
     flexDirection: 'row',
     width: '100%',
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     borderTopWidth: 1,
-    borderTopColor: '#1e293b',
+    borderTopColor: APP_COLORS.creamSoft,
     paddingTop: 10,
     paddingHorizontal: 8,
   },
@@ -71,11 +72,11 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   label: {
-    color: '#94a3b8',
+    color: APP_COLORS.textMuted,
     fontSize: 12,
     fontWeight: '600',
   },
   labelActive: {
-    color: '#22d3ee',
+    color: APP_COLORS.text,
   },
 });

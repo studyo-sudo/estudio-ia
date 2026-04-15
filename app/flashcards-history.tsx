@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AppBottomNav from '../components/AppBottomNav';
 import { getHistoryItems, HistoryItem } from '../services/historyStorage';
+import { APP_COLORS } from '../constants/theme';
 
 export default function FlashcardsHistoryScreen() {
   const [items, setItems] = useState<HistoryItem[]>([]);
@@ -89,11 +90,11 @@ export default function FlashcardsHistoryScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
   },
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
   },
     content: {
       paddingHorizontal: 20,
@@ -101,7 +102,7 @@ const styles = StyleSheet.create({
       paddingBottom: 280,
     },
   title: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 34,
     fontWeight: '800',
     marginBottom: 10,
@@ -109,7 +110,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   subtitle: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 17,
     lineHeight: 24,
     marginBottom: 24,
@@ -117,63 +118,69 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   emptyCard: {
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 18,
     padding: 20,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   emptyTitle: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 20,
     fontWeight: '700',
     marginBottom: 10,
   },
   emptyText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 15,
     lineHeight: 24,
   },
   itemCard: {
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 18,
     padding: 18,
     marginBottom: 14,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   itemTitle: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 18,
     fontWeight: '700',
     marginBottom: 6,
   },
   itemMeta: {
-    color: '#94a3b8',
+    color: APP_COLORS.textMuted,
     fontSize: 13,
     marginBottom: 8,
   },
   itemCount: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 15,
     marginBottom: 14,
   },
   openButton: {
-    backgroundColor: '#7c3aed',
+    backgroundColor: APP_COLORS.text,
     borderRadius: 12,
     paddingVertical: 12,
     alignItems: 'center',
   },
   openButtonText: {
-    color: 'white',
+    color: APP_COLORS.accentText,
     fontWeight: '700',
   },
   backButton: {
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 8,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   backButtonText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.text,
     fontWeight: '700',
     fontSize: 16,
   },

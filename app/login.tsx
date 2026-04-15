@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { loginWithEmail, registerWithEmail } from '../services/authApi';
 import { getAuthState, login } from '../services/authStorage';
+import { APP_COLORS } from '../constants/theme';
 
 export default function LoginScreen() {
   const appVersion = Constants.expoConfig?.version || 'desconocida';
@@ -80,7 +81,7 @@ export default function LoginScreen() {
   if (isChecking) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#22d3ee" />
+        <ActivityIndicator size="large" color={APP_COLORS.text} />
       </SafeAreaView>
     );
   }
@@ -102,13 +103,27 @@ export default function LoginScreen() {
             style={[styles.modeButton, authMode === 'login' && styles.modeButtonActive]}
             onPress={() => setAuthMode('login')}
           >
-            <Text style={styles.modeButtonText}>Entrar</Text>
+            <Text
+              style={[
+                styles.modeButtonText,
+                authMode === 'login' && styles.modeButtonTextActive,
+              ]}
+            >
+              Entrar
+            </Text>
           </Pressable>
           <Pressable
             style={[styles.modeButton, authMode === 'register' && styles.modeButtonActive]}
             onPress={() => setAuthMode('register')}
           >
-            <Text style={styles.modeButtonText}>Crear cuenta</Text>
+            <Text
+              style={[
+                styles.modeButtonText,
+                authMode === 'register' && styles.modeButtonTextActive,
+              ]}
+            >
+              Crear cuenta
+            </Text>
           </Pressable>
         </View>
 
@@ -116,7 +131,7 @@ export default function LoginScreen() {
           value={email}
           onChangeText={setEmail}
           placeholder="tu@email.com"
-          placeholderTextColor="#64748b"
+          placeholderTextColor={APP_COLORS.textMuted}
           keyboardType="email-address"
           autoCapitalize="none"
           style={styles.input}
@@ -126,7 +141,7 @@ export default function LoginScreen() {
             value={password}
             onChangeText={setPassword}
             placeholder="Password"
-            placeholderTextColor="#64748b"
+            placeholderTextColor={APP_COLORS.textMuted}
             secureTextEntry={!showPassword}
             style={styles.passwordInput}
           />
@@ -154,13 +169,13 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     alignItems: 'center',
     justifyContent: 'center',
   },
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     paddingHorizontal: 20,
     justifyContent: 'center',
   },
@@ -168,7 +183,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 18,
     alignSelf: 'center',
-    color: '#94a3b8',
+    color: APP_COLORS.textMuted,
     fontSize: 12,
     fontWeight: '600',
     letterSpacing: 0.3,
@@ -179,23 +194,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
   },
   title: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 38,
     fontWeight: '800',
     marginBottom: 10,
     textAlign: 'center',
   },
   subtitle: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 17,
     lineHeight: 24,
     textAlign: 'center',
     maxWidth: 320,
   },
   card: {
-    backgroundColor: '#111827',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 20,
     padding: 18,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   modeRow: {
     flexDirection: 'row',
@@ -204,62 +221,65 @@ const styles = StyleSheet.create({
   },
   modeButton: {
     flex: 1,
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surfaceAlt,
     borderRadius: 10,
     paddingVertical: 10,
     alignItems: 'center',
   },
   modeButtonActive: {
-    backgroundColor: '#2563eb',
+    backgroundColor: APP_COLORS.text,
   },
   modeButtonText: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontWeight: '700',
   },
+  modeButtonTextActive: {
+    color: APP_COLORS.accentText,
+  },
   input: {
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    color: 'white',
+    color: APP_COLORS.text,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#1e293b',
+    borderColor: APP_COLORS.creamSoft,
   },
   passwordRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     borderRadius: 12,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#1e293b',
+    borderColor: APP_COLORS.creamSoft,
     overflow: 'hidden',
   },
   passwordInput: {
     flex: 1,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    color: 'white',
+    color: APP_COLORS.text,
   },
   eyeButton: {
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
   eyeButtonText: {
-    color: '#93c5fd',
+    color: APP_COLORS.text,
     fontWeight: '700',
     fontSize: 13,
   },
   primaryButton: {
-    backgroundColor: '#2563eb',
+    backgroundColor: APP_COLORS.text,
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 4,
   },
   primaryButtonText: {
-    color: 'white',
+    color: APP_COLORS.accentText,
     fontWeight: '700',
     fontSize: 16,
   },

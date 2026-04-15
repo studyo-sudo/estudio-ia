@@ -5,6 +5,7 @@ import CreditCostTable from '../components/CreditCostTable';
 import AppBottomNav from '../components/AppBottomNav';
 import { purchaseCreditPack } from '../services/purchasesService';
 import { useSyncedBilling } from '../hooks/useSyncedBilling';
+import { APP_COLORS } from '../constants/theme';
 
 type CreditPack = {
   packSize: 'basic' | 'medium' | 'large';
@@ -182,11 +183,11 @@ export default function CreditsScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
   },
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
   },
     content: {
       paddingHorizontal: 20,
@@ -194,7 +195,7 @@ const styles = StyleSheet.create({
       paddingBottom: 280,
     },
   title: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 34,
     fontWeight: '800',
     marginBottom: 10,
@@ -202,7 +203,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   subtitle: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 17,
     lineHeight: 24,
     marginBottom: 24,
@@ -210,53 +211,57 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   balanceCard: {
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 18,
     padding: 18,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   balanceLabel: {
-    color: '#94a3b8',
+    color: APP_COLORS.textMuted,
     fontSize: 14,
     marginBottom: 8,
   },
   balanceValue: {
-    color: '#93c5fd',
+    color: APP_COLORS.text,
     fontSize: 28,
     fontWeight: '800',
     marginBottom: 6,
   },
   balancePlan: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 15,
     fontWeight: '700',
     marginBottom: 6,
   },
   balanceExpiration: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 14,
     lineHeight: 22,
   },
   infoCard: {
-    backgroundColor: '#111827',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 18,
     padding: 18,
     marginBottom: 20,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   infoTitle: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 8,
   },
   infoText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 14,
     lineHeight: 22,
     marginBottom: 4,
   },
   sectionTitle: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 20,
     fontWeight: '700',
     marginBottom: 14,
@@ -265,83 +270,91 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   packCard: {
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 20,
     padding: 20,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   packTitle: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 24,
     fontWeight: '800',
     marginBottom: 8,
   },
   packCredits: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 18,
     marginBottom: 6,
   },
   packPrice: {
-    color: '#93c5fd',
+    color: APP_COLORS.text,
     fontSize: 32,
     fontWeight: '800',
     marginBottom: 16,
   },
   equivalentsBox: {
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     borderRadius: 16,
     padding: 14,
     marginBottom: 18,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   equivalentsTitle: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 15,
     fontWeight: '700',
     marginBottom: 10,
   },
   equivalentText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 14,
     lineHeight: 22,
     marginBottom: 4,
   },
   buyButton: {
-    backgroundColor: '#7c3aed',
+    backgroundColor: APP_COLORS.text,
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
   },
   buyButtonText: {
-    color: 'white',
+    color: APP_COLORS.accentText,
     fontWeight: '700',
     fontSize: 16,
   },
   noteCard: {
-    backgroundColor: '#111827',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 18,
     padding: 18,
     marginTop: 20,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   noteTitle: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 8,
   },
   noteText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 14,
     lineHeight: 22,
   },
   backButton: {
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 6,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   backButtonText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.text,
     fontWeight: '700',
     fontSize: 16,
   },

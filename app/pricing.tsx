@@ -8,6 +8,7 @@ import {
   restorePurchasesAndSyncPlan,
 } from '../services/purchasesService';
 import { useSyncedBilling } from '../hooks/useSyncedBilling';
+import { APP_COLORS } from '../constants/theme';
 
 export default function PricingScreen() {
   const [isLoading, setIsLoading] = useState(false);
@@ -138,11 +139,11 @@ export default function PricingScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
   },
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
   },
     content: {
       paddingHorizontal: 20,
@@ -150,7 +151,7 @@ const styles = StyleSheet.create({
       paddingBottom: 280,
     },
   title: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 34,
     fontWeight: '800',
     marginBottom: 10,
@@ -158,7 +159,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   subtitle: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 17,
     lineHeight: 24,
     marginBottom: 24,
@@ -166,10 +167,10 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   infoCard: {
-    backgroundColor: '#111827',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#263445',
+    borderColor: APP_COLORS.creamSoft,
     padding: 20,
     marginBottom: 16,
     shadowColor: '#000',
@@ -179,93 +180,101 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   infoTitle: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 8,
   },
   infoText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 14,
     lineHeight: 22,
   },
   planCard: {
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 20,
     padding: 20,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   activeCard: {
     borderWidth: 2,
-    borderColor: '#22c55e',
+    borderColor: APP_COLORS.text,
   },
   activePremiumCard: {
     borderWidth: 2,
-    borderColor: '#60a5fa',
+    borderColor: APP_COLORS.text,
   },
   planName: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 24,
     fontWeight: '800',
     marginBottom: 8,
   },
   planPrice: {
-    color: '#93c5fd',
+    color: APP_COLORS.text,
     fontSize: 22,
     fontWeight: '700',
     marginBottom: 14,
   },
   planFeature: {
-    color: '#e2e8f0',
+    color: APP_COLORS.textMuted,
     fontSize: 15,
     lineHeight: 24,
     marginBottom: 4,
   },
   primaryButton: {
-    backgroundColor: '#2563eb',
+    backgroundColor: APP_COLORS.text,
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 16,
   },
   primaryButtonText: {
-    color: 'white',
+    color: APP_COLORS.accentText,
     fontWeight: '700',
     fontSize: 16,
   },
   secondaryButton: {
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 16,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   secondaryButtonText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.text,
     fontWeight: '700',
     fontSize: 16,
   },
   restoreButton: {
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 12,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   restoreButtonText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.text,
     fontWeight: '700',
     fontSize: 16,
   },
   backButton: {
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 6,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   backButtonText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.text,
     fontWeight: '700',
     fontSize: 16,
   },

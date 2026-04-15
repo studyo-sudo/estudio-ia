@@ -20,6 +20,7 @@ import {
   registerExamModelFreeUse,
 } from '../services/usageLimitsStorage';
 import { useSyncedBilling } from '../hooks/useSyncedBilling';
+import { APP_COLORS } from '../constants/theme';
 
 type SelectedExamImage = {
   uri: string;
@@ -332,11 +333,11 @@ export default function ExamModelScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
   },
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
   },
     content: {
       paddingHorizontal: 20,
@@ -344,7 +345,7 @@ const styles = StyleSheet.create({
       paddingBottom: 280,
     },
   title: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 34,
     fontWeight: 'bold',
     marginBottom: 10,
@@ -352,7 +353,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   subtitle: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 17,
     lineHeight: 24,
     marginBottom: 18,
@@ -360,36 +361,40 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   noticeCard: {
-    backgroundColor: '#111827',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   noticeTitle: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 8,
   },
   noticeText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 14,
     lineHeight: 22,
   },
   card: {
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 18,
     padding: 20,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   sectionTitle: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 20,
     fontWeight: '700',
     marginBottom: 12,
   },
   bodyText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 15,
     lineHeight: 24,
   },
@@ -397,9 +402,11 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   previewItem: {
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     borderRadius: 14,
     padding: 12,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   previewImage: {
     width: '100%',
@@ -409,60 +416,66 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   previewLabel: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 14,
     fontWeight: '600',
     marginBottom: 10,
   },
   removeButton: {
-    backgroundColor: '#7f1d1d',
+    backgroundColor: APP_COLORS.surfaceAlt,
     borderRadius: 10,
     paddingVertical: 10,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   removeButtonText: {
     color: 'white',
     fontWeight: '700',
   },
   topicChip: {
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 12,
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   topicChipText: {
-    color: '#e2e8f0',
+    color: APP_COLORS.text,
     fontSize: 14,
     fontWeight: '600',
   },
   bigNumber: {
-    color: '#93c5fd',
+    color: APP_COLORS.text,
     fontSize: 38,
     fontWeight: '800',
     marginBottom: 10,
   },
   primaryButton: {
-    backgroundColor: '#2563eb',
+    backgroundColor: APP_COLORS.text,
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
     marginBottom: 12,
   },
   primaryButtonText: {
-    color: 'white',
+    color: APP_COLORS.accentText,
     fontSize: 16,
     fontWeight: '700',
   },
   generateButton: {
-    backgroundColor: '#7c3aed',
+    backgroundColor: APP_COLORS.surfaceAlt,
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   generateButtonText: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 16,
     fontWeight: '700',
   },
@@ -470,13 +483,15 @@ const styles = StyleSheet.create({
     opacity: 0.45,
   },
   secondaryButton: {
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   secondaryButtonText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.text,
     fontSize: 16,
     fontWeight: '700',
   },

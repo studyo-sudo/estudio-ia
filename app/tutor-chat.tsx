@@ -3,8 +3,6 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -12,6 +10,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppBottomNav from '../components/AppBottomNav';
 import {
   buildTutorChatTitle,
@@ -22,24 +21,26 @@ import {
   TutorChatThread,
 } from '../services/tutorChatStorage';
 import { sendTutorMessage } from '../services/tutorApi';
+import { APP_COLORS } from '../constants/theme';
 
-const SCROLL_THRESHOLD = 180;
+const COMPOSER_BOTTOM_OFFSET = 88;
+const CONTENT_BOTTOM_PADDING = 220;
 
 export default function TutorChatScreen() {
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ chatId?: string }>();
   const scrollRef = useRef<ScrollView>(null);
   const [thread, setThread] = useState<TutorChatThread | null>(null);
   const [question, setQuestion] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const [showJumpToBottom, setShowJumpToBottom] = useState(false);
 
   const chatId = typeof params.chatId === 'string' ? params.chatId : undefined;
+  const composerBottom = COMPOSER_BOTTOM_OFFSET + insets.bottom;
 
   const scrollToBottom = useCallback((animated = true) => {
     requestAnimationFrame(() => {
       scrollRef.current?.scrollToEnd({ animated });
-      setShowJumpToBottom(false);
     });
   }, []);
 
@@ -160,21 +161,11 @@ export default function TutorChatScreen() {
     }
   };
 
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const { contentOffset, layoutMeasurement, contentSize } = event.nativeEvent;
-    const distanceFromBottom =
-      contentSize.height - (contentOffset.y + layoutMeasurement.height);
-
-    setShowJumpToBottom(
-      distanceFromBottom > SCROLL_THRESHOLD && contentSize.height > layoutMeasurement.height
-    );
-  };
-
   const handleContentSizeChange = useCallback(() => {
     scrollToBottom(false);
   }, [scrollToBottom]);
 
-  const title = useMemo(() => thread?.title || 'Tutor', [thread?.title]);
+  const title = useMemo(() => thread?.title || 'Nuevo chat', [thread?.title]);
   const hasMessages = (thread?.messages.length ?? 0) > 0;
 
   if (loading) {
@@ -198,9 +189,8 @@ export default function TutorChatScreen() {
       <ScrollView
         ref={scrollRef}
         style={styles.container}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom: CONTENT_BOTTOM_PADDING + insets.bottom }]}
         showsVerticalScrollIndicator={false}
-        onScroll={handleScroll}
         onContentSizeChange={handleContentSizeChange}
         scrollEventThrottle={16}
       >
@@ -214,32 +204,41 @@ export default function TutorChatScreen() {
                   message.role === 'user' ? styles.userBubble : styles.assistantBubble,
                 ]}
               >
-                <Text style={styles.messageText}>{message.text}</Text>
+                <Text
+                  style={[
+                    styles.messageText,
+                    message.role === 'user'
+                      ? styles.userMessageText
+                      : styles.assistantMessageText,
+                  ]}
+                >
+                  {message.text}
+                </Text>
               </View>
             ))}
           </View>
         ) : (
           <View style={styles.emptyStage}>
-            <View style={styles.emptyCard}>
-              <View style={styles.emptyBadge}>
-                <Ionicons name="chatbubbles-outline" size={24} color="#93c5fd" />
-              </View>
-              <Text style={styles.emptyLabel}>{title}</Text>
-              <Text style={styles.title}>Que quieres aprender?</Text>
-              <Text style={styles.subtitle}>
-                Escribe una pregunta y te respondo paso a paso, con ejemplos y recursos utiles.
-              </Text>
+            <View style={styles.emptyBadge}>
+              <Ionicons name="sparkles-outline" size={22} color={APP_COLORS.text} />
             </View>
+            <Text style={styles.emptyLabel}>{title}</Text>
+            <Text style={styles.emptyTitle}>Que quieres aprender?</Text>
+            <Text style={styles.emptySubtitle}>
+              Escribe una pregunta y te respondo paso a paso, con ejemplos y recursos utiles.
+            </Text>
           </View>
         )}
+      </ScrollView>
 
-        <View style={styles.inputCard}>
+      <View style={[styles.composerDock, { bottom: composerBottom }]}>
+        <View style={styles.composerCard}>
           <TextInput
             value={question}
             onChangeText={setQuestion}
             placeholder="Escribe lo que quieres aprender..."
-            placeholderTextColor="#64748b"
-            style={styles.input}
+            placeholderTextColor={APP_COLORS.textMuted}
+            style={styles.composerInput}
             multiline
           />
 
@@ -248,18 +247,10 @@ export default function TutorChatScreen() {
             onPress={handleSend}
             disabled={!question.trim() || sending}
           >
-            <Text style={styles.sendButtonText}>{sending ? 'Enviando...' : 'Enviar'}</Text>
+            <Ionicons name="arrow-up" size={22} color={APP_COLORS.accentText} />
           </Pressable>
         </View>
-      </ScrollView>
-
-      {showJumpToBottom ? (
-        <Pressable style={styles.jumpButtonWrapper} onPress={() => scrollToBottom(true)}>
-          <View style={styles.jumpButton}>
-            <Ionicons name="arrow-down" size={24} color="white" />
-          </View>
-        </Pressable>
-      ) : null}
+      </View>
 
       <AppBottomNav activeTab="home" />
     </View>
@@ -269,84 +260,32 @@ export default function TutorChatScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
   },
   centered: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
   },
   loadingText: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 18,
     fontWeight: '700',
   },
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
   },
   content: {
+    flexGrow: 1,
     paddingHorizontal: 20,
     paddingTop: 24,
-    paddingBottom: 260,
-    flexGrow: 1,
-  },
-  emptyStage: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 24,
-  },
-  emptyCard: {
-    width: '100%',
-    maxWidth: 420,
-    backgroundColor: '#111827',
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: '#263445',
-    padding: 22,
-    alignItems: 'center',
-  },
-  emptyBadge: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    backgroundColor: '#0f172a',
-    borderWidth: 1,
-    borderColor: '#1d4ed8',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 14,
-  },
-  emptyLabel: {
-    color: '#93c5fd',
-    fontSize: 13,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  title: {
-    color: 'white',
-    fontSize: 30,
-    fontWeight: '800',
-    marginBottom: 8,
-    textAlign: 'center',
-    width: '100%',
-  },
-  subtitle: {
-    color: '#cbd5e1',
-    fontSize: 16,
-    lineHeight: 24,
-    textAlign: 'center',
-    width: '100%',
   },
   chatCard: {
     gap: 12,
-    marginBottom: 16,
+    paddingBottom: 12,
   },
   messageBubble: {
     borderRadius: 18,
@@ -355,68 +294,106 @@ const styles = StyleSheet.create({
   },
   userBubble: {
     alignSelf: 'flex-end',
-    backgroundColor: '#2563eb',
+    backgroundColor: APP_COLORS.surfaceDeep,
   },
   assistantBubble: {
     alignSelf: 'flex-start',
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surface,
   },
   messageText: {
-    color: 'white',
     fontSize: 15,
     lineHeight: 22,
   },
-  inputCard: {
-    backgroundColor: '#111827',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#263445',
-    padding: 18,
-    gap: 12,
+  userMessageText: {
+    color: APP_COLORS.text,
   },
-  input: {
-    backgroundColor: '#0f172a',
-    color: 'white',
-    minHeight: 96,
-    borderRadius: 14,
+  assistantMessageText: {
+    color: APP_COLORS.text,
+  },
+  emptyStage: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 48,
+    paddingHorizontal: 12,
+  },
+  emptyBadge: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: APP_COLORS.surface,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 18,
+  },
+  emptyLabel: {
+    color: APP_COLORS.text,
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  emptyTitle: {
+    color: APP_COLORS.text,
+    fontSize: 31,
+    fontWeight: '800',
+    lineHeight: 38,
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  emptySubtitle: {
+    color: APP_COLORS.textMuted,
+    fontSize: 16,
+    lineHeight: 24,
+    textAlign: 'center',
+    maxWidth: 360,
+  },
+  composerDock: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    zIndex: 10,
+    elevation: 10,
+  },
+  composerCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 12,
+    backgroundColor: APP_COLORS.surface,
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
     paddingHorizontal: 14,
     paddingVertical: 12,
+    shadowColor: APP_COLORS.shadow,
+    shadowOpacity: 0.22,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+  },
+  composerInput: {
+    flex: 1,
+    minHeight: 24,
+    maxHeight: 120,
+    color: APP_COLORS.text,
     fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#334155',
+    lineHeight: 22,
+    paddingHorizontal: 6,
+    paddingVertical: 10,
+    textAlignVertical: 'top',
   },
   sendButton: {
-    backgroundColor: '#7c3aed',
-    borderRadius: 16,
-    paddingVertical: 16,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: APP_COLORS.text,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   sendButtonDisabled: {
     opacity: 0.72,
-  },
-  sendButtonText: {
-    color: 'white',
-    fontWeight: '800',
-    fontSize: 16,
-  },
-  jumpButtonWrapper: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 96,
-    alignItems: 'center',
-  },
-  jumpButton: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: '#2563eb',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.24,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 5,
   },
 });

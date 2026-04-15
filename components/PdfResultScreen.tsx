@@ -2,6 +2,8 @@ import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AppBottomNav from './AppBottomNav';
 import { PdfResultData } from '../data/mockPdfResults';
+import { APP_COLORS } from '../constants/theme';
+import { buildStudyRouteFromCurrentResult } from '../services/studyRoute';
 
 type Props = {
   fileName: string;
@@ -22,6 +24,12 @@ export default function PdfResultScreen({
   const isImage = sourceType === 'image';
   const estimatedPages = fileSize ? Math.max(1, Math.round(fileSize / 120)) : 1;
   const estimatedStudyTime = Math.max(5, estimatedPages * 3);
+  const studyRoute = buildStudyRouteFromCurrentResult(
+    result,
+    sourceType,
+    fileName,
+    Date.now()
+  );
 
   const handleOpenFlashcards = () => {
     router.push({
@@ -39,6 +47,10 @@ export default function PdfResultScreen({
         exam: JSON.stringify(result.exam),
       },
     });
+  };
+
+  const handleOpenStudyRoute = () => {
+    router.push('/study-route' as never);
   };
 
   return (
@@ -107,7 +119,27 @@ export default function PdfResultScreen({
         </Text>
 
         <Pressable style={styles.flashcardsButton} onPress={handleOpenFlashcards}>
-          <Text style={styles.flashcardsButtonText}>Abrir flashcards</Text>
+        <Text style={styles.flashcardsButtonText}>Abrir flashcards</Text>
+      </Pressable>
+      </View>
+
+      <View style={styles.resultCard}>
+        <Text style={styles.sectionTitle}>Ruta de estudio</Text>
+        <Text style={styles.flashcardsDescription}>
+          {studyRoute.nextAction}
+        </Text>
+        {studyRoute.steps.slice(0, 3).map((step, index) => (
+          <View key={`${index}-${step.title}`} style={styles.routeStep}>
+            <Text style={styles.routeStepIndex}>{index + 1}</Text>
+            <View style={styles.routeStepBody}>
+              <Text style={styles.routeStepTitle}>{step.title}</Text>
+              <Text style={styles.routeStepText}>{step.description}</Text>
+            </View>
+          </View>
+        ))}
+
+        <Pressable style={styles.routeButton} onPress={handleOpenStudyRoute}>
+          <Text style={styles.routeButtonText}>Ver ruta completa</Text>
         </Pressable>
       </View>
 
@@ -128,11 +160,11 @@ export default function PdfResultScreen({
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
   },
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     paddingHorizontal: 20,
     paddingTop: 24,
   },
@@ -140,7 +172,7 @@ const styles = StyleSheet.create({
       paddingBottom: 280,
     },
   title: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 34,
     fontWeight: 'bold',
     marginBottom: 16,
@@ -148,19 +180,21 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   headerCard: {
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 18,
     padding: 20,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   fileName: {
-    color: '#93c5fd',
+    color: APP_COLORS.text,
     fontSize: 18,
     fontWeight: '700',
     marginBottom: 6,
   },
   fileInfo: {
-    color: '#94a3b8',
+    color: APP_COLORS.textMuted,
     fontSize: 14,
     marginBottom: 16,
   },
@@ -170,68 +204,124 @@ const styles = StyleSheet.create({
   },
   statBox: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     borderRadius: 14,
     paddingVertical: 12,
     paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   statLabel: {
-    color: '#94a3b8',
+    color: APP_COLORS.textMuted,
     fontSize: 12,
     marginBottom: 4,
   },
   statValue: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 15,
     fontWeight: '700',
   },
   resultCard: {
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 18,
     padding: 20,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   sectionTitle: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 12,
   },
   resultText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 15,
     lineHeight: 24,
   },
   questionBox: {
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     borderRadius: 14,
     padding: 14,
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   questionText: {
-    color: '#e2e8f0',
+    color: APP_COLORS.text,
     fontSize: 15,
     lineHeight: 22,
   },
   flashcardsDescription: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 15,
     lineHeight: 22,
     marginBottom: 14,
   },
   flashcardsButton: {
-    backgroundColor: '#7c3aed',
+    backgroundColor: APP_COLORS.text,
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
   },
   flashcardsButtonText: {
-    color: 'white',
+    color: APP_COLORS.accentText,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  routeStep: {
+    flexDirection: 'row',
+    gap: 12,
+    backgroundColor: APP_COLORS.background,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
+  },
+  routeStepIndex: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: APP_COLORS.surface,
+    color: APP_COLORS.text,
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    fontSize: 14,
+    fontWeight: '800',
+    overflow: 'hidden',
+  },
+  routeStepBody: {
+    flex: 1,
+  },
+  routeStepTitle: {
+    color: APP_COLORS.text,
+    fontSize: 15,
+    fontWeight: '800',
+    marginBottom: 4,
+  },
+  routeStepText: {
+    color: APP_COLORS.textMuted,
+    fontSize: 14,
+    lineHeight: 22,
+  },
+  routeButton: {
+    backgroundColor: APP_COLORS.surface,
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
+    marginTop: 6,
+  },
+  routeButtonText: {
+    color: APP_COLORS.text,
     fontSize: 16,
     fontWeight: '700',
   },
   primaryButton: {
-    backgroundColor: '#2563eb',
+    backgroundColor: APP_COLORS.text,
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
@@ -239,18 +329,20 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   primaryButtonText: {
-    color: 'white',
+    color: APP_COLORS.accentText,
     fontSize: 16,
     fontWeight: '700',
   },
   secondaryButton: {
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   secondaryButtonText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.text,
     fontSize: 16,
     fontWeight: '700',
   },

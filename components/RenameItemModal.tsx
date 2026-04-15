@@ -7,6 +7,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { APP_COLORS } from '../constants/theme';
 
 type Props = {
   visible: boolean;
@@ -46,7 +47,7 @@ export default function RenameItemModal({
             value={value}
             onChangeText={setValue}
             placeholder="Nuevo nombre"
-            placeholderTextColor="#64748b"
+            placeholderTextColor={APP_COLORS.textMuted}
             style={styles.input}
             autoFocus
             returnKeyType="done"
@@ -76,7 +77,7 @@ export default function RenameItemModal({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+    backgroundColor: APP_COLORS.overlay,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
@@ -84,28 +85,30 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 420,
-    backgroundColor: '#111827',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 20,
     padding: 18,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   title: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 20,
     fontWeight: '800',
     marginBottom: 8,
   },
   subtitle: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 14,
     lineHeight: 21,
     marginBottom: 14,
   },
   input: {
-    backgroundColor: '#1e293b',
-    color: 'white',
+    backgroundColor: APP_COLORS.background,
+    color: APP_COLORS.text,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: APP_COLORS.creamSoft,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
@@ -117,19 +120,21 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     flex: 1,
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.background,
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   secondaryButtonText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.text,
     fontSize: 15,
     fontWeight: '700',
   },
   primaryButton: {
     flex: 1,
-    backgroundColor: '#2563eb',
+    backgroundColor: APP_COLORS.text,
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
@@ -138,7 +143,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   primaryButtonText: {
-    color: 'white',
+    color: APP_COLORS.accentText,
     fontSize: 15,
     fontWeight: '800',
   },

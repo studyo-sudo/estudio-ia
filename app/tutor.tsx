@@ -14,6 +14,7 @@ import {
 import ActionIconButton from '../components/ActionIconButton';
 import AppBottomNav from '../components/AppBottomNav';
 import RenameItemModal from '../components/RenameItemModal';
+import { APP_COLORS } from '../constants/theme';
 import {
   buildTutorShareText,
   deleteTutorChat,
@@ -190,28 +191,28 @@ export default function TutorScreen() {
                     icon="chatbubble-ellipses-outline"
                     label="Abrir"
                     onPress={() => openChat(thread)}
-                    backgroundColor="#2563eb"
+                    backgroundColor={APP_COLORS.surfaceAlt}
                   />
 
                   <ActionIconButton
                     icon="share-social-outline"
                     label="Compartir"
                     onPress={() => void handleShare(thread)}
-                    backgroundColor="#7c3aed"
+                    backgroundColor={APP_COLORS.surfaceAlt}
                   />
 
                   <ActionIconButton
                     icon="create-outline"
                     label="Renombrar"
                     onPress={() => handleRename(thread)}
-                    backgroundColor="#0f766e"
+                    backgroundColor={APP_COLORS.surfaceAlt}
                   />
 
                   <ActionIconButton
                     icon="trash-outline"
                     label="Eliminar"
                     onPress={() => void handleDelete(thread)}
-                    backgroundColor="#991b1b"
+                    backgroundColor={APP_COLORS.surfaceAlt}
                   />
                 </View>
               </View>
@@ -237,11 +238,11 @@ export default function TutorScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
   },
   container: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
   },
   content: {
     paddingHorizontal: 20,
@@ -249,7 +250,7 @@ const styles = StyleSheet.create({
     paddingBottom: 260,
   },
   title: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 34,
     fontWeight: '800',
     marginBottom: 10,
@@ -257,7 +258,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   subtitle: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 17,
     lineHeight: 24,
     marginBottom: 20,
@@ -265,7 +266,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   newChatButton: {
-    backgroundColor: '#2563eb',
+    backgroundColor: APP_COLORS.text,
     borderRadius: 18,
     paddingVertical: 16,
     paddingHorizontal: 18,
@@ -279,7 +280,7 @@ const styles = StyleSheet.create({
     opacity: 0.72,
   },
   newChatButtonText: {
-    color: 'white',
+    color: APP_COLORS.accentText,
     fontSize: 16,
     fontWeight: '800',
   },
@@ -290,36 +291,40 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   sectionTitle: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 22,
     fontWeight: '800',
   },
   sectionCounter: {
-    color: '#94a3b8',
+    color: APP_COLORS.textMuted,
     fontSize: 13,
     fontWeight: '600',
   },
   emptyCard: {
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 18,
     padding: 20,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   emptyTitle: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 20,
     fontWeight: '700',
     marginBottom: 10,
   },
   emptyText: {
-    color: '#cbd5e1',
+    color: APP_COLORS.textMuted,
     fontSize: 15,
     lineHeight: 24,
   },
   threadCard: {
-    backgroundColor: '#1e293b',
+    backgroundColor: APP_COLORS.surface,
     borderRadius: 18,
     padding: 18,
     marginBottom: 14,
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   threadHeader: {
     flexDirection: 'row',
@@ -334,23 +339,25 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: '#0f172a',
+    backgroundColor: APP_COLORS.background,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: APP_COLORS.creamSoft,
   },
   threadTitle: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 18,
     fontWeight: '800',
     marginBottom: 5,
   },
   threadMeta: {
-    color: '#94a3b8',
+    color: APP_COLORS.textMuted,
     fontSize: 13,
     lineHeight: 18,
   },
   threadPreview: {
-    color: '#dbeafe',
+    color: APP_COLORS.text,
     fontSize: 14,
     lineHeight: 22,
     marginTop: 12,

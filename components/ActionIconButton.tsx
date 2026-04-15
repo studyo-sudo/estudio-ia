@@ -1,6 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ComponentProps } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
+import { APP_COLORS } from '../constants/theme';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -18,7 +19,7 @@ export default function ActionIconButton({
   label,
   onPress,
   backgroundColor,
-  iconColor = 'white',
+  iconColor = APP_COLORS.cream,
   disabled = false,
 }: Props) {
   return (
@@ -61,7 +62,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   label: {
-    color: 'white',
+    color: APP_COLORS.text,
     fontSize: 10,
     fontWeight: '800',
     textAlign: 'center',

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { initializePurchases } from '../../services/purchasesService';
 import { getAuthState } from '../../services/authStorage';
+import { APP_COLORS } from '../../constants/theme';
 
 export default function TabLayout() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
@@ -31,12 +32,12 @@ export default function TabLayout() {
       <View
         style={{
           flex: 1,
-          backgroundColor: '#0f172a',
+          backgroundColor: APP_COLORS.background,
           alignItems: 'center',
           justifyContent: 'center',
         }}
       >
-        <ActivityIndicator size="large" color="#22d3ee" />
+        <ActivityIndicator size="large" color={APP_COLORS.text} />
       </View>
     );
   }
@@ -50,14 +51,14 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         sceneStyle: {
-          backgroundColor: '#0f172a',
+          backgroundColor: APP_COLORS.background,
         },
         tabBarStyle: {
-          backgroundColor: '#0f172a',
-          borderTopColor: '#1e293b',
+          backgroundColor: APP_COLORS.background,
+          borderTopColor: APP_COLORS.creamSoft,
         },
-        tabBarActiveTintColor: '#22d3ee',
-        tabBarInactiveTintColor: '#94a3b8',
+        tabBarActiveTintColor: APP_COLORS.text,
+        tabBarInactiveTintColor: APP_COLORS.textMuted,
       }}
     >
       <Tabs.Screen

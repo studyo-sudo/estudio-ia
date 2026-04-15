@@ -1,53 +1,35 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
-
-import { Platform } from 'react-native';
-
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+export const APP_COLORS = {
+  background: '#fbf7f1',
+  backgroundMuted: '#f4eee7',
+  surface: '#e8e0f2',
+  surfaceAlt: '#dfeaf6',
+  surfaceDeep: '#f2dfe6',
+  cream: '#f6d5c3',
+  creamMuted: '#a8a1b7',
+  creamSoft: 'rgba(63, 77, 107, 0.12)',
+  creamStrong: 'rgba(63, 77, 107, 0.2)',
+  accentText: '#fff7f0',
+  overlay: 'rgba(63, 77, 107, 0.16)',
+  shadow: '#c8bfd3',
+  text: '#6b7591',
+  textMuted: '#8c94a8',
+} as const;
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    text: APP_COLORS.text,
+    background: APP_COLORS.background,
+    tint: APP_COLORS.accentText,
+    icon: APP_COLORS.textMuted,
+    tabIconDefault: APP_COLORS.textMuted,
+    tabIconSelected: APP_COLORS.accentText,
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    text: APP_COLORS.text,
+    background: APP_COLORS.background,
+    tint: APP_COLORS.accentText,
+    icon: APP_COLORS.textMuted,
+    tabIconDefault: APP_COLORS.textMuted,
+    tabIconSelected: APP_COLORS.accentText,
   },
-};
-
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-  },
-});
+} as const;
