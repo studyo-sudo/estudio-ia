@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -11,12 +11,14 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useAppPreferences } from '../contexts/AppPreferencesContext';
 import { loginWithEmail, registerWithEmail } from '../services/authApi';
+import { resolvePostAuthRoute } from '../services/authRouting';
 import { getAuthState, login } from '../services/authStorage';
-import { APP_COLORS } from '../constants/theme';
 
 export default function LoginScreen() {
   const appVersion = Constants.expoConfig?.version || 'desconocida';
+  const { colors, t } = useAppPreferences();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -24,12 +26,14 @@ export default function LoginScreen() {
   const [isChecking, setIsChecking] = useState(true);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
 
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   useEffect(() => {
     async function bootstrap() {
       const auth = await getAuthState();
 
       if (auth.token) {
-        router.replace('/(tabs)');
+        router.replace(await resolvePostAuthRoute());
         return;
       }
 
@@ -45,34 +49,37 @@ export default function LoginScreen() {
 
   const handleSubmit = async () => {
     if (!email.trim() || !password.trim()) {
-      Alert.alert('Faltan datos', 'Completa email y password para continuar.');
+      Alert.alert('Faltan datos', t('login.missingData'));
       return;
     }
 
     if (authMode === 'register' && password.trim().length < 6) {
-      Alert.alert('Password muy corto', 'Usa al menos 6 caracteres.');
+      Alert.alert('Contraseña muy corta', t('login.shortPassword'));
       return;
     }
 
     try {
       setIsBusy(true);
       const normalizedEmail = email.trim();
-      const token =
+      const session =
         authMode === 'login'
           ? await loginWithEmail(normalizedEmail, password)
           : await registerWithEmail(normalizedEmail, password);
 
-      await login(token, normalizedEmail);
-      router.replace('/(tabs)');
+      await login(session.token, normalizedEmail, {
+        phoneVerified: session.phoneVerified,
+        phoneNumber: session.phoneNumber,
+      });
+      router.replace(await resolvePostAuthRoute());
     } catch (error) {
       const message =
         error instanceof Error
           ? error.message
           : authMode === 'login'
-          ? 'No se pudo iniciar sesion.'
+          ? 'No se pudo iniciar sesión.'
           : 'No se pudo crear la cuenta.';
 
-      Alert.alert(authMode === 'login' ? 'Error de acceso' : 'Error de registro', message);
+      Alert.alert(authMode === 'login' ? t('login.errorAccess') : t('login.errorRegister'), message);
     } finally {
       setIsBusy(false);
     }
@@ -81,20 +88,18 @@ export default function LoginScreen() {
   if (isChecking) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={APP_COLORS.text} />
+        <ActivityIndicator size="large" color={colors.text} />
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.versionBadge}>Version {appVersion}</Text>
+      <Text style={styles.versionBadge}>{t('login.version', { version: appVersion })}</Text>
 
       <View style={styles.hero}>
-        <Text style={styles.title}>Studyo Ai</Text>
-        <Text style={styles.subtitle}>
-          Inicia sesion para entrar a la app y guardar tu historial en la nube.
-        </Text>
+        <Text style={styles.title}>{t('login.heroTitle')}</Text>
+        <Text style={styles.subtitle}>{t('login.heroSubtitle')}</Text>
       </View>
 
       <View style={styles.card}>
@@ -104,12 +109,9 @@ export default function LoginScreen() {
             onPress={() => setAuthMode('login')}
           >
             <Text
-              style={[
-                styles.modeButtonText,
-                authMode === 'login' && styles.modeButtonTextActive,
-              ]}
+              style={[styles.modeButtonText, authMode === 'login' && styles.modeButtonTextActive]}
             >
-              Entrar
+              {t('login.loginTab')}
             </Text>
           </Pressable>
           <Pressable
@@ -122,7 +124,7 @@ export default function LoginScreen() {
                 authMode === 'register' && styles.modeButtonTextActive,
               ]}
             >
-              Crear cuenta
+              {t('login.registerTab')}
             </Text>
           </Pressable>
         </View>
@@ -130,8 +132,8 @@ export default function LoginScreen() {
         <TextInput
           value={email}
           onChangeText={setEmail}
-          placeholder="tu@email.com"
-          placeholderTextColor={APP_COLORS.textMuted}
+          placeholder={t('login.emailPlaceholder')}
+          placeholderTextColor={colors.textMuted}
           keyboardType="email-address"
           autoCapitalize="none"
           style={styles.input}
@@ -140,13 +142,15 @@ export default function LoginScreen() {
           <TextInput
             value={password}
             onChangeText={setPassword}
-            placeholder="Password"
-            placeholderTextColor={APP_COLORS.textMuted}
+            placeholder={t('login.passwordPlaceholder')}
+            placeholderTextColor={colors.textMuted}
             secureTextEntry={!showPassword}
             style={styles.passwordInput}
           />
           <Pressable style={styles.eyeButton} onPress={() => setShowPassword((prev) => !prev)}>
-            <Text style={styles.eyeButtonText}>{showPassword ? 'Ocultar' : 'Ver'}</Text>
+            <Text style={styles.eyeButtonText}>
+              {showPassword ? t('login.passwordHide') : t('login.passwordShow')}
+            </Text>
           </Pressable>
         </View>
 
@@ -154,11 +158,11 @@ export default function LoginScreen() {
           <Text style={styles.primaryButtonText}>
             {isBusy
               ? authMode === 'login'
-                ? 'Conectando...'
-                : 'Creando cuenta...'
+                ? t('login.loadingLogin')
+                : t('login.loadingRegister')
               : authMode === 'login'
-              ? 'Iniciar sesion'
-              : 'Crear cuenta'}
+              ? t('login.submitLogin')
+              : t('login.submitRegister')}
           </Text>
         </Pressable>
       </View>
@@ -166,121 +170,123 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    backgroundColor: APP_COLORS.background,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  container: {
-    flex: 1,
-    backgroundColor: APP_COLORS.background,
-    paddingHorizontal: 20,
-    justifyContent: 'center',
-  },
-  versionBadge: {
-    position: 'absolute',
-    top: 18,
-    alignSelf: 'center',
-    color: APP_COLORS.textMuted,
-    fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: 0.3,
-  },
-  hero: {
-    marginBottom: 28,
-    alignItems: 'center',
-    paddingHorizontal: 18,
-  },
-  title: {
-    color: APP_COLORS.text,
-    fontSize: 38,
-    fontWeight: '800',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  subtitle: {
-    color: APP_COLORS.textMuted,
-    fontSize: 17,
-    lineHeight: 24,
-    textAlign: 'center',
-    maxWidth: 320,
-  },
-  card: {
-    backgroundColor: APP_COLORS.surface,
-    borderRadius: 20,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  modeRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 12,
-  },
-  modeButton: {
-    flex: 1,
-    backgroundColor: APP_COLORS.surfaceAlt,
-    borderRadius: 10,
-    paddingVertical: 10,
-    alignItems: 'center',
-  },
-  modeButtonActive: {
-    backgroundColor: APP_COLORS.text,
-  },
-  modeButtonText: {
-    color: APP_COLORS.text,
-    fontWeight: '700',
-  },
-  modeButtonTextActive: {
-    color: APP_COLORS.accentText,
-  },
-  input: {
-    backgroundColor: APP_COLORS.background,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    color: APP_COLORS.text,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  passwordRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: APP_COLORS.background,
-    borderRadius: 12,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-    overflow: 'hidden',
-  },
-  passwordInput: {
-    flex: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    color: APP_COLORS.text,
-  },
-  eyeButton: {
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  eyeButtonText: {
-    color: APP_COLORS.text,
-    fontWeight: '700',
-    fontSize: 13,
-  },
-  primaryButton: {
-    backgroundColor: APP_COLORS.text,
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  primaryButtonText: {
-    color: APP_COLORS.accentText,
-    fontWeight: '700',
-    fontSize: 16,
-  },
-});
+function createStyles(colors: ReturnType<typeof useAppPreferences>['colors']) {
+  return StyleSheet.create({
+    loadingContainer: {
+      flex: 1,
+      backgroundColor: colors.background,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+      paddingHorizontal: 20,
+      justifyContent: 'center',
+    },
+    versionBadge: {
+      position: 'absolute',
+      top: 18,
+      alignSelf: 'center',
+      color: colors.textMuted,
+      fontSize: 12,
+      fontWeight: '600',
+      letterSpacing: 0.3,
+    },
+    hero: {
+      marginBottom: 28,
+      alignItems: 'center',
+      paddingHorizontal: 18,
+    },
+    title: {
+      color: colors.text,
+      fontSize: 38,
+      fontWeight: '800',
+      marginBottom: 10,
+      textAlign: 'center',
+    },
+    subtitle: {
+      color: colors.textMuted,
+      fontSize: 17,
+      lineHeight: 24,
+      textAlign: 'center',
+      maxWidth: 320,
+    },
+    card: {
+      backgroundColor: colors.surface,
+      borderRadius: 20,
+      padding: 18,
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    modeRow: {
+      flexDirection: 'row',
+      gap: 10,
+      marginBottom: 12,
+    },
+    modeButton: {
+      flex: 1,
+      backgroundColor: colors.surfaceAlt,
+      borderRadius: 10,
+      paddingVertical: 10,
+      alignItems: 'center',
+    },
+    modeButtonActive: {
+      backgroundColor: colors.cream,
+    },
+    modeButtonText: {
+      color: colors.text,
+      fontWeight: '700',
+    },
+    modeButtonTextActive: {
+      color: colors.accentText,
+    },
+    input: {
+      backgroundColor: colors.background,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      color: colors.text,
+      marginBottom: 10,
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    passwordRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.background,
+      borderRadius: 12,
+      marginBottom: 10,
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+      overflow: 'hidden',
+    },
+    passwordInput: {
+      flex: 1,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      color: colors.text,
+    },
+    eyeButton: {
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+    },
+    eyeButtonText: {
+      color: colors.text,
+      fontWeight: '700',
+      fontSize: 13,
+    },
+    primaryButton: {
+      backgroundColor: colors.cream,
+      borderRadius: 12,
+      paddingVertical: 14,
+      alignItems: 'center',
+      marginTop: 4,
+    },
+    primaryButtonText: {
+      color: colors.accentText,
+      fontWeight: '700',
+      fontSize: 16,
+    },
+  });
+}

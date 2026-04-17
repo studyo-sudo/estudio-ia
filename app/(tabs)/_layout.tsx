@@ -1,14 +1,30 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { Redirect, Tabs, useFocusEffect } from 'expo-router';
+import { Redirect, Tabs, useFocusEffect, usePathname } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import AppBottomNav from '../../components/AppBottomNav';
+import { useAppPreferences } from '../../contexts/AppPreferencesContext';
+import { resolvePostAuthRoute } from '../../services/authRouting';
 import { initializePurchases } from '../../services/purchasesService';
 import { getAuthState } from '../../services/authStorage';
-import { APP_COLORS } from '../../constants/theme';
 
 export default function TabLayout() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [redirectTo, setRedirectTo] = useState<
+    '/login' | '/phone-verification' | '/(tabs)' | null
+  >(null);
+  const { colors, t } = useAppPreferences();
+  const pathname = usePathname();
+  const activeTab =
+    pathname.includes('/explore')
+      ? 'history'
+      : pathname.includes('/calendar')
+      ? 'calendar'
+      : pathname.includes('/shop')
+      ? 'shop'
+      : pathname.includes('/account')
+      ? 'account'
+      : 'home';
 
   useEffect(() => {
     initializePurchases();
@@ -16,7 +32,23 @@ export default function TabLayout() {
 
   const checkAuth = useCallback(async () => {
     const auth = await getAuthState();
-    setIsAuthenticated(Boolean(auth.token));
+    if (!auth.token) {
+      setIsAuthenticated(false);
+      setRedirectTo('/login');
+      setIsCheckingAuth(false);
+      return;
+    }
+
+    const route = await resolvePostAuthRoute();
+    if (route !== '/(tabs)') {
+      setIsAuthenticated(true);
+      setRedirectTo(route);
+      setIsCheckingAuth(false);
+      return;
+    }
+
+    setIsAuthenticated(true);
+    setRedirectTo(null);
     setIsCheckingAuth(false);
   }, []);
 
@@ -32,12 +64,12 @@ export default function TabLayout() {
       <View
         style={{
           flex: 1,
-          backgroundColor: APP_COLORS.background,
+          backgroundColor: colors.background,
           alignItems: 'center',
           justifyContent: 'center',
         }}
       >
-        <ActivityIndicator size="large" color={APP_COLORS.text} />
+        <ActivityIndicator size="large" color={colors.text} />
       </View>
     );
   }
@@ -46,57 +78,67 @@ export default function TabLayout() {
     return <Redirect href="/login" />;
   }
 
+  if (redirectTo && redirectTo !== '/(tabs)') {
+    return <Redirect href={redirectTo} />;
+  }
+
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        sceneStyle: {
-          backgroundColor: APP_COLORS.background,
-        },
-        tabBarStyle: {
-          backgroundColor: APP_COLORS.background,
-          borderTopColor: APP_COLORS.creamSoft,
-        },
-        tabBarActiveTintColor: APP_COLORS.text,
-        tabBarInactiveTintColor: APP_COLORS.textMuted,
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Inicio',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'home' : 'home-outline'} size={28} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Historial',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'time' : 'time-outline'} size={28} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="shop"
-        options={{
-          title: 'Tienda',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'cart' : 'cart-outline'} size={28} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="account"
-        options={{
-          title: 'Cuenta',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'person' : 'person-outline'} size={28} color={color} />
-          ),
-        }}
-      />
-    </Tabs>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <View style={styles.tabsArea}>
+        <Tabs
+          screenOptions={{
+            headerShown: false,
+            sceneStyle: {
+              backgroundColor: colors.background,
+            },
+            tabBarStyle: {
+              display: 'none',
+            },
+          }}
+        >
+          <Tabs.Screen
+            name="index"
+            options={{
+              title: t('nav.home'),
+            }}
+          />
+          <Tabs.Screen
+            name="explore"
+            options={{
+              title: t('nav.history'),
+            }}
+          />
+          <Tabs.Screen
+            name="calendar"
+            options={{
+              title: t('nav.calendar'),
+            }}
+          />
+          <Tabs.Screen
+            name="shop"
+            options={{
+              title: t('nav.shop'),
+            }}
+          />
+          <Tabs.Screen
+            name="account"
+            options={{
+              title: t('nav.account'),
+            }}
+          />
+        </Tabs>
+        <View style={styles.footerSpacer} pointerEvents="none" />
+      </View>
+      <AppBottomNav activeTab={activeTab} />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  tabsArea: {
+    flex: 1,
+  },
+  footerSpacer: {
+    height: 64,
+  },
+});

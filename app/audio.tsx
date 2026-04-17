@@ -1,4 +1,4 @@
-import * as DocumentPicker from 'expo-document-picker';
+﻿import * as DocumentPicker from 'expo-document-picker';
 import {
   getRecordingPermissionsAsync,
   RecordingPresets,
@@ -19,7 +19,8 @@ import { createHistoryId, saveHistoryItem } from '../services/historyStorage';
 import { analyzeAudio } from '../services/studyApi';
 import { mapStudyAnalysisToResult } from '../services/studyResultMapper';
 import { useSyncedBilling } from '../hooks/useSyncedBilling';
-import { APP_COLORS } from '../constants/theme';
+import { AppColors } from '../constants/theme';
+import { useAppPreferences } from '../contexts/AppPreferencesContext';
 
 function formatDuration(ms: number) {
   const totalSeconds = Math.floor(ms / 1000);
@@ -43,6 +44,9 @@ export default function AudioScreen() {
   const [recordingName, setRecordingName] = useState('clase-grabada');
   const [recordingSize, setRecordingSize] = useState<number | undefined>(undefined);
   const { billing, refreshBilling } = useSyncedBilling();
+  const { colors, t } = useAppPreferences();
+  const styles = createStyles(colors);
+  const isPremium = billing.plan === 'premium';
 
   useFocusEffect(
     useCallback(() => {
@@ -61,11 +65,8 @@ export default function AudioScreen() {
 
   const handleStartRecording = async () => {
     try {
-      if (billing.plan === 'free' && billing.credits <= 0) {
-        Alert.alert(
-          'Creditos requeridos',
-          'En Free el audio solo se usa con creditos. Compra creditos para analizar grabaciones.'
-        );
+      if (!isPremium) {
+        Alert.alert(t('audio.premiumOnlyTitle'), t('audio.premiumOnlyText'));
         return;
       }
 
@@ -85,18 +86,15 @@ export default function AudioScreen() {
         }
 
         const estimatedCredits = getAudioCreditCost(60000);
+        const consumed = await consumeCredits(estimatedCredits);
 
-        if (billing.plan === 'free') {
-          const consumed = await consumeCredits(estimatedCredits);
-
-          if (!consumed) {
-            await refreshBilling();
-            Alert.alert(
-              'Creditos insuficientes',
-              `Para analizar audio en web necesitas al menos ${estimatedCredits} creditos.`
-            );
-            return;
-          }
+        if (!consumed) {
+          await refreshBilling();
+          Alert.alert(
+            'Creditos insuficientes',
+            `Para analizar audio en web necesitas al menos ${estimatedCredits} creditos.`
+          );
+          return;
         }
 
         setIsProcessing(true);
@@ -157,6 +155,11 @@ export default function AudioScreen() {
 
   const handleStopAndAnalyze = async () => {
     try {
+      if (!isPremium) {
+        Alert.alert(t('audio.premiumOnlyTitle'), t('audio.premiumOnlyText'));
+        return;
+      }
+
       await recorder.stop();
 
       const audioUri = recorder.uri || recorderState.url;
@@ -168,17 +171,15 @@ export default function AudioScreen() {
       const durationMillis = recorderState.durationMillis || 0;
       const neededCredits = getAudioCreditCost(durationMillis);
 
-      if (billing.plan === 'free') {
-        const consumed = await consumeCredits(neededCredits);
+      const consumed = await consumeCredits(neededCredits);
 
-        if (!consumed) {
-          await refreshBilling();
-          Alert.alert(
-            'Creditos insuficientes',
-            `Esta grabacion necesita ${neededCredits} creditos. Compra mas creditos o acorta la duracion.`
-          );
-          return;
-        }
+      if (!consumed) {
+        await refreshBilling();
+        Alert.alert(
+          'Creditos insuficientes',
+          `Esta grabacion necesita ${neededCredits} creditos. Compra mas creditos o acorta la duracion.`
+        );
+        return;
       }
 
       setIsProcessing(true);
@@ -346,22 +347,23 @@ export default function AudioScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function createStyles(colors: AppColors) {
+  return StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: APP_COLORS.background,
+    backgroundColor: colors.background,
   },
   container: {
     flex: 1,
-    backgroundColor: APP_COLORS.background,
+    backgroundColor: colors.background,
   },
-    content: {
+  content: {
       paddingHorizontal: 20,
       paddingTop: 24,
-        paddingBottom: 280,
+        paddingBottom: 160,
       },
   title: {
-    color: APP_COLORS.text,
+    color: colors.text,
     fontSize: 34,
     fontWeight: 'bold',
     marginBottom: 10,
@@ -369,7 +371,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   subtitle: {
-    color: APP_COLORS.textMuted,
+    color: colors.textMuted,
     fontSize: 17,
     lineHeight: 24,
     marginBottom: 18,
@@ -377,104 +379,105 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   noticeCard: {
-    backgroundColor: APP_COLORS.surface,
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
+    borderColor: colors.creamSoft,
   },
   noticeTitle: {
-    color: APP_COLORS.text,
+    color: colors.text,
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 8,
   },
   noticeText: {
-    color: APP_COLORS.textMuted,
+    color: colors.textMuted,
     fontSize: 14,
     lineHeight: 22,
   },
   card: {
-    backgroundColor: APP_COLORS.surface,
+    backgroundColor: colors.surface,
     borderRadius: 18,
     padding: 20,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
+    borderColor: colors.creamSoft,
   },
   label: {
-    color: APP_COLORS.textMuted,
+    color: colors.textMuted,
     fontSize: 13,
     marginBottom: 6,
   },
   value: {
-    color: APP_COLORS.text,
+    color: colors.text,
     fontSize: 18,
     fontWeight: '700',
     marginBottom: 16,
   },
   timer: {
-    color: APP_COLORS.text,
+    color: colors.text,
     fontSize: 34,
     fontWeight: '800',
   },
   primaryButton: {
-    backgroundColor: APP_COLORS.text,
+    backgroundColor: colors.cream,
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
     marginBottom: 12,
   },
   primaryButtonText: {
-    color: APP_COLORS.accentText,
+    color: colors.accentText,
     fontSize: 16,
     fontWeight: '700',
   },
   stopButton: {
-    backgroundColor: APP_COLORS.surfaceAlt,
+    backgroundColor: colors.surfaceAlt,
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
+    borderColor: colors.creamSoft,
   },
   stopButtonText: {
-    color: APP_COLORS.text,
+    color: colors.text,
     fontSize: 16,
     fontWeight: '700',
   },
   secondaryButton: {
-    backgroundColor: APP_COLORS.surface,
+    backgroundColor: colors.surface,
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
+    borderColor: colors.creamSoft,
   },
   secondaryButtonText: {
-    color: APP_COLORS.text,
+    color: colors.text,
     fontSize: 16,
     fontWeight: '700',
   },
   tipCard: {
-    backgroundColor: APP_COLORS.surface,
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 18,
     borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
+    borderColor: colors.creamSoft,
   },
   tipTitle: {
-    color: APP_COLORS.text,
+    color: colors.text,
     fontSize: 16,
     fontWeight: '700',
     marginBottom: 8,
   },
   tipText: {
-    color: APP_COLORS.textMuted,
+    color: colors.textMuted,
     fontSize: 14,
     lineHeight: 22,
   },
 });
+}

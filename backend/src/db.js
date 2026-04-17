@@ -41,6 +41,21 @@ async function initializeDatabase() {
   `);
 
   await client.query(`
+    ALTER TABLE auth_users
+    ADD COLUMN IF NOT EXISTS phone_number TEXT
+  `);
+
+  await client.query(`
+    ALTER TABLE auth_users
+    ADD COLUMN IF NOT EXISTS phone_verified_at BIGINT
+  `);
+
+  await client.query(`
+    CREATE UNIQUE INDEX IF NOT EXISTS auth_users_phone_number_unique
+    ON auth_users (phone_number)
+  `);
+
+  await client.query(`
     CREATE TABLE IF NOT EXISTS user_state (
       email TEXT PRIMARY KEY,
       history JSONB NOT NULL DEFAULT '[]'::jsonb,

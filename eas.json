@@ -17,6 +17,7 @@
         "EXPO_PUBLIC_RC_OFFERING_ID": "default",
         "EXPO_PUBLIC_RC_ANDROID_PRODUCT_ID": "studyo_ai_premium",
         "EXPO_PUBLIC_RC_CREDITS_OFFERING_ID": "default",
+        "EXPO_PUBLIC_RC_CREDITS_STARTER_PRODUCT_ID": "studyo_ai_credits_starter",
         "EXPO_PUBLIC_RC_CREDITS_BASIC_PRODUCT_ID": "studyo_ai_credits_basic",
         "EXPO_PUBLIC_RC_CREDITS_MEDIUM_PRODUCT_ID": "studyo_ai_credits_medium",
         "EXPO_PUBLIC_RC_CREDITS_LARGE_PRODUCT_ID": "studyo_ai_credits_large"
@@ -31,6 +32,7 @@
         "EXPO_PUBLIC_RC_OFFERING_ID": "default",
         "EXPO_PUBLIC_RC_ANDROID_PRODUCT_ID": "studyo_ai_premium",
         "EXPO_PUBLIC_RC_CREDITS_OFFERING_ID": "default",
+        "EXPO_PUBLIC_RC_CREDITS_STARTER_PRODUCT_ID": "studyo_ai_credits_starter",
         "EXPO_PUBLIC_RC_CREDITS_BASIC_PRODUCT_ID": "studyo_ai_credits_basic",
         "EXPO_PUBLIC_RC_CREDITS_MEDIUM_PRODUCT_ID": "studyo_ai_credits_medium",
         "EXPO_PUBLIC_RC_CREDITS_LARGE_PRODUCT_ID": "studyo_ai_credits_large"

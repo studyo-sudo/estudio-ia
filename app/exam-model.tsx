@@ -1,18 +1,10 @@
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import {
-  Alert,
-  Image,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Alert, Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AppBottomNav from '../components/AppBottomNav';
 import ProcessingScreen from '../components/ProcessingScreen';
+import { useAppPreferences } from '../contexts/AppPreferencesContext';
 import { createHistoryId, saveHistoryItem } from '../services/historyStorage';
 import { analyzeExamModel } from '../services/studyApi';
 import {
@@ -20,7 +12,6 @@ import {
   registerExamModelFreeUse,
 } from '../services/usageLimitsStorage';
 import { useSyncedBilling } from '../hooks/useSyncedBilling';
-import { APP_COLORS } from '../constants/theme';
 
 type SelectedExamImage = {
   uri: string;
@@ -46,10 +37,13 @@ type ExamModelResult = {
 };
 
 export default function ExamModelScreen() {
+  const { colors, t, locale } = useAppPreferences();
   const [images, setImages] = useState<SelectedExamImage[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState<ExamModelResult | null>(null);
   const { billing, refreshBilling } = useSyncedBilling();
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   useFocusEffect(
     useCallback(() => {
@@ -89,7 +83,7 @@ export default function ExamModelScreen() {
       });
     } catch (error) {
       console.error('Error eligiendo examenes:', error);
-      Alert.alert('Error', 'No se pudieron seleccionar las imagenes.');
+      Alert.alert('Error', 'No se pudieron seleccionar las imágenes.');
     }
   };
 
@@ -100,7 +94,7 @@ export default function ExamModelScreen() {
   const handleGenerate = async () => {
     try {
       if (images.length === 0) {
-        Alert.alert('Faltan examenes', 'Sube al menos una imagen de examen.');
+        Alert.alert('Faltan exámenes', 'Sube al menos una imagen de examen.');
         return;
       }
 
@@ -109,8 +103,8 @@ export default function ExamModelScreen() {
 
         if (!allowed) {
           Alert.alert(
-            'Limite alcanzado',
-            'En Free puedes generar 1 modelo de examen por semana. Premium te da una experiencia mucho mas amplia.'
+            'Límite alcanzado',
+            'En Free puedes generar 1 modelo de examen por semana. Premium te da una experiencia mucho más amplia.'
           );
           return;
         }
@@ -147,7 +141,7 @@ export default function ExamModelScreen() {
         !data.generatedExam ||
         !Array.isArray(data.generatedExam.questions)
       ) {
-        throw new Error('El backend no devolvio un modelo de examen valido.');
+        throw new Error('El backend no devolvió un modelo de examen válido.');
       }
 
       if (billing.plan === 'free') {
@@ -212,46 +206,44 @@ export default function ExamModelScreen() {
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
-        <Text style={styles.title}>Modelo de examen</Text>
-        <Text style={styles.subtitle}>
-          Analizamos tus examenes y generamos uno nuevo con estilo similar.
-        </Text>
+          <Text style={styles.title}>{t('examModel.titleResult')}</Text>
+          <Text style={styles.subtitle}>{t('examModel.subtitleResult')}</Text>
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Temas detectados</Text>
-          {result.detectedTopics.map((topic, index) => (
-            <View key={index} style={styles.topicChip}>
-              <Text style={styles.topicChipText}>{topic}</Text>
-            </View>
-          ))}
-        </View>
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>{t('examModel.topics')}</Text>
+            {result.detectedTopics.map((topic, index) => (
+              <View key={index} style={styles.topicChip}>
+                <Text style={styles.topicChipText}>{topic}</Text>
+              </View>
+            ))}
+          </View>
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Estilo detectado</Text>
-          <Text style={styles.bodyText}>{result.examStyle}</Text>
-        </View>
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>{t('examModel.style')}</Text>
+            <Text style={styles.bodyText}>{result.examStyle}</Text>
+          </View>
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Preguntas estimadas</Text>
-          <Text style={styles.bigNumber}>{result.estimatedQuestions}</Text>
-          <Text style={styles.bodyText}>
-            El examen generado intenta respetar la escala y el patron de los examenes subidos.
-          </Text>
-        </View>
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>{t('examModel.estimated')}</Text>
+            <Text style={styles.bigNumber}>{result.estimatedQuestions}</Text>
+            <Text style={styles.bodyText}>
+              El examen generado intenta respetar la escala y el patrón de los exámenes subidos.
+            </Text>
+          </View>
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Examen generado</Text>
-          <Text style={styles.bodyText}>
-            Se generaron {result.generatedExam.questions.length} preguntas nuevas.
-          </Text>
-        </View>
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>{t('examModel.generated')}</Text>
+            <Text style={styles.bodyText}>
+              {t('examModel.savedCount', { count: result.generatedExam.questions.length })}
+            </Text>
+          </View>
 
-        <Pressable style={styles.primaryButton} onPress={handleOpenGeneratedExam}>
-          <Text style={styles.primaryButtonText}>Abrir examen generado</Text>
-        </Pressable>
+          <Pressable style={styles.primaryButton} onPress={handleOpenGeneratedExam}>
+            <Text style={styles.primaryButtonText}>{t('examModel.openGenerated')}</Text>
+          </Pressable>
 
           <Pressable style={styles.secondaryButton} onPress={handleBack}>
-            <Text style={styles.secondaryButtonText}>Volver</Text>
+            <Text style={styles.secondaryButtonText}>{t('common.back')}</Text>
           </Pressable>
         </ScrollView>
 
@@ -267,61 +259,56 @@ export default function ExamModelScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-      <Text style={styles.title}>Subir examenes</Text>
-      <Text style={styles.subtitle}>
-        Sube fotos de examenes anteriores y vamos a generar uno nuevo con estilo similar.
-      </Text>
+        <Text style={styles.title}>{t('examModel.title')}</Text>
+        <Text style={styles.subtitle}>{t('examModel.subtitle')}</Text>
 
-      <View style={styles.noticeCard}>
-        <Text style={styles.noticeTitle}>
-          {billing.plan === 'premium' ? 'Premium' : 'Plan Free'}
-        </Text>
-        <Text style={styles.noticeText}>
-          {billing.plan === 'premium'
-            ? 'Puedes subir hasta 10 imagenes por modelo.'
-            : 'En Free puedes subir hasta 2 imagenes y generar 1 modelo por semana.'}
-        </Text>
-      </View>
+        <View style={styles.noticeCard}>
+          <Text style={styles.noticeTitle}>
+            {billing.plan === 'premium' ? t('examModel.noticeTitlePremium') : t('examModel.noticeTitleFree')}
+          </Text>
+          <Text style={styles.noticeText}>
+            {billing.plan === 'premium'
+              ? t('examModel.noticePremium')
+              : t('examModel.noticeFree')}
+          </Text>
+        </View>
 
-      <Pressable style={styles.primaryButton} onPress={addImagesFromLibrary}>
-        <Text style={styles.primaryButtonText}>Agregar examenes</Text>
-      </Pressable>
+        <Pressable style={styles.primaryButton} onPress={addImagesFromLibrary}>
+          <Text style={styles.primaryButtonText}>{t('examModel.addImages')}</Text>
+        </Pressable>
 
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Examenes cargados</Text>
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>{t('examModel.loadedTitle')}</Text>
 
-        {images.length === 0 ? (
-          <Text style={styles.bodyText}>Todavia no cargaste imagenes.</Text>
-        ) : (
-          <View style={styles.previewGrid}>
-            {images.map((image, index) => (
-              <View key={`${image.uri}-${index}`} style={styles.previewItem}>
-                <Image source={{ uri: image.uri }} style={styles.previewImage} />
-                <Text style={styles.previewLabel} numberOfLines={1}>
-                  {image.name}
-                </Text>
-                <Pressable
-                  style={styles.removeButton}
-                  onPress={() => removeImage(index)}
-                >
-                  <Text style={styles.removeButtonText}>Quitar</Text>
-                </Pressable>
-              </View>
-            ))}
-          </View>
-        )}
-      </View>
+          {images.length === 0 ? (
+            <Text style={styles.bodyText}>{t('examModel.noImages')}</Text>
+          ) : (
+            <View style={styles.previewGrid}>
+              {images.map((image, index) => (
+                <View key={`${image.uri}-${index}`} style={styles.previewItem}>
+                  <Image source={{ uri: image.uri }} style={styles.previewImage} />
+                  <Text style={styles.previewLabel} numberOfLines={1}>
+                    {image.name}
+                  </Text>
+                  <Pressable style={styles.removeButton} onPress={() => removeImage(index)}>
+                    <Text style={styles.removeButtonText}>{t('examModel.remove')}</Text>
+                  </Pressable>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
 
-      <Pressable
-        style={[styles.generateButton, !canGenerate && styles.disabledButton]}
-        onPress={handleGenerate}
-        disabled={!canGenerate}
-      >
-        <Text style={styles.generateButtonText}>Generar modelo de examen</Text>
-      </Pressable>
+        <Pressable
+          style={[styles.generateButton, !canGenerate && styles.disabledButton]}
+          onPress={handleGenerate}
+          disabled={!canGenerate}
+        >
+          <Text style={styles.generateButtonText}>{t('examModel.generate')}</Text>
+        </Pressable>
 
         <Pressable style={styles.secondaryButton} onPress={handleBack}>
-          <Text style={styles.secondaryButtonText}>Volver</Text>
+          <Text style={styles.secondaryButtonText}>{t('common.back')}</Text>
         </Pressable>
       </ScrollView>
 
@@ -330,169 +317,167 @@ export default function ExamModelScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: APP_COLORS.background,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: APP_COLORS.background,
-  },
+function createStyles(colors: ReturnType<typeof useAppPreferences>['colors']) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
     content: {
       paddingHorizontal: 20,
       paddingTop: 24,
-      paddingBottom: 280,
+      paddingBottom: 160,
     },
-  title: {
-    color: APP_COLORS.text,
-    fontSize: 34,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
-    width: '100%',
-  },
-  subtitle: {
-    color: APP_COLORS.textMuted,
-    fontSize: 17,
-    lineHeight: 24,
-    marginBottom: 18,
-    textAlign: 'center',
-    width: '100%',
-  },
-  noticeCard: {
-    backgroundColor: APP_COLORS.surface,
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  noticeTitle: {
-    color: APP_COLORS.text,
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 8,
-  },
-  noticeText: {
-    color: APP_COLORS.textMuted,
-    fontSize: 14,
-    lineHeight: 22,
-  },
-  card: {
-    backgroundColor: APP_COLORS.surface,
-    borderRadius: 18,
-    padding: 20,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  sectionTitle: {
-    color: APP_COLORS.text,
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 12,
-  },
-  bodyText: {
-    color: APP_COLORS.textMuted,
-    fontSize: 15,
-    lineHeight: 24,
-  },
-  previewGrid: {
-    gap: 14,
-  },
-  previewItem: {
-    backgroundColor: APP_COLORS.background,
-    borderRadius: 14,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  previewImage: {
-    width: '100%',
-    height: 180,
-    borderRadius: 12,
-    marginBottom: 10,
-    resizeMode: 'cover',
-  },
-  previewLabel: {
-    color: APP_COLORS.text,
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 10,
-  },
-  removeButton: {
-    backgroundColor: APP_COLORS.surfaceAlt,
-    borderRadius: 10,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  removeButtonText: {
-    color: 'white',
-    fontWeight: '700',
-  },
-  topicChip: {
-    backgroundColor: APP_COLORS.background,
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  topicChipText: {
-    color: APP_COLORS.text,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  bigNumber: {
-    color: APP_COLORS.text,
-    fontSize: 38,
-    fontWeight: '800',
-    marginBottom: 10,
-  },
-  primaryButton: {
-    backgroundColor: APP_COLORS.text,
-    borderRadius: 14,
-    paddingVertical: 15,
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  primaryButtonText: {
-    color: APP_COLORS.accentText,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  generateButton: {
-    backgroundColor: APP_COLORS.surfaceAlt,
-    borderRadius: 14,
-    paddingVertical: 15,
-    alignItems: 'center',
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  generateButtonText: {
-    color: APP_COLORS.text,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  disabledButton: {
-    opacity: 0.45,
-  },
-  secondaryButton: {
-    backgroundColor: APP_COLORS.surface,
-    borderRadius: 14,
-    paddingVertical: 15,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  secondaryButtonText: {
-    color: APP_COLORS.text,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-});
+    title: {
+      color: colors.text,
+      fontSize: 34,
+      fontWeight: 'bold',
+      marginBottom: 10,
+      textAlign: 'center',
+      width: '100%',
+    },
+    subtitle: {
+      color: colors.textMuted,
+      fontSize: 17,
+      lineHeight: 24,
+      marginBottom: 18,
+      textAlign: 'center',
+      width: '100%',
+    },
+    noticeCard: {
+      backgroundColor: colors.surface,
+      borderRadius: 16,
+      padding: 16,
+      marginBottom: 16,
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    noticeTitle: {
+      color: colors.text,
+      fontSize: 16,
+      fontWeight: '700',
+      marginBottom: 8,
+    },
+    noticeText: {
+      color: colors.textMuted,
+      fontSize: 14,
+      lineHeight: 22,
+    },
+    card: {
+      backgroundColor: colors.surface,
+      borderRadius: 18,
+      padding: 20,
+      marginBottom: 16,
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    sectionTitle: {
+      color: colors.text,
+      fontSize: 20,
+      fontWeight: '700',
+      marginBottom: 12,
+    },
+    bodyText: {
+      color: colors.textMuted,
+      fontSize: 15,
+      lineHeight: 24,
+    },
+    previewGrid: {
+      gap: 14,
+    },
+    previewItem: {
+      backgroundColor: colors.background,
+      borderRadius: 14,
+      padding: 12,
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    previewImage: {
+      width: '100%',
+      height: 180,
+      borderRadius: 12,
+      marginBottom: 10,
+      resizeMode: 'cover',
+    },
+    previewLabel: {
+      color: colors.text,
+      fontSize: 14,
+      fontWeight: '600',
+      marginBottom: 10,
+    },
+    removeButton: {
+      backgroundColor: '#7f1d1d',
+      borderRadius: 10,
+      paddingVertical: 10,
+      alignItems: 'center',
+    },
+    removeButtonText: {
+      color: '#fee2e2',
+      fontWeight: '700',
+    },
+    topicChip: {
+      backgroundColor: colors.background,
+      borderRadius: 12,
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+      marginBottom: 10,
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    topicChipText: {
+      color: colors.text,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    bigNumber: {
+      color: colors.text,
+      fontSize: 38,
+      fontWeight: '800',
+      marginBottom: 10,
+    },
+    primaryButton: {
+      backgroundColor: colors.cream,
+      borderRadius: 14,
+      paddingVertical: 15,
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    primaryButtonText: {
+      color: colors.accentText,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+    generateButton: {
+      backgroundColor: colors.cream,
+      borderRadius: 14,
+      paddingVertical: 15,
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    generateButtonText: {
+      color: colors.accentText,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+    disabledButton: {
+      opacity: 0.45,
+    },
+    secondaryButton: {
+      backgroundColor: colors.surface,
+      borderRadius: 14,
+      paddingVertical: 15,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    secondaryButtonText: {
+      color: colors.text,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+  });
+}

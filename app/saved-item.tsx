@@ -1,21 +1,23 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AppBottomNav from '../components/AppBottomNav';
 import PdfResultScreen from '../components/PdfResultScreen';
+import { useAppPreferences } from '../contexts/AppPreferencesContext';
 import { getHistoryItemById, HistoryItem } from '../services/historyStorage';
-import { APP_COLORS } from '../constants/theme';
 
 export default function SavedItemScreen() {
+  const { colors, t } = useAppPreferences();
   const params = useLocalSearchParams<{ id?: string }>();
   const [item, setItem] = useState<HistoryItem | null>(null);
   const [loading, setLoading] = useState(true);
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   useEffect(() => {
     const load = async () => {
       try {
         if (!params.id || typeof params.id !== 'string') {
-          Alert.alert('Error', 'No se encontró el elemento guardado.');
+          Alert.alert('Error', t('saved.notFoundAlert'));
           router.back();
           return;
         }
@@ -23,7 +25,7 @@ export default function SavedItemScreen() {
         const found = await getHistoryItemById(params.id);
 
         if (!found) {
-          Alert.alert('Error', 'Este elemento ya no existe en el historial.');
+          Alert.alert('Error', t('saved.missing'));
           router.back();
           return;
         }
@@ -35,12 +37,12 @@ export default function SavedItemScreen() {
     };
 
     void load();
-  }, [params.id]);
+  }, [params.id, t]);
 
   if (loading) {
     return (
       <View style={styles.centered}>
-        <Text style={styles.loadingText}>Cargando...</Text>
+        <Text style={styles.loadingText}>{t('saved.loading')}</Text>
       </View>
     );
   }
@@ -48,7 +50,7 @@ export default function SavedItemScreen() {
   if (!item) {
     return (
       <View style={styles.centered}>
-        <Text style={styles.loadingText}>No se encontró el elemento.</Text>
+        <Text style={styles.loadingText}>{t('saved.notFound')}</Text>
       </View>
     );
   }
@@ -79,43 +81,43 @@ export default function SavedItemScreen() {
   return (
     <View style={styles.screen}>
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>{item.title}</Text>
-      <Text style={styles.subtitle}>
-        Guardado el {new Date(item.createdAt).toLocaleString()}
-      </Text>
-
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Temas detectados</Text>
-        {payload.detectedTopics.map((topic, index) => (
-          <View key={index} style={styles.topicChip}>
-            <Text style={styles.topicChipText}>{topic}</Text>
-          </View>
-        ))}
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Estilo detectado</Text>
-        <Text style={styles.bodyText}>{payload.examStyle}</Text>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Preguntas estimadas</Text>
-        <Text style={styles.bigNumber}>{payload.estimatedQuestions}</Text>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Examen generado</Text>
-        <Text style={styles.bodyText}>
-          Este modelo guardado contiene {payload.questions.length} preguntas.
+        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.subtitle}>
+          Guardado el {new Date(item.createdAt).toLocaleString()}
         </Text>
-      </View>
 
-      <Pressable style={styles.primaryButton} onPress={openGeneratedExam}>
-        <Text style={styles.primaryButtonText}>Abrir examen generado</Text>
-      </Pressable>
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>{t('saved.examTopics')}</Text>
+          {payload.detectedTopics.map((topic, index) => (
+            <View key={index} style={styles.topicChip}>
+              <Text style={styles.topicChipText}>{topic}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>{t('saved.examStyle')}</Text>
+          <Text style={styles.bodyText}>{payload.examStyle}</Text>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>{t('saved.examEstimate')}</Text>
+          <Text style={styles.bigNumber}>{payload.estimatedQuestions}</Text>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>{t('saved.examGenerated')}</Text>
+          <Text style={styles.bodyText}>
+            Este modelo guardado contiene {payload.questions.length} preguntas.
+          </Text>
+        </View>
+
+        <Pressable style={styles.primaryButton} onPress={openGeneratedExam}>
+          <Text style={styles.primaryButtonText}>{t('saved.openExam')}</Text>
+        </Pressable>
 
         <Pressable style={styles.secondaryButton} onPress={() => router.back()}>
-          <Text style={styles.secondaryButtonText}>Volver</Text>
+          <Text style={styles.secondaryButtonText}>{t('saved.back')}</Text>
         </Pressable>
       </ScrollView>
 
@@ -124,108 +126,110 @@ export default function SavedItemScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: APP_COLORS.background,
-  },
-  centered: {
-    flex: 1,
-    backgroundColor: APP_COLORS.background,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  loadingText: {
-    color: APP_COLORS.text,
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  container: {
-    flex: 1,
-    backgroundColor: APP_COLORS.background,
-    paddingHorizontal: 20,
-    paddingTop: 24,
-  },
-    content: {
-      paddingBottom: 280,
+function createStyles(colors: ReturnType<typeof useAppPreferences>['colors']) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.background,
     },
-  title: {
-    color: APP_COLORS.text,
-    fontSize: 30,
-    fontWeight: '800',
-    marginBottom: 8,
-    textAlign: 'center',
-    width: '100%',
-  },
-  subtitle: {
-    color: APP_COLORS.textMuted,
-    fontSize: 14,
-    marginBottom: 18,
-    textAlign: 'center',
-    width: '100%',
-  },
-  card: {
-    backgroundColor: APP_COLORS.surface,
-    borderRadius: 18,
-    padding: 20,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  sectionTitle: {
-    color: APP_COLORS.text,
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 12,
-  },
-  bodyText: {
-    color: APP_COLORS.textMuted,
-    fontSize: 15,
-    lineHeight: 24,
-  },
-  topicChip: {
-    backgroundColor: APP_COLORS.background,
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  topicChipText: {
-    color: APP_COLORS.text,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  bigNumber: {
-    color: APP_COLORS.text,
-    fontSize: 38,
-    fontWeight: '800',
-  },
-  primaryButton: {
-    backgroundColor: APP_COLORS.text,
-    borderRadius: 14,
-    paddingVertical: 15,
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  primaryButtonText: {
-    color: APP_COLORS.accentText,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  secondaryButton: {
-    backgroundColor: APP_COLORS.surface,
-    borderRadius: 14,
-    paddingVertical: 15,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  secondaryButtonText: {
-    color: APP_COLORS.text,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-});
+    centered: {
+      flex: 1,
+      backgroundColor: colors.background,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 24,
+    },
+    loadingText: {
+      color: colors.text,
+      fontSize: 18,
+      fontWeight: '600',
+    },
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+      paddingHorizontal: 20,
+      paddingTop: 24,
+    },
+    content: {
+      paddingBottom: 160,
+    },
+    title: {
+      color: colors.text,
+      fontSize: 30,
+      fontWeight: '800',
+      marginBottom: 8,
+      textAlign: 'center',
+      width: '100%',
+    },
+    subtitle: {
+      color: colors.textMuted,
+      fontSize: 14,
+      marginBottom: 18,
+      textAlign: 'center',
+      width: '100%',
+    },
+    card: {
+      backgroundColor: colors.surface,
+      borderRadius: 18,
+      padding: 20,
+      marginBottom: 16,
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    sectionTitle: {
+      color: colors.text,
+      fontSize: 20,
+      fontWeight: '700',
+      marginBottom: 12,
+    },
+    bodyText: {
+      color: colors.textMuted,
+      fontSize: 15,
+      lineHeight: 24,
+    },
+    topicChip: {
+      backgroundColor: colors.background,
+      borderRadius: 12,
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+      marginBottom: 10,
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    topicChipText: {
+      color: colors.text,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    bigNumber: {
+      color: colors.text,
+      fontSize: 38,
+      fontWeight: '800',
+    },
+    primaryButton: {
+      backgroundColor: colors.cream,
+      borderRadius: 14,
+      paddingVertical: 15,
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    primaryButtonText: {
+      color: colors.accentText,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+    secondaryButton: {
+      backgroundColor: colors.surface,
+      borderRadius: 14,
+      paddingVertical: 15,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    secondaryButtonText: {
+      color: colors.text,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+  });
+}

@@ -2,12 +2,12 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import { EncodingType, readAsStringAsync } from 'expo-file-system/legacy';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import AppBottomNav from '../components/AppBottomNav';
 import PdfResultScreen from '../components/PdfResultScreen';
 import ProcessingScreen from '../components/ProcessingScreen';
-import { APP_COLORS } from '../constants/theme';
+import { useAppPreferences } from '../contexts/AppPreferencesContext';
 import { PdfResultData } from '../data/mockPdfResults';
 import { createHistoryId, saveHistoryItem } from '../services/historyStorage';
 import { analyzeFile, analyzeImage, analyzeInlineFile } from '../services/studyApi';
@@ -29,10 +29,13 @@ type SelectedSource = {
 type ProcessingType = 'archivo' | 'imagen' | 'audio' | 'examen';
 
 export default function FileScreen() {
+  const { colors, t } = useAppPreferences();
   const [selectedSource, setSelectedSource] = useState<SelectedSource | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingType, setProcessingType] = useState<ProcessingType>('archivo');
   const [result, setResult] = useState<PdfResultData | null>(null);
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const handleFilePress = async () => {
     try {
@@ -40,8 +43,8 @@ export default function FileScreen() {
 
       if (!allowed) {
         Alert.alert(
-          'Limite alcanzado',
-          'En Free puedes procesar hasta 3 archivos por semana. Hazte Premium para seguir sin limites molestos.'
+          'Límite alcanzado',
+          'En Free puedes procesar hasta 3 archivos por semana. Hazte Premium para seguir sin límites molestos.'
         );
         return;
       }
@@ -73,7 +76,7 @@ export default function FileScreen() {
         const webFile = (file as { file?: File }).file;
 
         if (!webFile) {
-          throw new Error('En web no se encontro el archivo real para subir.');
+          throw new Error('En web no se encontró el archivo real para subir.');
         }
 
         formData.append('file', webFile);
@@ -134,7 +137,7 @@ export default function FileScreen() {
       const webFile = (asset as { file?: File }).file;
 
       if (!webFile) {
-        throw new Error('En web no se encontro el archivo real de la imagen.');
+        throw new Error('En web no se encontró el archivo real de la imagen.');
       }
 
       formData.append('image', webFile);
@@ -189,8 +192,8 @@ export default function FileScreen() {
 
       if (!allowed) {
         Alert.alert(
-          'Limite alcanzado',
-          'En Free puedes procesar hasta 3 imagenes por semana. Hazte Premium para seguir.'
+          'Límite alcanzado',
+          'En Free puedes procesar hasta 3 imágenes por semana. Hazte Premium para seguir.'
         );
         return;
       }
@@ -218,8 +221,8 @@ export default function FileScreen() {
 
       if (!allowed) {
         Alert.alert(
-          'Limite alcanzado',
-          'En Free puedes procesar hasta 3 imagenes por semana. Hazte Premium para seguir.'
+          'Límite alcanzado',
+          'En Free puedes procesar hasta 3 imágenes por semana. Hazte Premium para seguir.'
         );
         return;
       }
@@ -227,7 +230,7 @@ export default function FileScreen() {
       const permission = await ImagePicker.requestCameraPermissionsAsync();
 
       if (!permission.granted) {
-        Alert.alert('Permiso requerido', 'Necesitas dar permiso de camara para sacar una foto.');
+        Alert.alert('Permiso requerido', 'Necesitas dar permiso de cámara para sacar una foto.');
         return;
       }
 
@@ -254,21 +257,21 @@ export default function FileScreen() {
       return;
     }
 
-    Alert.alert('Imagen', 'Elige como quieres analizar la imagen', [
+    Alert.alert('Imagen', 'Elige cómo quieres analizar la imagen', [
       {
-        text: 'Camara',
+        text: 'Cámara',
         onPress: () => {
           void openCamera();
         },
       },
       {
-        text: 'Galeria',
+        text: 'Galería',
         onPress: () => {
           void openImageLibrary();
         },
       },
       {
-        text: 'Cancelar',
+        text: t('common.cancel'),
         style: 'cancel',
       },
     ]);
@@ -308,35 +311,26 @@ export default function FileScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.title}>Archivo</Text>
-        <Text style={styles.subtitle}>
-          Elige como quieres cargar tu material: texto, PDF, imagenes o audio.
-        </Text>
+        <Text style={styles.title}>{t('file.title')}</Text>
+        <Text style={styles.subtitle}>{t('file.subtitle')}</Text>
 
         <View style={styles.cardContainer}>
           <Pressable style={styles.card} onPress={handleFilePress}>
-            <Text style={styles.cardEmoji}>Texto y PDF</Text>
-            <Text style={styles.cardTitle}>Subir archivo</Text>
-            <Text style={styles.cardText}>
-              Soporta PDF y varios formatos de texto para generar resumen, preguntas,
-              flashcards y examen.
-            </Text>
+            <Text style={styles.cardEmoji}>{t('file.source.file')}</Text>
+            <Text style={styles.cardTitle}>{t('file.fileTitle')}</Text>
+            <Text style={styles.cardText}>{t('file.fileText')}</Text>
           </Pressable>
 
           <Pressable style={styles.card} onPress={handleImagePress}>
-            <Text style={styles.cardEmoji}>Imagen</Text>
-            <Text style={styles.cardTitle}>Subir imagen</Text>
-            <Text style={styles.cardText}>
-              Analiza apuntes, diapositivas, pizarrones o capturas con texto.
-            </Text>
+            <Text style={styles.cardEmoji}>{t('file.source.image')}</Text>
+            <Text style={styles.cardTitle}>{t('file.imageTitle')}</Text>
+            <Text style={styles.cardText}>{t('file.imageText')}</Text>
           </Pressable>
 
           <Pressable style={styles.card} onPress={handleAudioPress}>
-            <Text style={styles.cardEmoji}>Audio</Text>
-            <Text style={styles.cardTitle}>Grabar o subir audio</Text>
-            <Text style={styles.cardText}>
-              Transcribe clases o audios y conviertelos en material de estudio.
-            </Text>
+            <Text style={styles.cardEmoji}>{t('file.source.audio')}</Text>
+            <Text style={styles.cardTitle}>{t('file.audioTitle')}</Text>
+            <Text style={styles.cardText}>{t('file.audioText')}</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -346,61 +340,63 @@ export default function FileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: APP_COLORS.background,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: APP_COLORS.background,
-  },
-  content: {
+function createStyles(colors: ReturnType<typeof useAppPreferences>['colors']) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    content: {
       paddingHorizontal: 20,
       paddingTop: 24,
-      paddingBottom: 280,
+      paddingBottom: 160,
     },
-  title: {
-    color: APP_COLORS.text,
-    fontSize: 34,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
-    width: '100%',
-  },
-  subtitle: {
-    color: APP_COLORS.textMuted,
-    fontSize: 17,
-    lineHeight: 24,
-    marginBottom: 24,
-    textAlign: 'center',
-    width: '100%',
-  },
-  cardContainer: {
-    gap: 16,
-  },
-  card: {
-    backgroundColor: APP_COLORS.surface,
-    borderRadius: 18,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  cardEmoji: {
-    color: APP_COLORS.text,
-    fontSize: 18,
-    fontWeight: '800',
-    marginBottom: 10,
-  },
-  cardTitle: {
-    color: APP_COLORS.text,
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  cardText: {
-    color: APP_COLORS.textMuted,
-    fontSize: 15,
-    lineHeight: 22,
-  },
-});
+    title: {
+      color: colors.text,
+      fontSize: 34,
+      fontWeight: 'bold',
+      marginBottom: 10,
+      textAlign: 'center',
+      width: '100%',
+    },
+    subtitle: {
+      color: colors.textMuted,
+      fontSize: 17,
+      lineHeight: 24,
+      marginBottom: 24,
+      textAlign: 'center',
+      width: '100%',
+    },
+    cardContainer: {
+      gap: 16,
+    },
+    card: {
+      backgroundColor: colors.surface,
+      borderRadius: 18,
+      padding: 20,
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    cardEmoji: {
+      color: colors.text,
+      fontSize: 18,
+      fontWeight: '800',
+      marginBottom: 10,
+    },
+    cardTitle: {
+      color: colors.text,
+      fontSize: 20,
+      fontWeight: 'bold',
+      marginBottom: 8,
+    },
+    cardText: {
+      color: colors.textMuted,
+      fontSize: 15,
+      lineHeight: 22,
+    },
+  });
+}

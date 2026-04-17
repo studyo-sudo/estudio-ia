@@ -1,13 +1,6 @@
-import { useEffect, useState } from 'react';
-import {
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import { APP_COLORS } from '../constants/theme';
+import { useEffect, useMemo, useState } from 'react';
+import { Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useAppPreferences } from '../contexts/AppPreferencesContext';
 
 type Props = {
   visible: boolean;
@@ -26,7 +19,9 @@ export default function RenameItemModal({
   onClose,
   onSave,
 }: Props) {
+  const { colors, t } = useAppPreferences();
   const [value, setValue] = useState(initialValue);
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   useEffect(() => {
     if (visible) {
@@ -40,14 +35,14 @@ export default function RenameItemModal({
         <View style={styles.card}>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.subtitle}>
-            Escribe un nombre mas claro para tener tu historial mejor organizado.
+            Escribe un nombre más claro para tener tu historial mejor organizado.
           </Text>
 
           <TextInput
             value={value}
             onChangeText={setValue}
             placeholder="Nuevo nombre"
-            placeholderTextColor={APP_COLORS.textMuted}
+            placeholderTextColor={colors.textMuted}
             style={styles.input}
             autoFocus
             returnKeyType="done"
@@ -55,7 +50,7 @@ export default function RenameItemModal({
 
           <View style={styles.row}>
             <Pressable style={styles.secondaryButton} onPress={onClose} disabled={saving}>
-              <Text style={styles.secondaryButtonText}>Cancelar</Text>
+              <Text style={styles.secondaryButtonText}>{t('common.cancel')}</Text>
             </Pressable>
 
             <Pressable
@@ -64,7 +59,7 @@ export default function RenameItemModal({
               disabled={saving}
             >
               <Text style={styles.primaryButtonText}>
-                {saving ? 'Guardando...' : 'Guardar'}
+                {saving ? t('common.saving') : t('common.save')}
               </Text>
             </Pressable>
           </View>
@@ -74,77 +69,79 @@ export default function RenameItemModal({
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: APP_COLORS.overlay,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  card: {
-    width: '100%',
-    maxWidth: 420,
-    backgroundColor: APP_COLORS.surface,
-    borderRadius: 20,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  title: {
-    color: APP_COLORS.text,
-    fontSize: 20,
-    fontWeight: '800',
-    marginBottom: 8,
-  },
-  subtitle: {
-    color: APP_COLORS.textMuted,
-    fontSize: 14,
-    lineHeight: 21,
-    marginBottom: 14,
-  },
-  input: {
-    backgroundColor: APP_COLORS.background,
-    color: APP_COLORS.text,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 16,
-  },
-  row: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 16,
-  },
-  secondaryButton: {
-    flex: 1,
-    backgroundColor: APP_COLORS.background,
-    borderRadius: 14,
-    paddingVertical: 14,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  secondaryButtonText: {
-    color: APP_COLORS.text,
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  primaryButton: {
-    flex: 1,
-    backgroundColor: APP_COLORS.text,
-    borderRadius: 14,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  primaryButtonDisabled: {
-    opacity: 0.7,
-  },
-  primaryButtonText: {
-    color: APP_COLORS.accentText,
-    fontSize: 15,
-    fontWeight: '800',
-  },
-});
+function createStyles(colors: ReturnType<typeof useAppPreferences>['colors']) {
+  return StyleSheet.create({
+    backdrop: {
+      flex: 1,
+      backgroundColor: colors.overlay,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 20,
+    },
+    card: {
+      width: '100%',
+      maxWidth: 420,
+      backgroundColor: colors.surface,
+      borderRadius: 20,
+      padding: 18,
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    title: {
+      color: colors.text,
+      fontSize: 20,
+      fontWeight: '800',
+      marginBottom: 8,
+    },
+    subtitle: {
+      color: colors.textMuted,
+      fontSize: 14,
+      lineHeight: 21,
+      marginBottom: 14,
+    },
+    input: {
+      backgroundColor: colors.background,
+      color: colors.text,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      fontSize: 16,
+    },
+    row: {
+      flexDirection: 'row',
+      gap: 10,
+      marginTop: 16,
+    },
+    secondaryButton: {
+      flex: 1,
+      backgroundColor: colors.background,
+      borderRadius: 14,
+      paddingVertical: 14,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    secondaryButtonText: {
+      color: colors.text,
+      fontSize: 15,
+      fontWeight: '700',
+    },
+    primaryButton: {
+      flex: 1,
+      backgroundColor: colors.cream,
+      borderRadius: 14,
+      paddingVertical: 14,
+      alignItems: 'center',
+    },
+    primaryButtonDisabled: {
+      opacity: 0.7,
+    },
+    primaryButtonText: {
+      color: colors.accentText,
+      fontSize: 15,
+      fontWeight: '800',
+    },
+  });
+}

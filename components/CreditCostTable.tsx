@@ -1,117 +1,147 @@
+import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { APP_COLORS } from '../constants/theme';
+import { useAppPreferences } from '../contexts/AppPreferencesContext';
 
 type CostRow = {
   label: string;
-  free: string;
-  premium: string;
+  detail: string;
+  free: number | string;
+  premium: number | string;
 };
 
-const COST_ROWS: CostRow[] = [
-  {
-    label: 'Texto',
-    free: '96 creditos',
-    premium: '48 creditos',
-  },
-  {
-    label: 'Imagen',
-    free: '200 creditos',
-    premium: '100 creditos',
-  },
-  {
-    label: 'PDF',
-    free: '480 creditos',
-    premium: '240 creditos',
-  },
-  {
-    label: 'Audio por minuto',
-    free: 'Bloqueado',
-    premium: '120 creditos',
-  },
-];
-
 export default function CreditCostTable() {
+  const { colors, t } = useAppPreferences();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+  const creditsUnit = t('cost.creditsUnit');
+
+  const costRows: CostRow[] = [
+    {
+      label: t('tutor.title'),
+      detail: t('cost.text'),
+      free: 96,
+      premium: 48,
+    },
+    {
+      label: t('problem.title'),
+      detail: t('cost.image'),
+      free: 200,
+      premium: 100,
+    },
+    {
+      label: t('file.title'),
+      detail: t('cost.pdf'),
+      free: 480,
+      premium: 240,
+    },
+    {
+      label: t('cost.audioPerMinute'),
+      detail: t('cost.perMinute'),
+      free: t('cost.blocked'),
+      premium: 120,
+    },
+  ];
+
+  const formatCostValue = (value: number | string) =>
+    typeof value === 'number' ? `${value} ${creditsUnit}` : value;
+
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>Tabla de costos</Text>
-      <Text style={styles.subtitle}>Esta es la referencia actual para entender cuanto cuesta cada tipo de uso.</Text>
+      <Text style={styles.title}>{t('cost.title')}</Text>
+      <Text style={styles.subtitle}>{t('cost.subtitle')}</Text>
 
       <View style={styles.headerRow}>
-        <Text style={[styles.headerCell, styles.flexTwo]}>Uso</Text>
-        <Text style={styles.headerCell}>Free</Text>
-        <Text style={styles.headerCell}>Premium</Text>
+        <Text style={[styles.headerCell, styles.flexTwo]}>{t('cost.function')}</Text>
+        <Text style={styles.headerCell}>{t('cost.free')}</Text>
+        <Text style={styles.headerCell}>{t('cost.premium')}</Text>
       </View>
 
-      {COST_ROWS.map((row) => (
+      {costRows.map((row) => (
         <View key={row.label} style={styles.row}>
-          <Text style={[styles.cell, styles.flexTwo]}>{row.label}</Text>
-          <Text style={styles.cell}>{row.free}</Text>
-          <Text style={styles.cell}>{row.premium}</Text>
+          <View style={[styles.cell, styles.flexTwo]}>
+            <Text style={styles.rowLabel}>{row.label}</Text>
+            <Text style={styles.rowDetail}>{row.detail}</Text>
+          </View>
+          <Text style={styles.cell}>{formatCostValue(row.free)}</Text>
+          <Text style={styles.cell}>{formatCostValue(row.premium)}</Text>
         </View>
       ))}
 
-      <Text style={styles.note}>* El consumo puede variar segun el tamano y la complejidad del archivo o imagen.</Text>
+      <Text style={styles.note}>{t('cost.note')}</Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: APP_COLORS.surface,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-    padding: 20,
-    marginTop: 18,
-    shadowColor: APP_COLORS.shadow,
-    shadowOpacity: 0.18,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 4,
-  },
-  title: {
-    color: APP_COLORS.text,
-    fontSize: 20,
-    fontWeight: '800',
-    marginBottom: 6,
-  },
-  subtitle: {
-    color: APP_COLORS.textMuted,
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 14,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 10,
-  },
-  headerCell: {
-    color: APP_COLORS.text,
-    fontSize: 13,
-    fontWeight: '800',
-    flex: 1,
-  },
-  row: {
-    flexDirection: 'row',
-    gap: 10,
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: APP_COLORS.creamSoft,
-  },
-  cell: {
-    color: APP_COLORS.text,
-    fontSize: 13,
-    flex: 1,
-    lineHeight: 18,
-  },
-  flexTwo: {
-    flex: 1.2,
-  },
-  note: {
-    color: APP_COLORS.textMuted,
-    fontSize: 13,
-    lineHeight: 18,
-    marginTop: 12,
-  },
-});
+function createStyles(colors: ReturnType<typeof useAppPreferences>['colors']) {
+  return StyleSheet.create({
+    card: {
+      backgroundColor: colors.surface,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+      padding: 20,
+      marginTop: 18,
+      shadowColor: colors.shadow,
+      shadowOpacity: 0.18,
+      shadowRadius: 10,
+      shadowOffset: { width: 0, height: 6 },
+      elevation: 4,
+    },
+    title: {
+      color: colors.text,
+      fontSize: 20,
+      fontWeight: '800',
+      marginBottom: 6,
+    },
+    subtitle: {
+      color: colors.textMuted,
+      fontSize: 14,
+      lineHeight: 20,
+      marginBottom: 14,
+    },
+    headerRow: {
+      flexDirection: 'row',
+      gap: 10,
+      marginBottom: 10,
+    },
+    headerCell: {
+      color: colors.text,
+      fontSize: 13,
+      fontWeight: '800',
+      flex: 1,
+    },
+    row: {
+      flexDirection: 'row',
+      gap: 10,
+      paddingVertical: 10,
+      borderTopWidth: 1,
+      borderTopColor: colors.creamSoft,
+    },
+    cell: {
+      color: colors.text,
+      fontSize: 13,
+      flex: 1,
+      lineHeight: 18,
+    },
+    rowLabel: {
+      color: colors.text,
+      fontSize: 14,
+      fontWeight: '700',
+      lineHeight: 18,
+    },
+    rowDetail: {
+      color: colors.textMuted,
+      fontSize: 12,
+      lineHeight: 16,
+      marginTop: 2,
+    },
+    flexTwo: {
+      flex: 1.2,
+    },
+    note: {
+      color: colors.textMuted,
+      fontSize: 13,
+      lineHeight: 18,
+      marginTop: 12,
+    },
+  });
+}

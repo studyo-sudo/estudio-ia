@@ -1,20 +1,10 @@
 import * as ImagePicker from 'expo-image-picker';
-import { useState } from 'react';
-import {
-  Alert,
-  Image,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { useMemo, useState } from 'react';
+import { Alert, Image, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import AppBottomNav from '../components/AppBottomNav';
 import ProcessingScreen from '../components/ProcessingScreen';
+import { useAppPreferences } from '../contexts/AppPreferencesContext';
 import { analyzeProblem } from '../services/problemSolverApi';
-import { APP_COLORS } from '../constants/theme';
 
 type SelectedProblemImage = {
   uri: string;
@@ -32,12 +22,22 @@ type ProblemSolution = {
 };
 
 export default function ProblemSolverScreen() {
+  const { colors, t } = useAppPreferences();
   const [image, setImage] = useState<SelectedProblemImage | null>(null);
   const [description, setDescription] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [solution, setSolution] = useState<ProblemSolution | null>(null);
 
-  const pickImage = async () => {
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
+  const pickImageFromLibrary = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permission.granted) {
+      Alert.alert(t('problem.permissionTitle'), t('problem.permissionLibrary'));
+      return;
+    }
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: false,
@@ -56,6 +56,50 @@ export default function ProblemSolverScreen() {
     }
   };
 
+  const takePhoto = async () => {
+    if (Platform.OS === 'web') {
+      await pickImageFromLibrary();
+      return;
+    }
+
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (!permission.granted) {
+      Alert.alert(t('problem.permissionTitle'), t('problem.permissionCamera'));
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      allowsEditing: false,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const asset = result.assets[0];
+      setImage({
+        uri: asset.uri,
+        name: asset.fileName || `problema-${Date.now()}.jpg`,
+        mimeType: asset.mimeType || 'image/jpeg',
+        webFile: (asset as { file?: File }).file,
+      });
+      setSolution(null);
+    }
+  };
+
+  const handleChoosePhoto = async () => {
+    if (Platform.OS === 'web') {
+      await pickImageFromLibrary();
+      return;
+    }
+
+    Alert.alert(t('problem.photoActionTitle'), t('problem.photoActionText'), [
+      { text: t('problem.uploadPhoto'), onPress: () => void pickImageFromLibrary() },
+      { text: t('problem.takePhoto'), onPress: () => void takePhoto() },
+      { text: t('common.cancel'), style: 'cancel' },
+    ]);
+  };
+
   const handleAnalyzeProblem = async () => {
     if (!image) {
       Alert.alert('Falta la foto', 'Primero elige una imagen del problema.');
@@ -70,7 +114,7 @@ export default function ProblemSolverScreen() {
 
       if (Platform.OS === 'web') {
         if (!image.webFile) {
-          throw new Error('En web no se encontro el archivo real del problema.');
+          throw new Error('En web no se encontró el archivo real del problema.');
         }
 
         formData.append('image', image.webFile);
@@ -106,21 +150,16 @@ export default function ProblemSolverScreen() {
   return (
     <View style={styles.screen}>
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Resolver problemas</Text>
-        <Text style={styles.subtitle}>
-          Saca una foto de un ejercicio de matematicas, fisica o quimica y prepararemos una
-          correccion paso a paso.
-        </Text>
+        <Text style={styles.title}>{t('problem.title')}</Text>
+        <Text style={styles.subtitle}>{t('problem.subtitle')}</Text>
 
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Foto del problema</Text>
-          <Text style={styles.bodyText}>
-            Sube una imagen para analizar si la respuesta esta bien y ver el proceso completo.
-          </Text>
+          <Text style={styles.sectionTitle}>{t('problem.photoTitle')}</Text>
+          <Text style={styles.bodyText}>{t('problem.photoText')}</Text>
 
-          <Pressable style={styles.secondaryButton} onPress={pickImage}>
+          <Pressable style={styles.secondaryButton} onPress={handleChoosePhoto}>
             <Text style={styles.secondaryButtonText}>
-              {image ? 'Cambiar foto' : 'Elegir foto'}
+              {image ? t('problem.changePhoto') : t('problem.uploadPhoto')}
             </Text>
           </Pressable>
 
@@ -130,15 +169,13 @@ export default function ProblemSolverScreen() {
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Descripcion opcional</Text>
-          <Text style={styles.bodyText}>
-            Puedes escribir el enunciado o aclarar que parte quieres revisar.
-          </Text>
+          <Text style={styles.sectionTitle}>{t('problem.descriptionTitle')}</Text>
+          <Text style={styles.bodyText}>{t('problem.descriptionText')}</Text>
           <TextInput
             value={description}
             onChangeText={setDescription}
-            placeholder="Escribe el problema o una pista"
-            placeholderTextColor={APP_COLORS.textMuted}
+            placeholder={t('problem.descriptionPlaceholder')}
+            placeholderTextColor={colors.textMuted}
             style={styles.input}
             multiline
           />
@@ -183,7 +220,7 @@ export default function ProblemSolverScreen() {
           onPress={handleAnalyzeProblem}
           disabled={!image}
         >
-          <Text style={styles.primaryButtonText}>Analizar problema</Text>
+          <Text style={styles.primaryButtonText}>{t('problem.analyze')}</Text>
         </Pressable>
       </ScrollView>
 
@@ -192,139 +229,141 @@ export default function ProblemSolverScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: APP_COLORS.background,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: APP_COLORS.background,
-  },
-  content: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 260,
-  },
-  title: {
-    color: APP_COLORS.text,
-    fontSize: 34,
-    fontWeight: '800',
-    marginBottom: 10,
-    textAlign: 'center',
-    width: '100%',
-  },
-  subtitle: {
-    color: APP_COLORS.textMuted,
-    fontSize: 17,
-    lineHeight: 24,
-    marginBottom: 24,
-    textAlign: 'center',
-    width: '100%',
-  },
-  card: {
-    backgroundColor: APP_COLORS.surface,
-    borderRadius: 18,
-    padding: 20,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  sectionTitle: {
-    color: APP_COLORS.text,
-    fontSize: 20,
-    fontWeight: '800',
-    marginBottom: 8,
-  },
-  bodyText: {
-    color: APP_COLORS.textMuted,
-    fontSize: 15,
-    lineHeight: 22,
-    marginBottom: 14,
-  },
-  secondaryButton: {
-    backgroundColor: APP_COLORS.background,
-    borderRadius: 14,
-    paddingVertical: 14,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  secondaryButtonText: {
-    color: APP_COLORS.text,
-    fontWeight: '800',
-    fontSize: 16,
-  },
-  preview: {
-    width: '100%',
-    height: 220,
-    borderRadius: 16,
-    marginTop: 16,
-  },
-  input: {
-    backgroundColor: APP_COLORS.background,
-    color: APP_COLORS.text,
-    minHeight: 110,
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  solutionCard: {
-    backgroundColor: APP_COLORS.surface,
-    borderRadius: 18,
-    padding: 18,
-    marginBottom: 18,
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  solutionBlock: {
-    marginTop: 14,
-  },
-  solutionLabel: {
-    color: APP_COLORS.text,
-    fontSize: 16,
-    fontWeight: '800',
-    marginBottom: 8,
-  },
-  stepItem: {
-    backgroundColor: APP_COLORS.background,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  stepText: {
-    color: APP_COLORS.text,
-    fontSize: 14,
-    lineHeight: 22,
-  },
-  finalAnswer: {
-    color: APP_COLORS.text,
-    fontSize: 15,
-    lineHeight: 24,
-  },
-  tipText: {
-    color: APP_COLORS.textMuted,
-    fontSize: 14,
-    lineHeight: 22,
-    marginBottom: 4,
-  },
-  primaryButton: {
-    backgroundColor: APP_COLORS.text,
-    borderRadius: 16,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  disabledButton: {
-    opacity: 0.55,
-  },
-  primaryButtonText: {
-    color: APP_COLORS.accentText,
-    fontWeight: '800',
-    fontSize: 16,
-  },
-});
+function createStyles(colors: ReturnType<typeof useAppPreferences>['colors']) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    content: {
+      paddingHorizontal: 20,
+      paddingTop: 24,
+      paddingBottom: 160,
+    },
+    title: {
+      color: colors.text,
+      fontSize: 34,
+      fontWeight: '800',
+      marginBottom: 10,
+      textAlign: 'center',
+      width: '100%',
+    },
+    subtitle: {
+      color: colors.textMuted,
+      fontSize: 17,
+      lineHeight: 24,
+      marginBottom: 24,
+      textAlign: 'center',
+      width: '100%',
+    },
+    card: {
+      backgroundColor: colors.surface,
+      borderRadius: 18,
+      padding: 20,
+      marginBottom: 16,
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    sectionTitle: {
+      color: colors.text,
+      fontSize: 20,
+      fontWeight: '800',
+      marginBottom: 8,
+    },
+    bodyText: {
+      color: colors.textMuted,
+      fontSize: 15,
+      lineHeight: 22,
+      marginBottom: 14,
+    },
+    secondaryButton: {
+      backgroundColor: colors.background,
+      borderRadius: 14,
+      paddingVertical: 14,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    secondaryButtonText: {
+      color: colors.text,
+      fontWeight: '800',
+      fontSize: 16,
+    },
+    preview: {
+      width: '100%',
+      height: 220,
+      borderRadius: 16,
+      marginTop: 16,
+    },
+    input: {
+      backgroundColor: colors.background,
+      color: colors.text,
+      minHeight: 110,
+      borderRadius: 14,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      fontSize: 16,
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    solutionCard: {
+      backgroundColor: colors.surface,
+      borderRadius: 18,
+      padding: 18,
+      marginBottom: 18,
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    solutionBlock: {
+      marginTop: 14,
+    },
+    solutionLabel: {
+      color: colors.text,
+      fontSize: 16,
+      fontWeight: '800',
+      marginBottom: 8,
+    },
+    stepItem: {
+      backgroundColor: colors.background,
+      borderRadius: 12,
+      padding: 12,
+      marginBottom: 10,
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    stepText: {
+      color: colors.text,
+      fontSize: 14,
+      lineHeight: 22,
+    },
+    finalAnswer: {
+      color: colors.text,
+      fontSize: 15,
+      lineHeight: 24,
+    },
+    tipText: {
+      color: colors.textMuted,
+      fontSize: 14,
+      lineHeight: 22,
+      marginBottom: 4,
+    },
+    primaryButton: {
+      backgroundColor: colors.cream,
+      borderRadius: 16,
+      paddingVertical: 16,
+      alignItems: 'center',
+    },
+    disabledButton: {
+      opacity: 0.55,
+    },
+    primaryButtonText: {
+      color: colors.accentText,
+      fontWeight: '800',
+      fontSize: 16,
+    },
+  });
+}

@@ -1,9 +1,10 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
+import { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import AppBottomNav from './AppBottomNav';
+import { useAppPreferences } from '../contexts/AppPreferencesContext';
 import { PdfResultData } from '../data/mockPdfResults';
-import { APP_COLORS } from '../constants/theme';
-import { buildStudyRouteFromCurrentResult } from '../services/studyRoute';
+import AppBottomNav from './AppBottomNav';
 
 type Props = {
   fileName: string;
@@ -11,7 +12,19 @@ type Props = {
   result: PdfResultData;
   onBack: () => void;
   sourceType: 'file' | 'image' | 'audio';
+  processingState?: 'success' | 'error';
 };
+
+function estimateStudyMinutes(fileSize?: number, result?: PdfResultData) {
+  const fileSizeMb = fileSize ? fileSize / (1024 * 1024) : 0;
+  const contentWeight =
+    (result?.questions.length ?? 0) * 3 +
+    (result?.flashcards.length ?? 0) * 2 +
+    (result?.exam.length ?? 0) * 2;
+
+  const minutes = 12 + fileSizeMb * 12 + contentWeight;
+  return Math.max(15, Math.min(180, Math.round(minutes)));
+}
 
 export default function PdfResultScreen({
   fileName,
@@ -19,17 +32,20 @@ export default function PdfResultScreen({
   result,
   onBack,
   sourceType,
+  processingState = 'success',
 }: Props) {
+  const { colors, t } = useAppPreferences();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const isFile = sourceType === 'file';
   const isImage = sourceType === 'image';
-  const estimatedPages = fileSize ? Math.max(1, Math.round(fileSize / 120)) : 1;
-  const estimatedStudyTime = Math.max(5, estimatedPages * 3);
-  const studyRoute = buildStudyRouteFromCurrentResult(
-    result,
-    sourceType,
-    fileName,
-    Date.now()
-  );
+  const sourceInfo = isFile
+    ? { emoji: '📁', label: t('file.source.file') }
+    : isImage
+    ? { emoji: '📷', label: t('file.source.image') }
+    : { emoji: '🎤', label: t('file.source.audio') };
+  const estimatedStudyTime = estimateStudyMinutes(fileSize, result);
+  const statusIcon = processingState === 'error' ? 'close-circle' : 'checkmark-circle';
+  const statusColor = processingState === 'error' ? '#ef4444' : '#22c55e';
 
   const handleOpenFlashcards = () => {
     router.push({
@@ -49,10 +65,6 @@ export default function PdfResultScreen({
     });
   };
 
-  const handleOpenStudyRoute = () => {
-    router.push('/study-route' as never);
-  };
-
   return (
     <View style={styles.screen}>
       <ScrollView
@@ -60,95 +72,74 @@ export default function PdfResultScreen({
         contentContainerStyle={styles.resultContent}
         showsVerticalScrollIndicator={false}
       >
-      <Text style={styles.title}>
-        {isFile
-          ? 'Resultado del archivo'
-          : isImage
-          ? 'Resultado de la imagen'
-          : 'Resultado del audio'}
-      </Text>
-
-      <View style={styles.headerCard}>
-        <Text style={styles.fileName}>{fileName}</Text>
-        <Text style={styles.fileInfo}>
-          Tamano: {fileSize ? Math.round(fileSize / 1024) : 0} KB
+        <Text style={styles.title}>
+          {isFile
+            ? 'Resultado del archivo'
+            : isImage
+            ? 'Resultado de la imagen'
+            : 'Resultado del audio'}
         </Text>
 
-        <View style={styles.statsRow}>
-          <View style={styles.statBox}>
-            <Text style={styles.statLabel}>Estado</Text>
-            <Text style={styles.statValue}>Procesado</Text>
-          </View>
+        <View style={styles.headerCard}>
+          <Text style={styles.fileName}>{fileName}</Text>
+          <Text style={styles.fileInfo}>
+            Tamaño: {fileSize ? Math.round(fileSize / 1024) : 0} KB
+          </Text>
 
-          <View style={styles.statBox}>
-            <Text style={styles.statLabel}>{isFile ? 'Archivo' : 'Fuente'}</Text>
-            <Text style={styles.statValue}>
-              {isFile ? 'Archivo' : isImage ? 'Imagen' : 'Audio'}
-            </Text>
-          </View>
+          <View style={styles.statsRow}>
+            <View style={styles.statBox}>
+              <Text style={styles.statLabel}>Estado</Text>
+              <Ionicons name={statusIcon} size={30} color={statusColor} />
+            </View>
 
-          <View style={styles.statBox}>
-            <Text style={styles.statLabel}>Estudio</Text>
-            <Text style={styles.statValue}>
-              {isFile ? `${estimatedStudyTime} min` : isImage ? 'Visual' : 'Clase'}
-            </Text>
-          </View>
-        </View>
-      </View>
+            <View style={styles.statBox}>
+              <Text style={styles.statLabel}>Fuente</Text>
+              <Text style={styles.sourceEmoji}>{sourceInfo.emoji}</Text>
+              <Text style={styles.sourceText}>{sourceInfo.label}</Text>
+            </View>
 
-      <View style={styles.resultCard}>
-        <Text style={styles.sectionTitle}>Resumen</Text>
-        <Text style={styles.resultText}>{result.summary}</Text>
-      </View>
-
-      <View style={styles.resultCard}>
-        <Text style={styles.sectionTitle}>Preguntas tipo examen</Text>
-        {result.questions.map((question, index) => (
-          <View key={index} style={styles.questionBox}>
-            <Text style={styles.questionText}>
-              {index + 1}. {question}
-            </Text>
-          </View>
-        ))}
-      </View>
-
-      <View style={styles.resultCard}>
-        <Text style={styles.sectionTitle}>Flashcards</Text>
-        <Text style={styles.flashcardsDescription}>
-          Estudia las flashcards en modo interactivo, una por una, con animacion de giro.
-        </Text>
-
-        <Pressable style={styles.flashcardsButton} onPress={handleOpenFlashcards}>
-        <Text style={styles.flashcardsButtonText}>Abrir flashcards</Text>
-      </Pressable>
-      </View>
-
-      <View style={styles.resultCard}>
-        <Text style={styles.sectionTitle}>Ruta de estudio</Text>
-        <Text style={styles.flashcardsDescription}>
-          {studyRoute.nextAction}
-        </Text>
-        {studyRoute.steps.slice(0, 3).map((step, index) => (
-          <View key={`${index}-${step.title}`} style={styles.routeStep}>
-            <Text style={styles.routeStepIndex}>{index + 1}</Text>
-            <View style={styles.routeStepBody}>
-              <Text style={styles.routeStepTitle}>{step.title}</Text>
-              <Text style={styles.routeStepText}>{step.description}</Text>
+            <View style={styles.statBox}>
+              <Text style={styles.statLabel}>Estudio</Text>
+              <Text style={styles.statValue}>
+                {isFile ? `${estimatedStudyTime} min` : isImage ? 'Visual' : 'Clase'}
+              </Text>
             </View>
           </View>
-        ))}
+        </View>
 
-        <Pressable style={styles.routeButton} onPress={handleOpenStudyRoute}>
-          <Text style={styles.routeButtonText}>Ver ruta completa</Text>
+        <View style={styles.resultCard}>
+          <Text style={styles.sectionTitle}>Resumen</Text>
+          <Text style={styles.resultText}>{result.summary}</Text>
+        </View>
+
+        <View style={styles.resultCard}>
+          <Text style={styles.sectionTitle}>Preguntas tipo examen</Text>
+          {result.questions.map((question, index) => (
+            <View key={index} style={styles.questionBox}>
+              <Text style={styles.questionText}>
+                {index + 1}. {question}
+              </Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.resultCard}>
+          <Text style={styles.sectionTitle}>Flashcards</Text>
+          <Text style={styles.flashcardsDescription}>
+            Estudia las flashcards en modo interactivo, una por una, con animación de giro.
+          </Text>
+
+          <Pressable style={styles.flashcardsButton} onPress={handleOpenFlashcards}>
+            <Text style={styles.flashcardsButtonText}>{t('flashcards.title')}</Text>
+          </Pressable>
+        </View>
+
+        <Pressable style={styles.primaryButton} onPress={handleOpenExam}>
+          <Text style={styles.primaryButtonText}>Generar examen completo</Text>
         </Pressable>
-      </View>
-
-      <Pressable style={styles.primaryButton} onPress={handleOpenExam}>
-        <Text style={styles.primaryButtonText}>Generar examen completo</Text>
-      </Pressable>
 
         <Pressable style={styles.secondaryButton} onPress={onBack}>
-          <Text style={styles.secondaryButtonText}>Volver</Text>
+          <Text style={styles.secondaryButtonText}>{t('common.back')}</Text>
         </Pressable>
       </ScrollView>
 
@@ -157,193 +148,160 @@ export default function PdfResultScreen({
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: APP_COLORS.background,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: APP_COLORS.background,
-    paddingHorizontal: 20,
-    paddingTop: 24,
-  },
-    resultContent: {
-      paddingBottom: 280,
+function createStyles(colors: ReturnType<typeof useAppPreferences>['colors']) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.background,
     },
-  title: {
-    color: APP_COLORS.text,
-    fontSize: 34,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    textAlign: 'center',
-    width: '100%',
-  },
-  headerCard: {
-    backgroundColor: APP_COLORS.surface,
-    borderRadius: 18,
-    padding: 20,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  fileName: {
-    color: APP_COLORS.text,
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 6,
-  },
-  fileInfo: {
-    color: APP_COLORS.textMuted,
-    fontSize: 14,
-    marginBottom: 16,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  statBox: {
-    flex: 1,
-    backgroundColor: APP_COLORS.background,
-    borderRadius: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  statLabel: {
-    color: APP_COLORS.textMuted,
-    fontSize: 12,
-    marginBottom: 4,
-  },
-  statValue: {
-    color: APP_COLORS.text,
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  resultCard: {
-    backgroundColor: APP_COLORS.surface,
-    borderRadius: 18,
-    padding: 20,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  sectionTitle: {
-    color: APP_COLORS.text,
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 12,
-  },
-  resultText: {
-    color: APP_COLORS.textMuted,
-    fontSize: 15,
-    lineHeight: 24,
-  },
-  questionBox: {
-    backgroundColor: APP_COLORS.background,
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  questionText: {
-    color: APP_COLORS.text,
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  flashcardsDescription: {
-    color: APP_COLORS.textMuted,
-    fontSize: 15,
-    lineHeight: 22,
-    marginBottom: 14,
-  },
-  flashcardsButton: {
-    backgroundColor: APP_COLORS.text,
-    borderRadius: 14,
-    paddingVertical: 15,
-    alignItems: 'center',
-  },
-  flashcardsButtonText: {
-    color: APP_COLORS.accentText,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  routeStep: {
-    flexDirection: 'row',
-    gap: 12,
-    backgroundColor: APP_COLORS.background,
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  routeStepIndex: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: APP_COLORS.surface,
-    color: APP_COLORS.text,
-    textAlign: 'center',
-    textAlignVertical: 'center',
-    fontSize: 14,
-    fontWeight: '800',
-    overflow: 'hidden',
-  },
-  routeStepBody: {
-    flex: 1,
-  },
-  routeStepTitle: {
-    color: APP_COLORS.text,
-    fontSize: 15,
-    fontWeight: '800',
-    marginBottom: 4,
-  },
-  routeStepText: {
-    color: APP_COLORS.textMuted,
-    fontSize: 14,
-    lineHeight: 22,
-  },
-  routeButton: {
-    backgroundColor: APP_COLORS.surface,
-    borderRadius: 14,
-    paddingVertical: 14,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-    marginTop: 6,
-  },
-  routeButtonText: {
-    color: APP_COLORS.text,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  primaryButton: {
-    backgroundColor: APP_COLORS.text,
-    borderRadius: 14,
-    paddingVertical: 15,
-    alignItems: 'center',
-    marginTop: 4,
-    marginBottom: 12,
-  },
-  primaryButtonText: {
-    color: APP_COLORS.accentText,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  secondaryButton: {
-    backgroundColor: APP_COLORS.surface,
-    borderRadius: 14,
-    paddingVertical: 15,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  secondaryButtonText: {
-    color: APP_COLORS.text,
-    fontSize: 16,
-    fontWeight: '700',
-  },
-});
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+      paddingHorizontal: 20,
+      paddingTop: 24,
+    },
+    resultContent: {
+      paddingBottom: 140,
+    },
+    title: {
+      color: colors.text,
+      fontSize: 34,
+      fontWeight: 'bold',
+      marginBottom: 16,
+      textAlign: 'center',
+      width: '100%',
+    },
+    headerCard: {
+      backgroundColor: colors.surface,
+      borderRadius: 18,
+      padding: 20,
+      marginBottom: 16,
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    fileName: {
+      color: colors.text,
+      fontSize: 18,
+      fontWeight: '700',
+      marginBottom: 6,
+    },
+    fileInfo: {
+      color: colors.textMuted,
+      fontSize: 14,
+      marginBottom: 16,
+    },
+    statsRow: {
+      flexDirection: 'row',
+      gap: 10,
+    },
+    statBox: {
+      flex: 1,
+      backgroundColor: colors.background,
+      borderRadius: 14,
+      paddingVertical: 14,
+      paddingHorizontal: 10,
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+      minHeight: 96,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    statLabel: {
+      color: colors.textMuted,
+      fontSize: 12,
+      marginBottom: 8,
+      textAlign: 'center',
+    },
+    statValue: {
+      color: colors.text,
+      fontSize: 15,
+      fontWeight: '700',
+      textAlign: 'center',
+    },
+    sourceEmoji: {
+      fontSize: 28,
+      marginBottom: 4,
+    },
+    sourceText: {
+      color: colors.text,
+      fontSize: 14,
+      fontWeight: '700',
+      textAlign: 'center',
+    },
+    resultCard: {
+      backgroundColor: colors.surface,
+      borderRadius: 18,
+      padding: 20,
+      marginBottom: 16,
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    sectionTitle: {
+      color: colors.text,
+      fontSize: 20,
+      fontWeight: 'bold',
+      marginBottom: 12,
+    },
+    resultText: {
+      color: colors.textMuted,
+      fontSize: 15,
+      lineHeight: 24,
+    },
+    questionBox: {
+      backgroundColor: colors.background,
+      borderRadius: 14,
+      padding: 14,
+      marginBottom: 10,
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    questionText: {
+      color: colors.text,
+      fontSize: 15,
+      lineHeight: 22,
+    },
+    flashcardsDescription: {
+      color: colors.textMuted,
+      fontSize: 15,
+      lineHeight: 22,
+      marginBottom: 14,
+    },
+    flashcardsButton: {
+      backgroundColor: colors.cream,
+      borderRadius: 14,
+      paddingVertical: 15,
+      alignItems: 'center',
+    },
+    flashcardsButtonText: {
+      color: colors.accentText,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+    primaryButton: {
+      backgroundColor: colors.cream,
+      borderRadius: 14,
+      paddingVertical: 15,
+      alignItems: 'center',
+      marginTop: 4,
+      marginBottom: 12,
+    },
+    primaryButtonText: {
+      color: colors.accentText,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+    secondaryButton: {
+      backgroundColor: colors.surface,
+      borderRadius: 14,
+      paddingVertical: 15,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    secondaryButtonText: {
+      color: colors.text,
+      fontSize: 16,
+      fontWeight: '700',
+    },
+  });
+}

@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "935387046564",
+    "project_id": "studyai-61789",
+    "storage_bucket": "studyai-61789.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:935387046564:android:a933a15abc6cc93fd07c31",
+        "android_client_info": {
+          "package_name": "com.ismael.studyai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAlFfJcEublYqputipwKk7Bzixsh0YytUQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:935387046564:android:191d6ca60cf8e540d07c31",
+        "android_client_info": {
+          "package_name": "com.studyoai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAlFfJcEublYqputipwKk7Bzixsh0YytUQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

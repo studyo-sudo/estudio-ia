@@ -2,7 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const { port } = require('./config');
-const { registerUser, validateCredentials } = require('./authStore');
+const {
+  getUserByEmail,
+  registerUser,
+  setUserPhoneVerification,
+  validateCredentials,
+} = require('./authStore');
 const { createToken, verifyToken } = require('./token');
 const {
   analyzeAudioBuffer,
@@ -64,6 +69,20 @@ function createCreditGrant(amount) {
   };
 }
 
+async function buildAuthProfile(email) {
+  const [user, userState] = await Promise.all([
+    getUserByEmail(email),
+    readUserState(email),
+  ]);
+
+  return {
+    email,
+    plan: userState.billing.plan,
+    phoneNumber: user?.phoneNumber ?? null,
+    phoneVerified: Boolean(user?.phoneVerifiedAt),
+  };
+}
+
 async function analyzeStudyFilePayload(buffer, fileName, mimeType) {
   const normalizedName = String(fileName || 'archivo').toLowerCase();
   const normalizedMimeType = String(mimeType || '').toLowerCase();
@@ -94,7 +113,7 @@ app.get('/health', (_req, res) => {
 app.post('/auth/login', (req, res) => {
   const { email, password } = req.body || {};
   validateCredentials(email, password)
-    .then((user) => {
+    .then(async (user) => {
       if (!user) {
         res.status(401).send('Invalid credentials');
         return;
@@ -102,6 +121,7 @@ app.post('/auth/login', (req, res) => {
 
       res.json({
         token: createToken(user.email),
+        ...(await buildAuthProfile(user.email)),
       });
     })
     .catch((error) => {
@@ -118,9 +138,10 @@ app.post('/auth/register', (req, res) => {
   }
 
   registerUser(email, password)
-    .then((user) => {
+    .then(async (user) => {
       res.status(201).json({
         token: createToken(user.email),
+        ...(await buildAuthProfile(user.email)),
       });
     })
     .catch((error) => {
@@ -129,9 +150,18 @@ app.post('/auth/register', (req, res) => {
 });
 
 app.get('/auth/me', requireAuth, async (req, res) => {
-  res.json({
-    email: req.auth.email,
-  });
+  res.json(await buildAuthProfile(req.auth.email));
+});
+
+app.post('/auth/phone/verify', requireAuth, async (req, res) => {
+  const { phoneNumber } = req.body || {};
+
+  try {
+    await setUserPhoneVerification(req.auth.email, phoneNumber);
+    res.json(await buildAuthProfile(req.auth.email));
+  } catch (error) {
+    res.status(400).json({ error: error.message || 'Phone verification failed' });
+  }
 });
 
 app.post('/tutor/chat', async (req, res) => {

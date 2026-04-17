@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ComponentProps } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
-import { APP_COLORS } from '../constants/theme';
+import { useAppPreferences } from '../contexts/AppPreferencesContext';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -11,6 +11,7 @@ type Props = {
   onPress: () => void;
   backgroundColor: string;
   iconColor?: string;
+  labelColor?: string;
   disabled?: boolean;
 };
 
@@ -19,9 +20,11 @@ export default function ActionIconButton({
   label,
   onPress,
   backgroundColor,
-  iconColor = APP_COLORS.cream,
+  iconColor,
+  labelColor,
   disabled = false,
 }: Props) {
+  const { colors } = useAppPreferences();
   return (
     <Pressable
       onPress={onPress}
@@ -35,8 +38,8 @@ export default function ActionIconButton({
       accessibilityRole="button"
       accessibilityLabel={label}
     >
-      <Ionicons name={icon} size={19} color={iconColor} />
-      <Text style={styles.label} numberOfLines={1}>
+      <Ionicons name={icon} size={19} color={iconColor ?? colors.cream} />
+      <Text style={[styles.label, { color: labelColor ?? colors.text }]} numberOfLines={1}>
         {label}
       </Text>
     </Pressable>
@@ -62,7 +65,6 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   label: {
-    color: APP_COLORS.text,
     fontSize: 10,
     fontWeight: '800',
     textAlign: 'center',

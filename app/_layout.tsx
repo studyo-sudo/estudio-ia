@@ -1,94 +1,99 @@
 import * as NavigationBar from 'expo-navigation-bar';
-import * as Notifications from 'expo-notifications';
-import { router, Stack } from 'expo-router';
-import * as SystemUI from 'expo-system-ui';
-import { useEffect } from 'react';
-import { Platform } from 'react-native';
-import { APP_COLORS } from '../constants/theme';
-import { configureStudyReminderChannel } from '../services/studyReminderService';
-
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+import { Stack } from 'expo-router';
+import { useCallback, useEffect } from 'react';
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
+import { AppPreferencesProvider, useAppPreferences } from '../contexts/AppPreferencesContext';
+import '../services/calendarNotifications';
 
 export default function RootLayout() {
-  useEffect(() => {
-    SystemUI.setBackgroundColorAsync(APP_COLORS.background).catch(() => {});
+  return (
+    <AppPreferencesProvider>
+      <RootLayoutContent />
+    </AppPreferencesProvider>
+  );
+}
 
-    if (Platform.OS === 'android') {
-      NavigationBar.setBackgroundColorAsync(APP_COLORS.background).catch(() => {});
-      NavigationBar.setButtonStyleAsync('dark').catch(() => {});
+function RootLayoutContent() {
+  const { colors, t, isReady } = useAppPreferences();
+
+  const hideAndroidNavBar = useCallback(() => {
+    if (Platform.OS !== 'android') {
+      return;
     }
 
-    void configureStudyReminderChannel();
-
-    let openedFromReminder = false;
-    const openStudyRoute = () => {
-      if (openedFromReminder) {
-        return;
-      }
-
-      openedFromReminder = true;
-      router.push('/study-route' as never);
-    };
-
-    const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
-      const screen = response.notification.request.content.data?.screen;
-
-      if (screen === 'study-route') {
-        openStudyRoute();
-      }
-    });
-
-    void Notifications.getLastNotificationResponseAsync().then((response) => {
-      const screen = response?.notification.request.content.data?.screen;
-
-      if (screen === 'study-route') {
-        openStudyRoute();
-      }
-    });
-
-    return () => subscription.remove();
+    NavigationBar.setVisibilityAsync('hidden').catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (!isReady) {
+      return;
+    }
+  }, [isReady]);
+
+  return (
+    <View style={[styles.root, { backgroundColor: colors.background }]} onTouchStart={hideAndroidNavBar}>
+      {Platform.OS === 'ios' ? (
+        <KeyboardAvoidingView style={styles.flex} behavior="padding">
+          <AppStack colors={colors} t={t} />
+        </KeyboardAvoidingView>
+      ) : (
+        <View style={styles.flex}>
+          <AppStack colors={colors} t={t} />
+        </View>
+      )}
+    </View>
+  );
+}
+
+function AppStack({
+  colors,
+  t,
+}: {
+  colors: ReturnType<typeof useAppPreferences>['colors'];
+  t: ReturnType<typeof useAppPreferences>['t'];
+}) {
   return (
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: APP_COLORS.background,
+          backgroundColor: colors.background,
         },
-        headerTintColor: APP_COLORS.text,
+        headerTintColor: colors.text,
         headerTitleStyle: {
-          color: APP_COLORS.text,
+          color: colors.text,
           fontWeight: '700',
         },
         contentStyle: {
-          backgroundColor: APP_COLORS.background,
+          backgroundColor: colors.background,
         },
         animation: 'slide_from_right',
       }}
     >
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="login" options={{ headerShown: false }} />
+      <Stack.Screen name="phone-verification" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="file" options={{ title: 'Archivo' }} />
-      <Stack.Screen name="audio" options={{ title: 'Grabar clase' }} />
-      <Stack.Screen name="exam" options={{ title: 'Examen' }} />
-      <Stack.Screen name="exam-model" options={{ title: 'Subir examenes' }} />
-      <Stack.Screen name="problem-solver" options={{ title: 'Resolver problemas' }} />
-      <Stack.Screen name="flashcards" options={{ title: 'Flashcards' }} />
-      <Stack.Screen name="flashcards-history" options={{ title: 'Flashcards' }} />
-      <Stack.Screen name="saved-item" options={{ title: 'Guardado' }} />
-      <Stack.Screen name="pricing" options={{ title: 'Planes' }} />
-      <Stack.Screen name="credits" options={{ title: 'Creditos' }} />
-      <Stack.Screen name="study-route" options={{ title: 'Ruta de estudio' }} />
-      <Stack.Screen name="tutor" options={{ title: 'Tutor' }} />
-      <Stack.Screen name="tutor-chat" options={{ title: 'Chat Tutor' }} />
+      <Stack.Screen name="file" options={{ title: t('file.title') }} />
+      <Stack.Screen name="audio" options={{ title: t('file.source.audio') }} />
+      <Stack.Screen name="exam" options={{ title: t('exam.title') }} />
+      <Stack.Screen name="exam-model" options={{ title: t('examModel.title') }} />
+      <Stack.Screen name="problem-solver" options={{ title: t('problem.title') }} />
+      <Stack.Screen name="flashcards" options={{ title: t('flashcards.title') }} />
+      <Stack.Screen name="flashcards-history" options={{ title: t('flashcardsHistory.title') }} />
+      <Stack.Screen name="saved-item" options={{ title: t('saved.title') }} />
+      <Stack.Screen name="pricing" options={{ title: t('pricing.title') }} />
+      <Stack.Screen name="credits" options={{ title: t('credits.title') }} />
+      <Stack.Screen name="tutor" options={{ title: t('tutor.title') }} />
+      <Stack.Screen name="tutor-chat" options={{ title: t('tutor.title') }} />
     </Stack>
   );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
+  flex: {
+    flex: 1,
+  },
+});

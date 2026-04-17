@@ -5,13 +5,14 @@ import {
   RC_CREDITS_BASIC_PRODUCT_ID,
   RC_CREDITS_LARGE_PRODUCT_ID,
   RC_CREDITS_MEDIUM_PRODUCT_ID,
+  RC_CREDITS_STARTER_PRODUCT_ID,
   RC_CREDITS_OFFERING_ID,
   RC_ANDROID_API_KEY,
   RC_IOS_API_KEY,
   RC_PREMIUM_ENTITLEMENT_ID,
   RC_OFFERING_ID,
 } from '../constants/env';
-import { addCredits, setPlan } from './billingStorage';
+import { addCredits, getBillingState, setPlan } from './billingStorage';
 
 function isNativeMobile() {
   return Platform.OS === 'ios' || Platform.OS === 'android';
@@ -91,17 +92,25 @@ async function purchaseRevenueCatPackageByProductId(productId: string) {
 
 export async function purchaseCreditPack(
   credits: number,
-  packSize: 'basic' | 'medium' | 'large'
+  packSize: 'starter' | 'basic' | 'medium' | 'large'
 ) {
   const productId =
-    packSize === 'basic'
+    packSize === 'starter'
+      ? RC_CREDITS_STARTER_PRODUCT_ID
+      : packSize === 'basic'
       ? RC_CREDITS_BASIC_PRODUCT_ID
       : packSize === 'medium'
       ? RC_CREDITS_MEDIUM_PRODUCT_ID
       : RC_CREDITS_LARGE_PRODUCT_ID;
 
   await purchaseRevenueCatPackageByProductId(productId);
-  await addCredits(credits);
+
+  const billing = await getBillingState();
+  const creditsToAdd = billing.plan === 'premium' ? Math.round(credits * 1.1) : credits;
+
+  await addCredits(creditsToAdd);
+
+  return creditsToAdd;
 }
 
 export async function restorePurchasesAndSyncPlan() {

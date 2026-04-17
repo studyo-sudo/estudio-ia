@@ -2,10 +2,10 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { APP_COLORS } from '../constants/theme';
+import { useAppPreferences } from '../contexts/AppPreferencesContext';
 
 type AppBottomNavProps = {
-  activeTab?: 'home' | 'history' | 'shop' | 'account';
+  activeTab?: 'home' | 'history' | 'calendar' | 'shop' | 'account';
 };
 
 type NavItem = {
@@ -13,33 +13,58 @@ type NavItem = {
   label: string;
   activeIcon: keyof typeof Ionicons.glyphMap;
   inactiveIcon: keyof typeof Ionicons.glyphMap;
-  href: '/(tabs)' | '/(tabs)/explore' | '/(tabs)/shop' | '/(tabs)/account';
+  href: '/(tabs)' | '/(tabs)/explore' | '/(tabs)/calendar' | '/(tabs)/shop' | '/(tabs)/account';
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { key: 'home', label: 'Inicio', activeIcon: 'home', inactiveIcon: 'home-outline', href: '/(tabs)' },
-  { key: 'history', label: 'Historial', activeIcon: 'time', inactiveIcon: 'time-outline', href: '/(tabs)/explore' },
-  { key: 'shop', label: 'Tienda', activeIcon: 'cart', inactiveIcon: 'cart-outline', href: '/(tabs)/shop' },
-  { key: 'account', label: 'Cuenta', activeIcon: 'person', inactiveIcon: 'person-outline', href: '/(tabs)/account' },
+  { key: 'home', label: 'nav.home', activeIcon: 'home', inactiveIcon: 'home-outline', href: '/(tabs)' },
+  { key: 'history', label: 'nav.history', activeIcon: 'time', inactiveIcon: 'time-outline', href: '/(tabs)/explore' },
+  {
+    key: 'calendar',
+    label: 'nav.calendar',
+    activeIcon: 'calendar',
+    inactiveIcon: 'calendar-outline',
+    href: '/(tabs)/calendar',
+  },
+  { key: 'shop', label: 'nav.shop', activeIcon: 'cart', inactiveIcon: 'cart-outline', href: '/(tabs)/shop' },
+  { key: 'account', label: 'nav.account', activeIcon: 'person', inactiveIcon: 'person-outline', href: '/(tabs)/account' },
 ];
 
 export default function AppBottomNav({ activeTab }: AppBottomNavProps) {
   const insets = useSafeAreaInsets();
+  const { colors, t } = useAppPreferences();
+  const bottomPadding = Math.max(insets.bottom, 4);
 
   return (
     <View style={styles.wrapper} pointerEvents="box-none">
-      <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, 12) + 8 }]}>
+      <View
+        style={[
+          styles.bar,
+          {
+            paddingBottom: bottomPadding,
+            backgroundColor: colors.background,
+            borderTopColor: colors.creamSoft,
+          },
+        ]}
+      >
         {NAV_ITEMS.map((item) => {
           const focused = item.key === activeTab;
+          const iconColor = focused ? colors.cream : colors.textMuted;
 
           return (
-            <Pressable key={item.key} style={styles.item} onPress={() => router.replace(item.href)}>
+            <Pressable
+              key={item.key}
+              style={styles.item}
+              onPress={() => router.replace(item.href as never)}
+            >
               <Ionicons
                 name={focused ? item.activeIcon : item.inactiveIcon}
                 size={24}
-                color={focused ? APP_COLORS.cream : APP_COLORS.creamMuted}
+                color={iconColor}
               />
-              <Text style={[styles.label, focused && styles.labelActive]}>{item.label}</Text>
+              <Text style={[styles.label, focused && styles.labelActive, { color: iconColor }]}>
+                {t(item.label)}
+              </Text>
             </Pressable>
           );
         })}
@@ -53,16 +78,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    bottom: 0,
+    bottom: 8,
     alignItems: 'center',
   },
   bar: {
     flexDirection: 'row',
     width: '100%',
-    backgroundColor: APP_COLORS.background,
     borderTopWidth: 1,
-    borderTopColor: APP_COLORS.creamSoft,
-    paddingTop: 10,
+    paddingTop: 12,
     paddingHorizontal: 8,
   },
   item: {
@@ -72,11 +95,9 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   label: {
-    color: APP_COLORS.textMuted,
     fontSize: 12,
     fontWeight: '600',
   },
   labelActive: {
-    color: APP_COLORS.text,
   },
 });

@@ -1,35 +1,29 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
-import {
-  Alert,
-  Platform,
-  Pressable,
-  ScrollView,
-  Share,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { useCallback, useMemo, useState } from 'react';
+import { Alert, Platform, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 import ActionIconButton from '../components/ActionIconButton';
 import AppBottomNav from '../components/AppBottomNav';
 import RenameItemModal from '../components/RenameItemModal';
-import { APP_COLORS } from '../constants/theme';
+import { useAppPreferences } from '../contexts/AppPreferencesContext';
 import {
   buildTutorShareText,
+  createTutorChat,
   deleteTutorChat,
   getTutorChats,
   saveTutorChat,
   TutorChatThread,
   updateTutorChatTitle,
-  createTutorChat,
 } from '../services/tutorChatStorage';
 
 export default function TutorScreen() {
+  const { colors, t, locale } = useAppPreferences();
   const [threads, setThreads] = useState<TutorChatThread[]>([]);
   const [renamingThread, setRenamingThread] = useState<TutorChatThread | null>(null);
   const [savingRename, setSavingRename] = useState(false);
   const [creatingChat, setCreatingChat] = useState(false);
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const loadThreads = useCallback(async () => {
     const chats = await getTutorChats();
@@ -96,9 +90,9 @@ export default function TutorScreen() {
     }
 
     Alert.alert('Eliminar chat', 'Quieres eliminar este chat del Tutor?', [
-      { text: 'Cancelar', style: 'cancel' },
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Eliminar',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: () => {
           void confirmDelete();
@@ -135,33 +129,29 @@ export default function TutorScreen() {
   return (
     <View style={styles.screen}>
       <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>Tutor</Text>
-        <Text style={styles.subtitle}>
-          Abre un chat nuevo o entra a uno anterior para seguir preguntando sobre cualquier tema.
-        </Text>
+        <Text style={styles.title}>{t('tutor.title')}</Text>
+        <Text style={styles.subtitle}>{t('tutor.subtitle')}</Text>
 
         <Pressable
           style={[styles.newChatButton, creatingChat && styles.newChatButtonDisabled]}
           onPress={handleNewChat}
           disabled={creatingChat}
         >
-          <Ionicons name="add-circle-outline" size={22} color="white" />
+          <Ionicons name="add-circle-outline" size={22} color={colors.accentText} />
           <Text style={styles.newChatButtonText}>
-            {creatingChat ? 'Creando...' : 'Nuevo chat'}
+            {creatingChat ? t('tutor.creating') : t('tutor.newChat')}
           </Text>
         </Pressable>
 
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Historial de chats</Text>
-          <Text style={styles.sectionCounter}>{threads.length} chats</Text>
+          <Text style={styles.sectionTitle}>{t('tutor.historyTitle')}</Text>
+          <Text style={styles.sectionCounter}>{t('tutor.chatsCount', { count: threads.length })}</Text>
         </View>
 
         {threads.length === 0 ? (
           <View style={styles.emptyCard}>
-            <Text style={styles.emptyTitle}>Todavia no hay chats guardados</Text>
-            <Text style={styles.emptyText}>
-              Toca en Nuevo chat para empezar una conversación con Tutor.
-            </Text>
+            <Text style={styles.emptyTitle}>{t('tutor.noChatsTitle')}</Text>
+            <Text style={styles.emptyText}>{t('tutor.noChatsText')}</Text>
           </View>
         ) : (
           threads.map((thread) => {
@@ -175,12 +165,15 @@ export default function TutorScreen() {
                   <View style={styles.threadHeaderText}>
                     <Text style={styles.threadTitle}>{thread.title}</Text>
                     <Text style={styles.threadMeta}>
-                      {thread.messages.length} mensajes · {new Date(thread.updatedAt).toLocaleString()}
+                      {t('tutor.messageTime', {
+                        count: thread.messages.length,
+                        time: new Date(thread.updatedAt).toLocaleString(locale),
+                      })}
                     </Text>
                   </View>
 
                   <View style={styles.threadBadge}>
-                    <Ionicons name="chatbubble-ellipses-outline" size={16} color="#7dd3fc" />
+                    <Ionicons name="chatbubble-ellipses-outline" size={16} color={colors.cream} />
                   </View>
                 </View>
 
@@ -189,30 +182,35 @@ export default function TutorScreen() {
                 <View style={styles.actionRow}>
                   <ActionIconButton
                     icon="chatbubble-ellipses-outline"
-                    label="Abrir"
+                    label={t('tutor.open')}
                     onPress={() => openChat(thread)}
-                    backgroundColor={APP_COLORS.surfaceAlt}
+                    backgroundColor={colors.surfaceAlt}
+                    iconColor={colors.cream}
                   />
 
                   <ActionIconButton
                     icon="share-social-outline"
-                    label="Compartir"
+                    label={t('tutor.share')}
                     onPress={() => void handleShare(thread)}
-                    backgroundColor={APP_COLORS.surfaceAlt}
+                    backgroundColor={colors.surfaceDeep}
+                    iconColor={colors.cream}
                   />
 
                   <ActionIconButton
                     icon="create-outline"
-                    label="Renombrar"
+                    label={t('tutor.rename')}
                     onPress={() => handleRename(thread)}
-                    backgroundColor={APP_COLORS.surfaceAlt}
+                    backgroundColor={colors.surfaceAlt}
+                    iconColor={colors.cream}
                   />
 
                   <ActionIconButton
                     icon="trash-outline"
-                    label="Eliminar"
+                    label={t('tutor.delete')}
                     onPress={() => void handleDelete(thread)}
-                    backgroundColor={APP_COLORS.surfaceAlt}
+                    backgroundColor="#7f1d1d"
+                    iconColor="#fecaca"
+                    labelColor="#fee2e2"
                   />
                 </View>
               </View>
@@ -225,7 +223,7 @@ export default function TutorScreen() {
 
       <RenameItemModal
         visible={renamingThread !== null}
-        title="Renombrar chat"
+        title={t('tutor.rename')}
         initialValue={renamingThread?.title || ''}
         saving={savingRename}
         onClose={() => setRenamingThread(null)}
@@ -235,137 +233,139 @@ export default function TutorScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: APP_COLORS.background,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: APP_COLORS.background,
-  },
-  content: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 260,
-  },
-  title: {
-    color: APP_COLORS.text,
-    fontSize: 34,
-    fontWeight: '800',
-    marginBottom: 10,
-    textAlign: 'center',
-    width: '100%',
-  },
-  subtitle: {
-    color: APP_COLORS.textMuted,
-    fontSize: 17,
-    lineHeight: 24,
-    marginBottom: 20,
-    textAlign: 'center',
-    width: '100%',
-  },
-  newChatButton: {
-    backgroundColor: APP_COLORS.text,
-    borderRadius: 18,
-    paddingVertical: 16,
-    paddingHorizontal: 18,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    marginBottom: 22,
-  },
-  newChatButtonDisabled: {
-    opacity: 0.72,
-  },
-  newChatButtonText: {
-    color: APP_COLORS.accentText,
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 14,
-  },
-  sectionTitle: {
-    color: APP_COLORS.text,
-    fontSize: 22,
-    fontWeight: '800',
-  },
-  sectionCounter: {
-    color: APP_COLORS.textMuted,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  emptyCard: {
-    backgroundColor: APP_COLORS.surface,
-    borderRadius: 18,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  emptyTitle: {
-    color: APP_COLORS.text,
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 10,
-  },
-  emptyText: {
-    color: APP_COLORS.textMuted,
-    fontSize: 15,
-    lineHeight: 24,
-  },
-  threadCard: {
-    backgroundColor: APP_COLORS.surface,
-    borderRadius: 18,
-    padding: 18,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  threadHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  threadHeaderText: {
-    flex: 1,
-  },
-  threadBadge: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: APP_COLORS.background,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  threadTitle: {
-    color: APP_COLORS.text,
-    fontSize: 18,
-    fontWeight: '800',
-    marginBottom: 5,
-  },
-  threadMeta: {
-    color: APP_COLORS.textMuted,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  threadPreview: {
-    color: APP_COLORS.text,
-    fontSize: 14,
-    lineHeight: 22,
-    marginTop: 12,
-    marginBottom: 14,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-});
+function createStyles(colors: ReturnType<typeof useAppPreferences>['colors']) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    content: {
+      paddingHorizontal: 20,
+      paddingTop: 24,
+      paddingBottom: 160,
+    },
+    title: {
+      color: colors.text,
+      fontSize: 34,
+      fontWeight: '800',
+      marginBottom: 10,
+      textAlign: 'center',
+      width: '100%',
+    },
+    subtitle: {
+      color: colors.textMuted,
+      fontSize: 17,
+      lineHeight: 24,
+      marginBottom: 20,
+      textAlign: 'center',
+      width: '100%',
+    },
+    newChatButton: {
+      backgroundColor: colors.cream,
+      borderRadius: 18,
+      paddingVertical: 16,
+      paddingHorizontal: 18,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 10,
+      marginBottom: 22,
+    },
+    newChatButtonDisabled: {
+      opacity: 0.72,
+    },
+    newChatButtonText: {
+      color: colors.accentText,
+      fontSize: 16,
+      fontWeight: '800',
+    },
+    sectionHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 14,
+    },
+    sectionTitle: {
+      color: colors.text,
+      fontSize: 22,
+      fontWeight: '800',
+    },
+    sectionCounter: {
+      color: colors.textMuted,
+      fontSize: 13,
+      fontWeight: '600',
+    },
+    emptyCard: {
+      backgroundColor: colors.surface,
+      borderRadius: 18,
+      padding: 20,
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    emptyTitle: {
+      color: colors.text,
+      fontSize: 20,
+      fontWeight: '700',
+      marginBottom: 10,
+    },
+    emptyText: {
+      color: colors.textMuted,
+      fontSize: 15,
+      lineHeight: 24,
+    },
+    threadCard: {
+      backgroundColor: colors.surface,
+      borderRadius: 18,
+      padding: 18,
+      marginBottom: 14,
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    threadHeader: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
+      gap: 12,
+    },
+    threadHeaderText: {
+      flex: 1,
+    },
+    threadBadge: {
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      backgroundColor: colors.background,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    threadTitle: {
+      color: colors.text,
+      fontSize: 18,
+      fontWeight: '800',
+      marginBottom: 5,
+    },
+    threadMeta: {
+      color: colors.textMuted,
+      fontSize: 13,
+      lineHeight: 18,
+    },
+    threadPreview: {
+      color: colors.text,
+      fontSize: 14,
+      lineHeight: 22,
+      marginTop: 12,
+      marginBottom: 14,
+    },
+    actionRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 10,
+    },
+  });
+}

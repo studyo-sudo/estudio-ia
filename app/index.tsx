@@ -1,17 +1,20 @@
 import { Redirect } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, SafeAreaView, StyleSheet } from 'react-native';
-import { getAuthState } from '../services/authStorage';
-import { APP_COLORS } from '../constants/theme';
+import { useAppPreferences } from '../contexts/AppPreferencesContext';
+import { resolvePostAuthRoute } from '../services/authRouting';
 
 export default function IndexScreen() {
   const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [redirectTo, setRedirectTo] = useState<
+    '/login' | '/phone-verification' | '/(tabs)'
+  >('/login');
+  const { colors } = useAppPreferences();
 
   useEffect(() => {
     async function bootstrap() {
-      const auth = await getAuthState();
-      setIsAuthenticated(Boolean(auth.token));
+      const route = await resolvePostAuthRoute();
+      setRedirectTo(route);
       setIsLoading(false);
     }
 
@@ -20,19 +23,18 @@ export default function IndexScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
-        <ActivityIndicator size="large" color={APP_COLORS.text} />
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.text} />
       </SafeAreaView>
     );
   }
 
-  return <Redirect href={isAuthenticated ? '/(tabs)' : '/login'} />;
+  return <Redirect href={redirectTo} />;
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: APP_COLORS.background,
     alignItems: 'center',
     justifyContent: 'center',
   },

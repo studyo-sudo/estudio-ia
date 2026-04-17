@@ -1,37 +1,41 @@
+import { useMemo } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
-import { APP_COLORS } from '../constants/theme';
+import { useAppPreferences } from '../contexts/AppPreferencesContext';
 
 type Props = {
   type?: 'archivo' | 'imagen' | 'audio' | 'examen' | 'problema';
 };
 
 export default function ProcessingScreen({ type = 'archivo' }: Props) {
+  const { colors, t } = useAppPreferences();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   const title =
     type === 'imagen'
-      ? 'Procesando imagen'
+      ? t('processing.image')
       : type === 'audio'
-      ? 'Procesando audio'
+      ? t('processing.audio')
       : type === 'examen'
-      ? 'Procesando examen'
+      ? t('processing.exam')
       : type === 'problema'
-      ? 'Procesando problema'
-      : 'Procesando archivo';
+      ? t('processing.problem')
+      : t('processing.file');
 
   const subtitle =
     type === 'imagen'
-      ? 'Analizando el contenido  y generando material de estudio.'
+      ? t('processing.imageText')
       : type === 'audio'
-      ? 'Transcribiendo el audio y generando material de estudio.'
+      ? t('processing.audioText')
       : type === 'examen'
-      ? 'Detectando patrones y generando un nuevo modelo de examen.'
+      ? t('processing.examText')
       : type === 'problema'
-      ? 'Leyendo la imagen y resolviendo el ejercicio paso a paso.'
-      : 'Leyendo el archivo y generando material de estudio.';
+      ? t('processing.problemText')
+      : t('processing.fileText');
 
   return (
     <View style={styles.container}>
       <View style={styles.card}>
-        <ActivityIndicator size="large" color={APP_COLORS.text} />
+        <ActivityIndicator size="large" color={colors.text} />
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.subtitle}>{subtitle}</Text>
       </View>
@@ -39,37 +43,39 @@ export default function ProcessingScreen({ type = 'archivo' }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: APP_COLORS.background,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  card: {
-    width: '100%',
-    maxWidth: 380,
-    backgroundColor: APP_COLORS.surface,
-    borderRadius: 20,
-    paddingVertical: 28,
-    paddingHorizontal: 22,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: APP_COLORS.creamSoft,
-  },
-  title: {
-    color: APP_COLORS.text,
-    fontSize: 26,
-    fontWeight: '800',
-    marginTop: 18,
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  subtitle: {
-    color: APP_COLORS.textMuted,
-    fontSize: 15,
-    lineHeight: 24,
-    textAlign: 'center',
-  },
-});
+function createStyles(colors: ReturnType<typeof useAppPreferences>['colors']) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 24,
+    },
+    card: {
+      width: '100%',
+      maxWidth: 380,
+      backgroundColor: colors.surface,
+      borderRadius: 20,
+      paddingVertical: 28,
+      paddingHorizontal: 22,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+    },
+    title: {
+      color: colors.text,
+      fontSize: 26,
+      fontWeight: '800',
+      marginTop: 18,
+      marginBottom: 10,
+      textAlign: 'center',
+    },
+    subtitle: {
+      color: colors.textMuted,
+      fontSize: 15,
+      lineHeight: 24,
+      textAlign: 'center',
+    },
+  });
+}
