@@ -1,4 +1,4 @@
-import { Redirect, Tabs, useFocusEffect, usePathname } from 'expo-router';
+import { Redirect, Tabs, useFocusEffect, usePathname, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import AppBottomNav from '../../components/AppBottomNav';
@@ -14,6 +14,7 @@ export default function TabLayout() {
     '/login' | '/phone-verification' | '/(tabs)' | null
   >(null);
   const { colors, t } = useAppPreferences();
+  const router = useRouter();
   const pathname = usePathname();
   const activeTab =
     pathname.includes('/explore')
@@ -59,6 +60,12 @@ export default function TabLayout() {
     }, [checkAuth])
   );
 
+  useEffect(() => {
+    if (redirectTo && redirectTo !== '/(tabs)') {
+      void router.replace(redirectTo);
+    }
+  }, [redirectTo, router]);
+
   if (isCheckingAuth) {
     return (
       <View
@@ -79,7 +86,18 @@ export default function TabLayout() {
   }
 
   if (redirectTo && redirectTo !== '/(tabs)') {
-    return <Redirect href={redirectTo} />;
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: colors.background,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <ActivityIndicator size="large" color={colors.text} />
+      </View>
+    );
   }
 
   return (

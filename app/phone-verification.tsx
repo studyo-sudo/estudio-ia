@@ -1,4 +1,4 @@
-import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
+import type { FirebaseAuthTypes } from '@react-native-firebase/auth';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -27,11 +27,21 @@ function isValidPhoneNumber(value: string) {
   return value.startsWith('+') && value.length >= 8;
 }
 
+function getFirebaseAuthModule() {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return require('@react-native-firebase/auth').default as typeof import('@react-native-firebase/auth').default;
+  } catch {
+    return null;
+  }
+}
+
 export default function PhoneVerificationScreen() {
   const { colors, t } = useAppPreferences();
   const [isChecking, setIsChecking] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [hasNativeAuth, setHasNativeAuth] = useState(true);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [code, setCode] = useState('');
   const [confirmation, setConfirmation] =
@@ -64,6 +74,7 @@ export default function PhoneVerificationScreen() {
         setPhoneNumber(authState.phoneNumber);
       }
 
+      setHasNativeAuth(getFirebaseAuthModule() !== null);
       setIsChecking(false);
     })();
 
@@ -85,7 +96,20 @@ export default function PhoneVerificationScreen() {
 
     try {
       setIsSending(true);
-      const result = await auth().signInWithPhoneNumber(normalizedPhone, forceResend);
+      const firebaseAuth = getFirebaseAuthModule();
+
+      if (!firebaseAuth) {
+        Alert.alert(
+          'Necesitas actualizar la build',
+          'Esta version de la app todavia no incluye Firebase nativo para SMS. Instala una build nueva para usar esta funcion.'
+        );
+        return;
+      }
+
+      const result = await firebaseAuth().signInWithPhoneNumber(
+        normalizedPhone,
+        forceResend
+      );
       setConfirmation(result);
       setCode('');
       Alert.alert(
@@ -165,6 +189,16 @@ export default function PhoneVerificationScreen() {
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
         >
+          {!hasNativeAuth ? (
+            <View style={styles.nativeWarningCard}>
+              <Text style={styles.sectionTitle}>Necesitas una build nueva</Text>
+              <Text style={styles.helperText}>
+                Esta pantalla necesita el modulo de Firebase instalado en la app. La version que
+                tienes abierta todavia no lo incluye.
+              </Text>
+            </View>
+          ) : null}
+
           <View style={styles.hero}>
             <Text style={styles.badge}>{t('phoneVerification.badge')}</Text>
             <Text style={styles.title}>{t('phoneVerification.title')}</Text>
@@ -320,6 +354,15 @@ function createStyles(colors: ReturnType<typeof useAppPreferences>['colors']) {
       color: colors.textMuted,
       fontSize: 14,
       lineHeight: 21,
+    },
+    nativeWarningCard: {
+      backgroundColor: colors.surfaceAlt,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: colors.creamSoft,
+      gap: 8,
+      marginBottom: 18,
+      padding: 16,
     },
     input: {
       backgroundColor: colors.background,
